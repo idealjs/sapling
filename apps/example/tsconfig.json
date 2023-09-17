@@ -2,17 +2,15 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "dist",
-    "emitDeclarationOnly": true,
-    "lib": ["esnext"],
     "paths": {
-      "@idealjs/mono-template-core": ["../core/src"]
+      "@idealjs/reactive/*": ["../../packages/core/src/*"]
     }
   },
   "include": ["src"],
   "exclude": ["node_modules"],
   "references": [
     {
-      "path": "../core"
+      "path": "../../packages/core"
     }
   ]
 }

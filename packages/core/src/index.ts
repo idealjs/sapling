@@ -1,1 +1,1 @@
-export { default as moduleA } from "./moduleA";
+export * from "./reactive";
