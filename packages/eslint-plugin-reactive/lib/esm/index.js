@@ -11,7 +11,7 @@ const findParent = (node, search) => {
 const noNestedDeriveCall = {
   meta: {
     messages: {
-      "nested-derive-call": "Nested 'derive' call in the derive's callback."
+      "nested-derive-call": "derive call in the derive's callback."
     },
     type: "problem",
     schema: [],
@@ -41,7 +41,7 @@ const noNestedDeriveCall = {
 const noStateCreatedInDerive = {
   meta: {
     messages: {
-      "state-created-in-derive": "state created in derive."
+      "state-created-in-derive": "state create in derive."
     },
     type: "problem",
     schema: [],
