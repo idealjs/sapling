@@ -1,17 +1,28 @@
-const fStack: { stateReader: () => any; state: State<any> }[] = [];
+const fStack: { stateReader: () => unknown; state: State<unknown> }[] = [];
 
-class State<T> {
+export class State<T> {
   private _val: T;
-  public _listeners = new Set<{ stateReader: () => any; state: State<any> }>();
+  private _oldVal: T | undefined;
+  private _listeners = new Set<{
+    stateReader: () => unknown;
+    state: State<unknown>;
+  }>();
   constructor(val: T) {
     this._val = val;
   }
+
   get val() {
-    fStack[0] && this._listeners.add(fStack[0]);
+    fStack[fStack.length - 1] && this._listeners.add(fStack[fStack.length - 1]);
     return this._val;
   }
 
+  get oldVal() {
+    fStack[fStack.length - 1] && this._listeners.add(fStack[fStack.length - 1]);
+    return this._oldVal;
+  }
+
   set val(v: T) {
+    this._oldVal = this._val;
     this._val = v;
     const listeners = Array.from(this._listeners);
     this._listeners.clear();
@@ -23,6 +34,7 @@ class State<T> {
 
 export type StateView<T> = {
   readonly val: T;
+  readonly oldVal: T | undefined;
 };
 
 export function createState<T>(initialValue: T): State<T>;
@@ -43,4 +55,13 @@ export const derive = <T>(
   state.val = f();
   fStack.pop();
   return state as StateView<T>;
+};
+
+export type Dispose = () => void;
+
+export const effect = <R = Dispose | undefined>(
+  f: () => R,
+  state = createState<R>(),
+) => {
+  return derive(f, state);
 };

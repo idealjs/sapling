@@ -14,11 +14,11 @@ const config = defineConfig([
     ],
     output: [
       {
-        file: "lib/cjs/index.cjs",
+        file: "dist/cjs/index.cjs",
         format: "cjs",
       },
       {
-        file: "lib/esm/index.js",
+        file: "dist/esm/index.js",
         format: "esm",
       },
     ],

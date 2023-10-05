@@ -4,18 +4,19 @@
   "type": "module",
   "exports": {
     ".": {
-      "require": "./lib/cjs/index.cjs",
-      "import": "./lib/esm/index.js"
+      "require": "./dist/cjs/index.cjs",
+      "import": "./dist/esm/index.js"
     }
   },
   "files": [
-    "lib",
+    "dist",
     "src"
   ],
   "license": "MIT",
   "scripts": {
     "test": "vitest",
     "build": "rollup --config rollup.config.js --bundleConfigAsCjs",
+    "postinstall": "rimraf dist && yarn build",
     "prepack": "rimraf dist && yarn build"
   },
   "devDependencies": {

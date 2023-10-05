@@ -5,6 +5,7 @@
   "rules": {
     "quotes": "warn",
     "simple-import-sort/imports": "warn",
-    "simple-import-sort/exports": "warn"
+    "simple-import-sort/exports": "warn",
+    "@typescript-eslint/no-unused-vars": "off"
   }
 }

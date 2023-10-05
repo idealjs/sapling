@@ -7,6 +7,7 @@
     "simple-import-sort/imports": "warn",
     "simple-import-sort/exports": "warn",
     "@idealjs/reactive/no-nested-derive-call": "error",
-    "@idealjs/reactive/no-state-created-in-derive": "error"
+    "@idealjs/reactive/no-state-created-in-derive": "error",
+    "@typescript-eslint/no-unused-vars": "off"
   }
 }
