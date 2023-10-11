@@ -623,13 +623,16 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@idealjs/reactive@workspace:packages/core"
   dependencies:
+    "@types/lodash.chunk": "npm:^4.2.7"
     csstype: "npm:^3.1.2"
     esbuild: "npm:^0.18.4"
+    lodash.chunk: "npm:^4.2.0"
     rimraf: "npm:^5.0.1"
     rollup: "npm:^3.25.1"
     rollup-plugin-esbuild: "npm:^5.0.0"
     rollup-plugin-visualizer: "npm:^5.9.2"
     typescript: "npm:^5.1.3"
+    v8: "npm:^0.1.0"
     vitest: "npm:^0.32.2"
   languageName: unknown
   linkType: soft
@@ -824,6 +827,22 @@ __metadata:
   version: 7.0.13
   resolution: "@types/json-schema@npm:7.0.13"
   checksum: 24000f93d34b3848053b8eb36bbbcfb6b465f691d61186ddac9596b6f1fb105ae84a8be63c0c0f3b6d8f7eb6f891f6cdf3c34910aefc756a1971164c4262de1a
+  languageName: node
+  linkType: hard
+
+"@types/lodash.chunk@npm:^4.2.7":
+  version: 4.2.7
+  resolution: "@types/lodash.chunk@npm:4.2.7"
+  dependencies:
+    "@types/lodash": "npm:*"
+  checksum: 09df5ca00d8866776038bf94658d30b4ea84bffe5f81c14c01568bcb6be692bf59f6ea093de2bb0afbb3f8e54ae96ebd97595f2838ab59b77865427ca77d391e
+  languageName: node
+  linkType: hard
+
+"@types/lodash@npm:*":
+  version: 4.14.199
+  resolution: "@types/lodash@npm:4.14.199"
+  checksum: 340aabe9b023553d64e47f2af7f2010814c1178ce3a2b256e8dd54c444578d5e6e937d70c7117ee1fac5c0fc429b592ab9f6d69a966f0a1222ebcbbe6d516c4a
   languageName: node
   linkType: hard
 
@@ -2549,6 +2568,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lodash.chunk@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "lodash.chunk@npm:4.2.0"
+  checksum: 3b6639fda107a0d8c3996090eeb7ad0f05063e6a1f4692a01335e7c1990030d3274c3164d78159f24928d86eb0943ad326b0a4a2da706c250c4d3166ddd8ed0e
+  languageName: node
+  linkType: hard
+
 "lodash.merge@npm:^4.6.2":
   version: 4.6.2
   resolution: "lodash.merge@npm:4.6.2"
@@ -3717,6 +3743,15 @@ __metadata:
   version: 3.0.1
   resolution: "v8-compile-cache-lib@npm:3.0.1"
   checksum: 88d3423a52b6aaf1836be779cab12f7016d47ad8430dffba6edf766695e6d90ad4adaa3d8eeb512cc05924f3e246c4a4ca51e089dccf4402caa536b5e5be8961
+  languageName: node
+  linkType: hard
+
+"v8@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "v8@npm:0.1.0"
+  bin:
+    v8: ./bin/v8
+  checksum: e7b95a80db615ad56502e6d86681c845724003bc51a4cacdb801cf5eff2111edbc84ae0f7b03aef77640df9f1648a4172783b7cc8914d5601b2095c1e83cb1a6
   languageName: node
   linkType: hard
 
