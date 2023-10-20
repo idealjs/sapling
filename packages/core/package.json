@@ -7,6 +7,16 @@
     ".": {
       "require": "./dist/umd/index.js",
       "import": "./dist/esm/index.js"
+    },
+    "./jsx-runtime": {
+      "require": "./dist/umd/index.js",
+      "import": "./dist/esm/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./jsx-dev-runtime": {
+      "require": "./dist/umd/index.js",
+      "import": "./dist/esm/index.js",
+      "types": "./dist/index.d.ts"
     }
   },
   "files": [

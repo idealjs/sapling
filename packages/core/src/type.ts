@@ -174,6 +174,7 @@ export type Tags = {
   readonly tspan: SVGTSpanElement;
   readonly use: SVGUseElement;
   readonly view: SVGViewElement;
+  readonly fragment: DocumentFragment;
 };
 
 export type Primitive = string | number | boolean | bigint;

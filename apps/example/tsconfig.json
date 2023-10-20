@@ -2,6 +2,8 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "dist",
+    "jsx": "react-jsx",
+    "jsxImportSource": "@idealjs/reactive",
     "paths": {
       "@idealjs/reactive/*": ["../../packages/core/src/*"]
     }

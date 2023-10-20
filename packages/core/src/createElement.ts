@@ -7,14 +7,25 @@ import { OrFunction, Primitive, Tags } from "./type";
 type Dispose = () => void;
 
 export type ComponentChild = {
-  el?: Primitive | Element | DocumentFragment | null | undefined;
-  disposeStack?: (StateView<Dispose> | undefined)[];
+  el?: Primitive | Element | Node | DocumentFragment | null | undefined;
+  disposeStack?: StateView<Dispose>[];
 };
+
+type PrimitiveChild = Primitive;
 
 export type ComponentChildren =
   | ComponentChild
-  | (ComponentChild | (() => ComponentChild))[]
-  | (() => ComponentChild);
+  | PrimitiveChild
+  | (() => ComponentChild | PrimitiveChild)
+  | (
+      | ComponentChild
+      | PrimitiveChild
+      | (() => ComponentChild | PrimitiveChild)
+    )[];
+
+const isPrimitive = (value: unknown): value is Primitive => {
+  return value !== Object(value);
+};
 
 let globalDisposeStack: StateView<Dispose | void>[] = [];
 
@@ -61,12 +72,16 @@ const findNextSibling = (
 
 export const upsert = (
   element: Node,
-  ...children: (ComponentChild | (() => ComponentChild))[]
+  ...children: (
+    | ComponentChild
+    | PrimitiveChild
+    | (() => ComponentChild | PrimitiveChild)
+  )[]
 ) => {
   const upsertCache: (
     | {
         el: Node | null | undefined;
-        disposeStack?: (StateView<Dispose> | undefined)[];
+        disposeStack?: StateView<Dispose>[];
         fragmentChildren?: Node[];
       }
     | undefined
@@ -76,8 +91,16 @@ export const upsert = (
       derive(() => {
         const cache = upsertCache[index];
         cache?.disposeStack?.forEach((dispose) => dispose?.val());
-        const result = child();
-
+        const _result = child();
+        let result: ComponentChild;
+        if (isPrimitive(_result)) {
+          result = {
+            el: _result,
+            disposeStack: [],
+          };
+        } else {
+          result = _result;
+        }
         // fragment replace
         if (
           cache?.el != null &&
@@ -207,6 +230,12 @@ export const upsert = (
       return element;
     }
 
+    if (isPrimitive(child)) {
+      const text = new Text(child.toString());
+      upsertCache[index] = { el: text };
+      return element.appendChild(text);
+    }
+
     if (child.el instanceof Node) {
       upsertCache[index] = { el: child.el };
       return element.appendChild(child.el);
@@ -226,6 +255,7 @@ export type TagOption<K extends keyof Tags> = Omit<
 > & {
   children?: ComponentChildren;
   style?: CSS.Properties;
+  dispose?: StateView<Dispose>[];
 };
 
 function createElement<P = object>(
@@ -251,19 +281,22 @@ function createElement<P = object>(
     return { el: component.el, disposeStack };
   }
 
-  const { children, ...props } = options as TagOption<keyof Tags>;
+  const { children, dispose, ...props } = options as TagOption<keyof Tags>;
 
   const temp = globalDisposeStack;
-  const disposeStack: StateView<Dispose>[] = [];
+  const disposeStack: StateView<Dispose>[] = dispose ?? [];
   globalDisposeStack = disposeStack;
 
-  const el = hyper(jsxTag, props);
+  const el =
+    jsxTag === "fragment"
+      ? document.createDocumentFragment()
+      : hyper(jsxTag, props);
 
   if (typeof children === "function") {
     upsert(el, children);
   } else if (Array.isArray(children)) {
     upsert(el, ...children);
-  } else if (children?.el != null) {
+  } else if (children != null) {
     upsert(el, children);
   }
 
@@ -275,3 +308,8 @@ function createElement<P = object>(
 }
 
 export default createElement;
+
+export const lazy =
+  <V>(v: V) =>
+  () =>
+    v;
