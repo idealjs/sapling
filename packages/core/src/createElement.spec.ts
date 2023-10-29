@@ -343,7 +343,7 @@ describe("unit test", () => {
     const snapshot = writeHeapSnapshot();
     expect(
       getState(getNodes(readSnapshotFile(snapshot))).length,
-    ).toMatchInlineSnapshot('36');
+    ).toMatchInlineSnapshot("36");
     fs.unlinkSync(snapshot);
     vi.useRealTimers();
   });
