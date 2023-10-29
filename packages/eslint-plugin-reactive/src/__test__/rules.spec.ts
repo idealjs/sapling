@@ -59,7 +59,7 @@ describe("", () => {
           derive(()=>{
             createState();
           })`,
-          errors: ["state created in derive."],
+          errors: ["state create in derive."],
         },
         {
           code: `
@@ -67,7 +67,7 @@ describe("", () => {
             const state = createState();
             console.log(state.val);
           })`,
-          errors: ["state created in derive."],
+          errors: ["state create in derive."],
         },
         {
           code: `
@@ -75,7 +75,7 @@ describe("", () => {
             const state = createState();
             createState();
           })`,
-          errors: ["state created in derive.", "state created in derive."],
+          errors: ["state create in derive.", "state create in derive."],
         },
       ],
     });
