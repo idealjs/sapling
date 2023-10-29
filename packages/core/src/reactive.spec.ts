@@ -3,7 +3,7 @@ import { writeHeapSnapshot } from "v8";
 import { describe, expect, it, vi } from "vitest";
 
 import { createState, derive, effect } from "./reactive";
-import { getNodes } from "./utils/v8";
+import { getNodes, getState, readSnapshotFile } from "./utils/v8";
 
 describe("unit test", () => {
   it("derive state val", () => {
@@ -62,7 +62,6 @@ describe("unit test", () => {
         clearInterval(handler);
       };
     });
-
     const snapshot1 = writeHeapSnapshot();
     vi.advanceTimersToNextTimer();
     expect(stubFn).toBeCalledTimes(1);
@@ -75,14 +74,10 @@ describe("unit test", () => {
     vi.advanceTimersByTime(2000);
     expect(stubFn).toBeCalledTimes(2);
     expect(
-      getNodes(JSON.parse(fs.readFileSync(snapshot1).toString())).filter(
-        (node) => node.name.includes("class State"),
-      ).length,
+      getState(getNodes(readSnapshotFile(snapshot1))).length,
     ).toMatchInlineSnapshot("2");
     expect(
-      getNodes(JSON.parse(fs.readFileSync(snapshot2).toString())).filter(
-        (node) => node.name.includes("class State"),
-      ).length,
+      getState(getNodes(readSnapshotFile(snapshot2))).length,
     ).toMatchInlineSnapshot("2");
     fs.unlinkSync(snapshot1);
     fs.unlinkSync(snapshot2);

@@ -1,315 +1,166 @@
 import * as CSS from "csstype";
 
 import { hyper } from "./hyper";
-import { derive, effect, StateView } from "./reactive";
-import { OrFunction, Primitive, Tags } from "./type";
+import { derive, effect, State, StateView } from "./reactive";
+import { Key, OrFunction, Primitive, TagNameMap } from "./type";
 
 type Dispose = () => void;
 
-export type ComponentChild = {
-  el?: Primitive | Element | Node | DocumentFragment | null | undefined;
-  disposeStack?: StateView<Dispose>[];
+export type JSXNode = {
+  childNode: Node | null;
+  disposeStack: StateView<Dispose | void>[];
 };
 
-type PrimitiveChild = Primitive;
+export type PrimitiveChild = Primitive;
 
-export type ComponentChildren =
-  | ComponentChild
-  | PrimitiveChild
-  | (() => ComponentChild | PrimitiveChild)
-  | (
-      | ComponentChild
-      | PrimitiveChild
-      | (() => ComponentChild | PrimitiveChild)
-    )[];
+export type JSXChildren = OrFunction<
+  JSXNode | PrimitiveChild | null | (JSXNode | PrimitiveChild | null)[]
+>;
 
-const isPrimitive = (value: unknown): value is Primitive => {
-  return value !== Object(value);
+export const isPrimitive = (value: unknown): value is Primitive => {
+  return typeof value !== "object" && typeof value !== "function";
 };
 
-let globalDisposeStack: StateView<Dispose | void>[] = [];
+let exchangeDisposeStack: StateView<Dispose | void>[] = [];
+let exchangeNodeCache: Map<Key, JSXNode> = new Map();
 
 export const useEffect = (callback: () => Dispose | void) => {
   const disposeState = effect(callback);
-  globalDisposeStack.push(disposeState);
+  exchangeDisposeStack.push(disposeState);
 };
 
-const findNextSibling = (
-  upsertCache: (
-    | {
-        el: Node | null | undefined;
-        disposeStack?: (StateView<Dispose> | undefined)[];
-        fragmentChildren?: Node[];
-      }
-    | undefined
-  )[],
-  currentIndex: number,
-) => {
-  let nextSibling;
-  for (let i = currentIndex + 1; i < upsertCache.length; i++) {
-    if (upsertCache[i]?.el != null) {
-      if (
-        upsertCache[i]?.el instanceof DocumentFragment &&
-        upsertCache[i]?.fragmentChildren?.[0] != null
-      ) {
-        nextSibling = upsertCache[i]?.fragmentChildren?.[0];
-        break;
-      }
-      if (
-        upsertCache[i]?.el instanceof DocumentFragment &&
-        (upsertCache[i]?.fragmentChildren == null ||
-          upsertCache[i]?.fragmentChildren?.length === 0)
-      ) {
-        continue;
-      }
-      if (upsertCache[i]?.el instanceof Element) {
-        nextSibling = upsertCache[i]?.el;
-      }
-    }
+const arrify = <T>(v: T | T[]) => {
+  if (Array.isArray(v)) {
+    return v;
   }
-  return nextSibling;
+  return [v];
 };
 
 export const upsert = (
   element: Node,
-  ...children: (
-    | ComponentChild
-    | PrimitiveChild
-    | (() => ComponentChild | PrimitiveChild)
-  )[]
+  children: JSXChildren,
+  nodeCache: Map<Key, JSXNode> = new Map(),
 ) => {
-  const upsertCache: (
-    | {
-        el: Node | null | undefined;
-        disposeStack?: StateView<Dispose>[];
-        fragmentChildren?: Node[];
+  let upsertCache = new Set<JSXNode>();
+
+  derive(() => {
+    const _upserCache = new Set<JSXNode>();
+    const temp = exchangeNodeCache;
+    exchangeNodeCache = nodeCache;
+    const _children = typeof children === "function" ? children() : children;
+    exchangeNodeCache = temp;
+
+    const childrenNode = new Set(
+      arrify(_children)
+        .map((child) => {
+          if (isPrimitive(child)) {
+            return { childNode: new Text(child.toString()), disposeStack: [] };
+          }
+          if (child?.childNode instanceof Node) {
+            return child;
+          }
+        })
+        .filter((v): v is JSXNode => v != null),
+    );
+
+    upsertCache.forEach((cacheNode) => {
+      if (!childrenNode.has(cacheNode)) {
+        cacheNode.childNode?.parentElement?.removeChild(cacheNode.childNode);
+        cacheNode.disposeStack.forEach((dispose) => dispose.val?.());
       }
-    | undefined
-  )[] = [];
-  children.forEach((child, index) => {
-    if (typeof child === "function") {
-      derive(() => {
-        const cache = upsertCache[index];
-        cache?.disposeStack?.forEach((dispose) => dispose?.val());
-        const _result = child();
-        let result: ComponentChild;
-        if (isPrimitive(_result)) {
-          result = {
-            el: _result,
-            disposeStack: [],
-          };
-        } else {
-          result = _result;
-        }
-        // fragment replace
-        if (
-          cache?.el != null &&
-          result.el != null &&
-          result.el instanceof DocumentFragment
-        ) {
-          const nextSibling = findNextSibling(upsertCache, index);
-          const fragmentChildren = [...result.el.childNodes];
-          upsertCache[index]?.fragmentChildren?.forEach((child) =>
-            element.removeChild(child),
-          );
-          if (nextSibling != null) {
-            element.insertBefore(nextSibling, result.el);
-          } else {
-            element.appendChild(result.el);
-          }
+    });
 
-          upsertCache[index] = {
-            el: result.el,
-            disposeStack: result.disposeStack,
-            fragmentChildren: fragmentChildren,
-          };
-          return element;
-        }
+    childrenNode.forEach((child) => {
+      if (child.childNode != null) {
+        _upserCache.add(child);
+        return element.appendChild(child.childNode);
+      }
+    });
+    // debugger;
 
-        // remount
-        if (cache != null && cache?.el == null && result.el != null) {
-          const nextSibling = findNextSibling(upsertCache, index);
-
-          if (nextSibling != null && result.el instanceof Node) {
-            element.insertBefore(nextSibling, result.el);
-            upsertCache[index] = {
-              el: result.el,
-              disposeStack: result.disposeStack,
-            };
-            return element;
-          }
-          if (nextSibling == null && result.el instanceof Node) {
-            element.appendChild(result.el);
-            upsertCache[index] = {
-              el: result.el,
-              disposeStack: result.disposeStack,
-            };
-            return element;
-          }
-          if (nextSibling != null && !(result.el instanceof Node)) {
-            const text = new Text(result.el.toString());
-            element.insertBefore(nextSibling, text);
-            upsertCache[index] = {
-              el: text,
-              disposeStack: result.disposeStack,
-            };
-            return element;
-          }
-          if (nextSibling == null && !(result.el instanceof Node)) {
-            const text = new Text(result.el.toString());
-            element.appendChild(text);
-            upsertCache[index] = {
-              el: text,
-              disposeStack: result.disposeStack,
-            };
-            return element;
-          }
-
-          return element;
-        }
-
-        // unmount
-        if (cache?.el != null && result.el == null) {
-          element.removeChild(cache.el);
-          if (cache.el instanceof DocumentFragment) {
-            cache.fragmentChildren?.forEach((child) =>
-              element.removeChild(child),
-            );
-          }
-          upsertCache[index] = {
-            el: result.el,
-            disposeStack: result.disposeStack,
-          };
-          return element;
-        }
-
-        // replace
-        if (
-          cache?.el != null &&
-          result.el != null &&
-          result.el instanceof Element
-        ) {
-          element.replaceChild(result.el, cache.el);
-          upsertCache[index] = {
-            el: result.el,
-            disposeStack: result.disposeStack,
-          };
-          return element;
-        }
-
-        if (
-          cache?.el != null &&
-          result.el != null &&
-          !(result.el instanceof Node)
-        ) {
-          const text = new Text(result.el.toString());
-          element.replaceChild(text, cache.el);
-          upsertCache[index] = { el: text, disposeStack: result.disposeStack };
-          return element;
-        }
-
-        // add
-        if (cache == null && result.el != null && result.el instanceof Node) {
-          upsertCache[index] = {
-            el: result.el,
-            disposeStack: result.disposeStack,
-          };
-          return element.appendChild(result.el);
-        }
-
-        if (
-          cache == null &&
-          result.el != null &&
-          !(result.el instanceof Node)
-        ) {
-          const text = new Text(result.el.toString());
-          upsertCache[index] = { el: text, disposeStack: result.disposeStack };
-          return element.appendChild(text);
-        }
-      });
-      return element;
-    }
-
-    if (isPrimitive(child)) {
-      const text = new Text(child.toString());
-      upsertCache[index] = { el: text };
-      return element.appendChild(text);
-    }
-
-    if (child.el instanceof Node) {
-      upsertCache[index] = { el: child.el };
-      return element.appendChild(child.el);
-    }
-
-    if (child.el != null) {
-      const text = new Text(child.el.toString());
-      upsertCache[index] = { el: text };
-      return element.appendChild(text);
-    }
+    upsertCache.clear();
+    upsertCache = _upserCache;
   });
 };
 
-export type TagOption<K extends keyof Tags> = Omit<
-  OrFunction<Partial<Tags[K]>>,
-  "children" | "style"
+export type TagOption<K extends keyof TagNameMap> = Partial<
+  Omit<TagNameMap[K], "children" | "style">
 > & {
-  children?: ComponentChildren;
-  style?: CSS.Properties;
-  dispose?: StateView<Dispose>[];
+  ref?: State<TagNameMap[K] | null>;
+  children?: JSXChildren;
+  style?: OrFunction<CSS.Properties>;
 };
 
-function createElement<P = object>(
-  jsxTag: (props: P) => ComponentChild,
-  options?: P,
-): ComponentChild;
+type JSXTag<P> =
+  | keyof TagNameMap
+  | ((props: P) => JSXNode | PrimitiveChild | null);
 
-function createElement(
-  jsxTag: keyof Tags,
-  options?: TagOption<keyof Tags>,
-): ComponentChild;
+const getCache = (cache: Map<Key, JSXNode>, key: Key | undefined) => {
+  if (key == null) {
+    return null;
+  }
+  return cache.get(key);
+};
 
-function createElement<P = object>(
-  jsxTag: keyof Tags | ((props: P) => ComponentChild),
-  options?: TagOption<keyof Tags> | P,
-): ComponentChild {
+function createElement<P extends object>(
+  jsxTag: JSXTag<P>,
+  options?: TagOption<keyof TagNameMap> | P,
+  key?: Key,
+  isStaticChildren?: boolean,
+  source?: {
+    columnNumber: number;
+    fileName: string;
+    lineNumber: number;
+  },
+  self?: unknown,
+  nodeCache: Map<Key, JSXNode> = exchangeNodeCache,
+): JSXNode {
+  const cache = getCache(nodeCache, key);
+  if (cache != null) {
+    return cache;
+  }
+
   if (typeof jsxTag === "function") {
-    const temp = globalDisposeStack;
-    const disposeStack: StateView<Dispose>[] = [];
-    globalDisposeStack = disposeStack;
-    const component = jsxTag(options as P);
-    globalDisposeStack = temp;
-    return { el: component.el, disposeStack };
+    const disposeStack: StateView<void | Dispose>[] = [];
+    const temp = exchangeDisposeStack;
+    exchangeDisposeStack = disposeStack;
+    const node = jsxTag(options as P);
+    exchangeDisposeStack = temp;
+    const jsxNode =
+      isPrimitive(node) || node == null
+        ? {
+            childNode: node == null ? null : new Text(node.toString()),
+            disposeStack,
+          }
+        : node;
+    if (key != null) {
+      nodeCache.set(key, jsxNode);
+    }
+    return jsxNode;
   }
 
-  const { children, dispose, ...props } = options as TagOption<keyof Tags>;
+  const { children, ref, ...props } = (options ?? {}) as TagOption<
+    keyof TagNameMap
+  >;
 
-  const temp = globalDisposeStack;
-  const disposeStack: StateView<Dispose>[] = dispose ?? [];
-  globalDisposeStack = disposeStack;
-
-  const el =
-    jsxTag === "fragment"
-      ? document.createDocumentFragment()
-      : hyper(jsxTag, props);
-
-  if (typeof children === "function") {
-    upsert(el, children);
-  } else if (Array.isArray(children)) {
-    upsert(el, ...children);
-  } else if (children != null) {
-    upsert(el, children);
+  const el = hyper(jsxTag, props);
+  if (!(el instanceof DocumentFragment) && ref != null) {
+    ref.val = el;
   }
 
-  globalDisposeStack = temp;
-  return {
-    el: el,
-    disposeStack,
+  const jsxNode = {
+    childNode: el,
+    disposeStack: [...exchangeDisposeStack],
   };
+
+  if (key != null) {
+    nodeCache.set(key, jsxNode);
+  }
+
+  const _nodeCache = new Map<Key, JSXNode>();
+  children && upsert(el, children, _nodeCache);
+
+  return jsxNode;
 }
 
 export default createElement;
-
-export const lazy =
-  <V>(v: V) =>
-  () =>
-    v;

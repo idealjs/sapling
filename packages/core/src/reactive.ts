@@ -1,6 +1,6 @@
 const fStack: { stateReader: () => unknown; state: State<unknown> }[] = [];
 
-export class State<T> {
+export class State<T> implements State<T> {
   private _val: T;
   private _oldVal: T | undefined;
   private _listeners = new Set<{
@@ -32,14 +32,14 @@ export class State<T> {
   }
 }
 
-export type StateView<T> = {
+export interface StateView<T> extends State<T> {
   readonly val: T;
   readonly oldVal: T | undefined;
-};
+}
 
 export function createState<T>(initialValue: T): State<T>;
 
-export function createState<T>(initialValue: T | null): StateView<T>;
+export function createState<T>(initialValue: T | null): StateView<T | null>;
 
 export function createState<T = undefined>(): State<T | undefined>;
 

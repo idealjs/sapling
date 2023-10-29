@@ -1,24 +1,5 @@
-import * as CSS from "csstype";
-
-import { ComponentChild, ComponentChildren } from "./createElement";
-import { ChildElement } from "./hyper";
-import { Dispose, StateView } from "./reactive";
-import type { Tags } from "./type";
-
-type HTMLAttributes<T> = Partial<Omit<T, "style" | "children">> & {
-  style?: CSS.Properties;
-  ref?: { val: T };
-  children?: ComponentChildren | (() => ChildElement);
-};
-
-type SVGAttributes<T> = Partial<Omit<T, "style" | "children">> & {
-  style?: CSS.Properties;
-  ref?: { val: T };
-};
-
-type FragmentAttributes<T> = Partial<Omit<T, "children">> & {
-  children: ComponentChild | ComponentChild[] | (() => ComponentChild);
-};
+import type { JSXNode, TagOption } from "./createElement";
+import type { Key, TagNameMap } from "./type";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace JSX {
@@ -29,21 +10,19 @@ export namespace JSX {
     children: object;
   }
 
-  export type Element = ComponentChild;
+  export type Element = JSXNode;
 
-  export interface IntrinsicAttributes {}
+  export interface IntrinsicAttributes {
+    key?: Key;
+  }
 
   type InnerElement = {
-    [K in keyof Tags]: Tags[K] extends HTMLElement
-      ? HTMLAttributes<Tags[K]>
-      : Tags[K] extends SVGElement
-      ? SVGAttributes<Tags[K]>
-      : FragmentAttributes<Tags[K]> & {
-          dispose?: StateView<Dispose>[];
-        };
+    [K in keyof TagNameMap]: TagOption<K> & {
+      key?: Key;
+    };
   };
 
   export interface IntrinsicElements extends InnerElement {}
 }
 
-export { default as jsx } from "./createElement";
+export { default as jsx, default as jsxDEV } from "./createElement";

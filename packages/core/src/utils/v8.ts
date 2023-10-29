@@ -1,4 +1,6 @@
+import fs from "fs";
 import chunk from "lodash.chunk";
+
 export type HeapSnapshot = {
   snapshot: {
     meta: {
@@ -90,6 +92,10 @@ export type HeapNode = {
   detachedness: number;
 };
 
+export const readSnapshotFile = (filename: string) => {
+  return JSON.parse(fs.readFileSync(filename).toString());
+};
+
 export const getNodes = (heapSnapshot: HeapSnapshot) => {
   const nodes = (
     chunk(heapSnapshot.nodes, 7) as [
@@ -120,4 +126,8 @@ export const getNodes = (heapSnapshot: HeapSnapshot) => {
     };
   });
   return nodes;
+};
+
+export const getState = (nodes: ReturnType<typeof getNodes>) => {
+  return nodes.filter((node) => node.name === "State");
 };

@@ -3,6 +3,7 @@
   "type": "module",
   "workspaces": [
     "packages/*",
+    "examples/*",
     "apps/*"
   ],
   "repository": "git@github.com:idealjs/mono-template.git",
