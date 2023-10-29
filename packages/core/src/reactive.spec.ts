@@ -1,11 +1,9 @@
 import fs from "fs";
+import { writeHeapSnapshot } from "v8";
 import { describe, expect, it, vi } from "vitest";
 
 import { createState, derive, effect } from "./reactive";
 import { getNodes, getState, readSnapshotFile } from "./utils/v8";
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { writeHeapSnapshot } = require("v8");
 
 describe("unit test", () => {
   it("derive state val", () => {
