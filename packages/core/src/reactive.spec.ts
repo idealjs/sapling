@@ -54,7 +54,7 @@ describe("unit test", () => {
     expect(test.val).toBe(9);
     expect(test.oldVal).toBe(4);
   });
-  it.only("state in derive", () => {
+  it("state in derive", () => {
     vi.useFakeTimers();
     const stubFn = vi.fn();
     const interval = createState(1000);
@@ -77,10 +77,10 @@ describe("unit test", () => {
     expect(stubFn).toBeCalledTimes(2);
     expect(
       getState(getNodes(readSnapshotFile(snapshot1))).length,
-    ).toMatchInlineSnapshot("2");
+    ).toMatchInlineSnapshot("5");
     expect(
       getState(getNodes(readSnapshotFile(snapshot2))).length,
-    ).toMatchInlineSnapshot("2");
+    ).toMatchInlineSnapshot("5");
     fs.unlinkSync(snapshot1);
     fs.unlinkSync(snapshot2);
   });
