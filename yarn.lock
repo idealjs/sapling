@@ -680,7 +680,6 @@ __metadata:
     rollup-plugin-esbuild: "npm:^5.0.0"
     rollup-plugin-visualizer: "npm:^5.9.2"
     typescript: "npm:^5.1.3"
-    v8: "npm:^0.1.0"
     vitest: "npm:^0.34.6"
   languageName: unknown
   linkType: soft
@@ -4299,15 +4298,6 @@ __metadata:
   version: 3.0.1
   resolution: "v8-compile-cache-lib@npm:3.0.1"
   checksum: 88d3423a52b6aaf1836be779cab12f7016d47ad8430dffba6edf766695e6d90ad4adaa3d8eeb512cc05924f3e246c4a4ca51e089dccf4402caa536b5e5be8961
-  languageName: node
-  linkType: hard
-
-"v8@npm:^0.1.0":
-  version: 0.1.0
-  resolution: "v8@npm:0.1.0"
-  bin:
-    v8: ./bin/v8
-  checksum: e7b95a80db615ad56502e6d86681c845724003bc51a4cacdb801cf5eff2111edbc84ae0f7b03aef77640df9f1648a4172783b7cc8914d5601b2095c1e83cb1a6
   languageName: node
   linkType: hard
 
