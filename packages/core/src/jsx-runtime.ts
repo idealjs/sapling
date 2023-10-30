@@ -25,4 +25,8 @@ export namespace JSX {
   export interface IntrinsicElements extends InnerElement {}
 }
 
+export type * from "./createElement";
 export { default as jsx, default as jsxDEV } from "./createElement";
+export type * from "./hyper";
+export type * from "./reactive";
+export type * from "./type";
