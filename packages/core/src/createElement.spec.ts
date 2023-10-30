@@ -1,5 +1,6 @@
+import { writeHeapSnapshot } from "node:v8";
+
 import fs from "fs";
-import { writeHeapSnapshot } from "v8";
 import { describe, expect, it, vi } from "vitest";
 
 import createElement, { useEffect } from "./createElement";
