@@ -1,6 +1,6 @@
 {
   "name": "@idealjs/reactive",
-  "version": "0.1.2-beta.1",
+  "version": "0.1.2",
   "type": "module",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -47,6 +47,5 @@
   },
   "dependencies": {
     "csstype": "^3.1.2"
-  },
-  "stableVersion": "0.1.1"
+  }
 }

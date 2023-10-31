@@ -20,6 +20,8 @@ jobs:
       - name: Test Packages
         run: yarn workspaces foreach -A run test run
       - name: Publish Package
-        run: yarn workspaces foreach -A npm publish
+        run: |
+          yarn workspace @idealjs/reactive npm publish
+          yarn workspace @idealjs/eslint-plugin-reactive npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
