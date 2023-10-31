@@ -1,5 +1,6 @@
-import type { JSXNode, TagOption } from "./createElement";
-import type { Key, TagNameMap } from "./type";
+import type { JSXNode, Key, TagNameMap, TagOption } from ".";
+
+export * from ".";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace JSX {
@@ -24,9 +25,3 @@ export namespace JSX {
 
   export interface IntrinsicElements extends InnerElement {}
 }
-
-export type * from "./createElement";
-export { default as jsx, default as jsxDEV } from "./createElement";
-export type * from "./hyper";
-export type * from "./reactive";
-export type * from "./type";

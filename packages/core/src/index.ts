@@ -1,13 +1,9 @@
-export type * from "./createElement";
+export * from "./createElement";
 export {
   default as createElement,
-  isPrimitive,
-  upsert,
-  useEffect,
+  default as jsx,
+  default as jsxDEV,
 } from "./createElement";
-export type * from "./hyper";
-export { hyper } from "./hyper";
-export * from "./jsx-runtime";
-export type * from "./reactive";
-export { createState, derive, effect } from "./reactive";
-export type * from "./type";
+export * from "./hyper";
+export * from "./reactive";
+export * from "./type";

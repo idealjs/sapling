@@ -3,7 +3,7 @@ import { createState, upsert, useEffect } from "@idealjs/reactive";
 const TodoItem = (props: { name: number }) => {
   const { name } = props;
   const state = createState(0);
-
+  const ref = createState<HTMLParagraphElement>(null)
   useEffect(() => {
     const handler = setInterval(() => {
       state.val++;
@@ -15,7 +15,7 @@ const TodoItem = (props: { name: number }) => {
   });
 
   return (
-    <p>
+    <p ref={ref}>
       {() => {
         return `${name} counter ${state.val}`;
       }}
