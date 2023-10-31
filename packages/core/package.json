@@ -6,7 +6,8 @@
   "exports": {
     ".": {
       "require": "./dist/umd/index.js",
-      "import": "./dist/esm/index.js"
+      "import": "./dist/esm/index.js",
+      "types": "./dist/index.d.ts"
     },
     "./jsx-runtime": {
       "require": "./dist/umd/index.js",
@@ -39,7 +40,6 @@
     "lodash.chunk": "^4.2.0",
     "rimraf": "^5.0.1",
     "rollup": "^3.25.1",
-    "rollup-plugin-dts": "^6.1.0",
     "rollup-plugin-esbuild": "^5.0.0",
     "rollup-plugin-visualizer": "^5.9.2",
     "typescript": "^5.1.3",

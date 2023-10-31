@@ -1,5 +1,4 @@
 import { defineConfig } from "rollup";
-import { dts } from "rollup-plugin-dts";
 import esbuild from "rollup-plugin-esbuild";
 import { visualizer } from "rollup-plugin-visualizer";
 
@@ -25,13 +24,6 @@ const config = defineConfig([
         format: "esm",
       },
     ],
-  },
-  {
-    input: "./dist/jsx-runtime.d.ts",
-    output: {
-      file: "jsx-runtime.d.ts",
-    },
-    plugins: [dts()],
   },
 ]);
 
