@@ -1,23 +1,31 @@
-const fStack: { stateReader: () => unknown; state: State<unknown> }[] = [];
+const fStack: (() => unknown)[] = [];
+const stateMap = new WeakMap<() => unknown, State<unknown>>();
 
 export class State<T> implements State<T> {
   private _val: T;
   private _oldVal: T | undefined;
-  private _listeners = new Set<{
-    stateReader: () => unknown;
-    state: State<unknown>;
-  }>();
+  private _listeners = new Set<() => unknown>();
+  private _localStateMap = new WeakMap<
+    () => unknown,
+    State<unknown> | undefined
+  >();
   constructor(val: T) {
     this._val = val;
   }
 
+  private collectDeps() {
+    const f = fStack[fStack.length - 1];
+    f && this._listeners.add(f);
+    f && this._localStateMap.set(f, stateMap.get(f));
+  }
+
   get val() {
-    fStack[fStack.length - 1] && this._listeners.add(fStack[fStack.length - 1]);
+    this.collectDeps();
     return this._val;
   }
 
   get oldVal() {
-    fStack[fStack.length - 1] && this._listeners.add(fStack[fStack.length - 1]);
+    this.collectDeps();
     return this._oldVal;
   }
 
@@ -26,7 +34,9 @@ export class State<T> implements State<T> {
     this._val = v;
     const listeners = Array.from(this._listeners);
     this._listeners.clear();
-    listeners.forEach(({ stateReader, state }) => {
+    listeners.forEach((stateReader) => {
+      const state = this._localStateMap.get(stateReader);
+      this._localStateMap.delete(stateReader);
       derive(stateReader, state);
     });
   }
@@ -51,9 +61,11 @@ export const derive = <T>(
   f: () => T,
   state = createState<T>(),
 ): StateView<T> => {
-  fStack.push({ stateReader: f, state });
+  fStack.push(f);
+  stateMap.set(f, state);
   state.val = f();
   fStack.pop();
+  stateMap.delete(f);
   return state as StateView<T>;
 };
 
