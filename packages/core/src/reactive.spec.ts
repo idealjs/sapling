@@ -83,4 +83,20 @@ describe("unit test", () => {
     fs.unlinkSync(snapshot1);
     fs.unlinkSync(snapshot2);
   });
+  it("effect with condition", () => {
+    const count = createState(0);
+    const hidden = createState(false);
+    const hello = vi.fn((v, v2) => {
+      console.log("hello", v, v2);
+    });
+    effect(() => {
+      hello(count.val, hidden.val);
+    });
+    count.val++;
+    hidden.val = !hidden.val;
+    expect(hello).toBeCalledTimes(3);
+    count.val++;
+    hidden.val = !hidden.val;
+    expect(hello).toBeCalledTimes(5);
+  });
 });
