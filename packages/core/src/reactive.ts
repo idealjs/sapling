@@ -1,7 +1,4 @@
-const fStack: (() => unknown)[] = [];
-const stateMap = new WeakMap<() => unknown, State<unknown>>();
-
-export class State<T> implements State<T> {
+class State<T> {
   private _val: T;
   private _oldVal: T | undefined;
   private _listeners = new Set<() => unknown>();
@@ -9,14 +6,26 @@ export class State<T> implements State<T> {
     () => unknown,
     State<unknown> | undefined
   >();
-  constructor(val: T) {
+  private r: Reactive;
+  static getDerive = <T>(r: Reactive) => {
+    return (f: () => T, state: State<T | undefined>): StateView<T> => {
+      r.fStack.push(f);
+      r.stateMap.set(f, state);
+      state.val = f();
+      r.fStack.pop();
+      r.stateMap.delete(f);
+      return state as StateView<T>;
+    };
+  };
+  constructor(r: Reactive, val: T) {
     this._val = val;
+    this.r = r;
   }
 
   private collectDeps() {
-    const f = fStack[fStack.length - 1];
+    const f = this.r.fStack[this.r.fStack.length - 1];
     f && this._listeners.add(f);
-    f && this._localStateMap.set(f, stateMap.get(f));
+    f && this._localStateMap.set(f, this.r.stateMap.get(f));
   }
 
   get val() {
@@ -37,43 +46,43 @@ export class State<T> implements State<T> {
     listeners.forEach((stateReader) => {
       const state = this._localStateMap.get(stateReader);
       this._localStateMap.delete(stateReader);
-      derive(stateReader, state);
+      State.getDerive(this.r)(
+        stateReader,
+        state ?? new State(this.r, this._val),
+      );
     });
   }
 }
+
+type CreateState = {
+  <T>(initialValue: T): State<T>;
+  <T>(initialValue: T | null): StateView<T | null>;
+  <T = undefined>(): State<T | undefined>;
+};
+
+class Reactive {
+  public fStack: (() => unknown)[] = [];
+  public stateMap = new WeakMap<() => unknown, State<unknown>>();
+
+  public createState: CreateState = <T>(val?: T) => {
+    return new State(this, val);
+  };
+
+  public derive = <T>(f: () => T, state = createState<T>()) =>
+    State.getDerive<T>(this)(f, state);
+
+  public effect = <R = Dispose | undefined>(f: () => R) => {
+    return derive(f);
+  };
+}
+
+export type { State };
 
 export interface StateView<T> extends State<T> {
   readonly val: T;
   readonly oldVal: T | undefined;
 }
 
-export function createState<T>(initialValue: T): State<T>;
-
-export function createState<T>(initialValue: T | null): StateView<T | null>;
-
-export function createState<T = undefined>(): State<T | undefined>;
-
-export function createState<T>(val?: T) {
-  return new State(val);
-}
-
-export const derive = <T>(
-  f: () => T,
-  state = createState<T>(),
-): StateView<T> => {
-  fStack.push(f);
-  stateMap.set(f, state);
-  state.val = f();
-  fStack.pop();
-  stateMap.delete(f);
-  return state as StateView<T>;
-};
-
 export type Dispose = () => void;
 
-export const effect = <R = Dispose | undefined>(
-  f: () => R,
-  state = createState<R>(),
-) => {
-  return derive(f, state);
-};
+export const { createState, effect, derive } = new Reactive();

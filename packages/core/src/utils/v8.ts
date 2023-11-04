@@ -129,5 +129,5 @@ export const getNodes = (heapSnapshot: HeapSnapshot) => {
 };
 
 export const getState = (nodes: ReturnType<typeof getNodes>) => {
-  return nodes.filter((node) => node.name === "State");
+  return nodes.filter((node) => node.name === "_State");
 };
