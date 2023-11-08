@@ -76,10 +76,10 @@ describe("unit test", () => {
     expect(stubFn).toBeCalledTimes(2);
     expect(
       getState(getNodes(readSnapshotFile(snapshot1))).length,
-    ).toMatchInlineSnapshot("5");
+    ).toMatchInlineSnapshot("3");
     expect(
       getState(getNodes(readSnapshotFile(snapshot2))).length,
-    ).toMatchInlineSnapshot("5");
+    ).toMatchInlineSnapshot("3");
     fs.unlinkSync(snapshot1);
     fs.unlinkSync(snapshot2);
   });

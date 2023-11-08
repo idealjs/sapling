@@ -106,13 +106,13 @@ function createElement<P extends object>(
   jsxTag: JSXTag<P>,
   options?: TagOption<keyof TagNameMap> | P,
   key?: Key,
-  isStaticChildren?: boolean,
-  source?: {
+  _isStaticChildren?: boolean,
+  _source?: {
     columnNumber: number;
     fileName: string;
     lineNumber: number;
   },
-  self?: unknown,
+  _self?: unknown,
   nodeCache: Map<Key, JSXNode> = exchangeNodeCache,
 ): JSXNode {
   const cache = getCache(nodeCache, key);

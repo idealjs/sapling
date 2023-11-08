@@ -1,22 +1,19 @@
-const fStack: (() => unknown)[] = [];
-const stateMap = new WeakMap<() => unknown, State<unknown>>();
-
-export class State<T> implements State<T> {
+class State<T = unknown> {
   private _val: T;
   private _oldVal: T | undefined;
-  private _listeners = new Set<() => unknown>();
-  private _localStateMap = new WeakMap<
-    () => unknown,
-    State<unknown> | undefined
-  >();
-  constructor(val: T) {
-    this._val = val;
+  private localObserverStack = new Set<Observer<unknown>>();
+  protected r: Reactive;
+
+  constructor(r: Reactive);
+  constructor(r: Reactive, val: T);
+  constructor(r: Reactive, val?: T) {
+    this._val = val as T;
+    this.r = r;
   }
 
   private collectDeps() {
-    const f = fStack[fStack.length - 1];
-    f && this._listeners.add(f);
-    f && this._localStateMap.set(f, stateMap.get(f));
+    const observer = this.r.observerStack[this.r.observerStack.length - 1];
+    this.localObserverStack.add(observer);
   }
 
   get val() {
@@ -32,48 +29,54 @@ export class State<T> implements State<T> {
   set val(v: T) {
     this._oldVal = this._val;
     this._val = v;
-    const listeners = Array.from(this._listeners);
-    this._listeners.clear();
-    listeners.forEach((stateReader) => {
-      const state = this._localStateMap.get(stateReader);
-      this._localStateMap.delete(stateReader);
-      derive(stateReader, state);
+    const observers = Array.from(this.localObserverStack);
+    this.localObserverStack.clear();
+    observers.forEach((observer) => {
+      observer?.next();
     });
   }
 }
+
+class Observer<T> extends State<T> {
+  private callback: () => T;
+  constructor(r: Reactive, callback: () => T) {
+    super(r);
+    this.callback = callback;
+    this.next();
+  }
+  public next = () => {
+    this.r.observerStack.push(this);
+    this.val = this.callback();
+    this.r.observerStack.pop();
+  };
+}
+
+type CreateState = {
+  <T>(initialValue: T): State<T>;
+  <T>(initialValue: T | null): StateView<T | null>;
+  <T = undefined>(): State<T | undefined>;
+};
+
+class Reactive {
+  public observerStack: Observer<unknown>[] = [];
+  public createState: CreateState = <T>(val?: T) => {
+    return new State(this, val);
+  };
+
+  public derive = <T>(f: () => T) => new Observer(this, f);
+
+  public effect = <R = Dispose | undefined>(f: () => R) => {
+    return derive(f);
+  };
+}
+
+export type { State };
 
 export interface StateView<T> extends State<T> {
   readonly val: T;
   readonly oldVal: T | undefined;
 }
 
-export function createState<T>(initialValue: T): State<T>;
-
-export function createState<T>(initialValue: T | null): StateView<T | null>;
-
-export function createState<T = undefined>(): State<T | undefined>;
-
-export function createState<T>(val?: T) {
-  return new State(val);
-}
-
-export const derive = <T>(
-  f: () => T,
-  state = createState<T>(),
-): StateView<T> => {
-  fStack.push(f);
-  stateMap.set(f, state);
-  state.val = f();
-  fStack.pop();
-  stateMap.delete(f);
-  return state as StateView<T>;
-};
-
 export type Dispose = () => void;
 
-export const effect = <R = Dispose | undefined>(
-  f: () => R,
-  state = createState<R>(),
-) => {
-  return derive(f, state);
-};
+export const { createState, effect, derive } = new Reactive();
