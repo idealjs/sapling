@@ -1,36 +1,24 @@
-class State<T> {
-  private _val: T;
+class State<T = unknown> {
+  private _val: T | undefined;
   private _oldVal: T | undefined;
-  private _listeners = new Set<() => unknown>();
-  private _localStateMap = new WeakMap<
-    () => unknown,
-    State<unknown> | undefined
-  >();
-  private r: Reactive;
-  static getDerive = <T>(r: Reactive) => {
-    return (f: () => T, state: State<T | undefined>): StateView<T> => {
-      r.fStack.push(f);
-      r.stateMap.set(f, state);
-      state.val = f();
-      r.fStack.pop();
-      r.stateMap.delete(f);
-      return state as StateView<T>;
-    };
-  };
-  constructor(r: Reactive, val: T) {
+  private localObserverStack = new Set<Observer<unknown>>();
+  protected r: Reactive;
+
+  constructor(r: Reactive);
+  constructor(r: Reactive, val: T);
+  constructor(r: Reactive, val?: T) {
     this._val = val;
     this.r = r;
   }
 
   private collectDeps() {
-    const f = this.r.fStack[this.r.fStack.length - 1];
-    f && this._listeners.add(f);
-    f && this._localStateMap.set(f, this.r.stateMap.get(f));
+    const observer = this.r.observerStack[this.r.observerStack.length - 1];
+    this.localObserverStack.add(observer);
   }
 
   get val() {
     this.collectDeps();
-    return this._val;
+    return this._val as T;
   }
 
   get oldVal() {
@@ -41,17 +29,26 @@ class State<T> {
   set val(v: T) {
     this._oldVal = this._val;
     this._val = v;
-    const listeners = Array.from(this._listeners);
-    this._listeners.clear();
-    listeners.forEach((stateReader) => {
-      const state = this._localStateMap.get(stateReader);
-      this._localStateMap.delete(stateReader);
-      State.getDerive(this.r)(
-        stateReader,
-        state ?? new State(this.r, this._val),
-      );
+    const observers = Array.from(this.localObserverStack);
+    this.localObserverStack.clear();
+    observers.forEach((observer) => {
+      observer?.next();
     });
   }
+}
+
+class Observer<T> extends State<T> {
+  private callback: () => T;
+  constructor(r: Reactive, callback: () => T) {
+    super(r);
+    this.callback = callback;
+    this.next();
+  }
+  public next = () => {
+    this.r.observerStack.push(this);
+    this.val = this.callback();
+    this.r.observerStack.pop();
+  };
 }
 
 type CreateState = {
@@ -61,15 +58,12 @@ type CreateState = {
 };
 
 class Reactive {
-  public fStack: (() => unknown)[] = [];
-  public stateMap = new WeakMap<() => unknown, State<unknown>>();
-
+  public observerStack: Observer<unknown>[] = [];
   public createState: CreateState = <T>(val?: T) => {
     return new State(this, val);
   };
 
-  public derive = <T>(f: () => T, state = createState<T>()) =>
-    State.getDerive<T>(this)(f, state);
+  public derive = <T>(f: () => T) => new Observer(this, f);
 
   public effect = <R = Dispose | undefined>(f: () => R) => {
     return derive(f);
