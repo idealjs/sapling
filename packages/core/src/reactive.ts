@@ -1,5 +1,5 @@
 class State<T = unknown> {
-  private _val: T | undefined;
+  private _val: T;
   private _oldVal: T | undefined;
   private localObserverStack = new Set<Observer<unknown>>();
   protected r: Reactive;
@@ -7,7 +7,7 @@ class State<T = unknown> {
   constructor(r: Reactive);
   constructor(r: Reactive, val: T);
   constructor(r: Reactive, val?: T) {
-    this._val = val;
+    this._val = val as T;
     this.r = r;
   }
 
@@ -18,7 +18,7 @@ class State<T = unknown> {
 
   get val() {
     this.collectDeps();
-    return this._val as T;
+    return this._val;
   }
 
   get oldVal() {
