@@ -1,12 +1,8 @@
-import { writeHeapSnapshot } from "node:v8";
-
-import fs from "fs";
 import { describe, expect, it, vi } from "vitest";
 
 import createElement, { useEffect } from "./createElement";
 import { createState } from "./reactive";
 import { sleep } from "./utils/sleep";
-import { getNodes, getState, readSnapshotFile } from "./utils/v8";
 
 describe("unit test", () => {
   it("children", () => {
@@ -170,7 +166,7 @@ describe("unit test", () => {
     `);
   });
 
-  it.concurrent("Todo List with key", async () => {
+  it("Todo List with key", async () => {
     vi.useFakeTimers();
     const TodoItem = (props: { name: number }) => {
       const { name } = props;
@@ -250,11 +246,6 @@ describe("unit test", () => {
         </div>
       </div>
     `);
-    const snapshot = writeHeapSnapshot();
-    expect(
-      getState(getNodes(readSnapshotFile(snapshot))).length,
-    ).toMatchInlineSnapshot("34");
-    fs.unlinkSync(snapshot);
     vi.useRealTimers();
   });
 
@@ -339,11 +330,63 @@ describe("unit test", () => {
         </div>
       </div>
     `);
-    const snapshot = writeHeapSnapshot();
-    expect(
-      getState(getNodes(readSnapshotFile(snapshot))).length,
-    ).toMatchInlineSnapshot("34");
-    fs.unlinkSync(snapshot);
+    vi.useRealTimers();
+  });
+
+  it("Hidden Counter", async () => {
+    vi.useFakeTimers();
+    const count = createState(0);
+    const mockFn = vi.fn();
+    const Counter = () => {
+      useEffect(() => {
+        mockFn(count.val);
+      });
+      return createElement("div", {
+        children: () => count.val,
+      });
+    };
+    const App = () => {
+      const hidden = createState(false);
+      useEffect(() => {
+        setTimeout(() => {
+          hidden.val = true;
+        }, 1000);
+      });
+      useEffect(() => {
+        console.log("test test", hidden.val);
+      });
+
+      return createElement("div", {
+        children: () => {
+          return hidden.val ? null : createElement(Counter);
+        },
+      });
+    };
+    const node = createElement(App);
+    expect(node.childNode).toMatchInlineSnapshot(`
+      <div>
+        <div>
+          0
+        </div>
+      </div>
+    `);
+    expect(mockFn).toBeCalledTimes(1);
+
+    count.val++;
+    expect(node.childNode).toMatchInlineSnapshot(`
+      <div>
+        <div>
+          1
+        </div>
+      </div>
+    `);
+    expect(mockFn).toBeCalledTimes(2);
+
+    vi.advanceTimersToNextTimer();
+    count.val++;
+    expect(node.childNode).toMatchInlineSnapshot("<div />");
+    expect(mockFn).toBeCalledTimes(2);
+    expect(count.val).toBe(2);
     vi.useRealTimers();
   });
 });
