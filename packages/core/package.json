@@ -29,7 +29,8 @@
     "test": "vitest",
     "build": "rollup --config rollup.config.js --bundleConfigAsCjs",
     "typings": "tsc -v && tsc -b -v",
-    "prepack": "rimraf dist && yarn typings && yarn build"
+    "prepack": "rimraf dist && yarn typings && yarn build",
+    "debug": "vitest reactive"
   },
   "devDependencies": {
     "@edge-runtime/vm": "^3.1.6",

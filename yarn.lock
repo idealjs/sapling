@@ -2526,6 +2526,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"hidden-count@workspace:examples/hidden-count":
+  version: 0.0.0-use.local
+  resolution: "hidden-count@workspace:examples/hidden-count"
+  dependencies:
+    "@idealjs/eslint-plugin-reactive": "workspace:^"
+    "@idealjs/reactive": "workspace:^"
+    "@types/node": "npm:^20.6.2"
+    typescript: "npm:^5.0.2"
+    vite: "npm:^4.4.5"
+  languageName: unknown
+  linkType: soft
+
 "html-encoding-sniffer@npm:^3.0.0":
   version: 3.0.0
   resolution: "html-encoding-sniffer@npm:3.0.0"

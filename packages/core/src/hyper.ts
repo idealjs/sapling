@@ -1,6 +1,6 @@
 import * as CSS from "csstype";
 
-import { derive } from "./reactive";
+import { effect } from "./reactive";
 import { TagNameMap } from "./type";
 
 const styleToString = (style: CSS.Properties) => {
@@ -33,7 +33,7 @@ const hyperNS =
     for (const [key, value] of Object.entries(options ?? {})) {
       // Auto Update Attribute
       if (typeof value === "function" && !key.startsWith("on")) {
-        derive(() => {
+        effect(() => {
           let attr = value();
           if (key === "style") {
             attr = styleToString(attr);
