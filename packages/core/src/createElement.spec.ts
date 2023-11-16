@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import createElement, { useEffect } from "./createElement";
-import { createState } from "./reactive";
+import { createState, State } from "./reactive";
 import { sleep } from "./utils/sleep";
 
 describe("unit test", () => {
@@ -390,5 +390,74 @@ describe("unit test", () => {
     expect(mockFn).toBeCalledTimes(2);
     expect(count.val).toBe(2);
     vi.useRealTimers();
+  });
+
+  it("Hidden CountDown With Wrapper", async () => {
+    vi.useFakeTimers();
+    const mockFn = vi.fn((state: State<number>) => {
+      state.val--;
+    });
+    const mockClearInterval = vi.fn((handler: NodeJS.Timeout) => {
+      clearInterval(handler);
+    });
+    const CountDown = () => {
+      const count = createState(10);
+      useEffect(() => {
+        const handler = setInterval(() => {
+          mockFn(count);
+        }, 1000);
+        return () => {
+          mockClearInterval(handler);
+        };
+      });
+      return createElement("div", {
+        children: () => count.val,
+      });
+    };
+    const Wrapper = () => {
+      return createElement(CountDown);
+    };
+    const hidden = createState(false);
+
+    const App = () => {
+      return createElement("div", {
+        children: () => {
+          return hidden.val ? null : createElement(Wrapper);
+        },
+      });
+    };
+
+    const node = createElement(App);
+    expect(node.childNode).toMatchInlineSnapshot(`
+      <div>
+        <div>
+          10
+        </div>
+      </div>
+    `);
+    vi.advanceTimersByTime(1000);
+    expect(node.childNode).toMatchInlineSnapshot(`
+      <div>
+        <div>
+          9
+        </div>
+      </div>
+    `);
+    vi.advanceTimersByTime(1000);
+    expect(node.childNode).toMatchInlineSnapshot(`
+      <div>
+        <div>
+          8
+        </div>
+      </div>
+    `);
+    hidden.val = true;
+    expect(mockClearInterval).toBeCalledTimes(1);
+    expect(node.childNode).toMatchInlineSnapshot("<div />");
+    expect(mockFn).toBeCalledTimes(2);
+    vi.advanceTimersByTime(1000);
+    expect(mockClearInterval).toBeCalledTimes(1);
+    expect(node.childNode).toMatchInlineSnapshot("<div />");
+    expect(mockFn).toBeCalledTimes(2);
   });
 });
