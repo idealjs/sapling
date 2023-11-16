@@ -39,11 +39,10 @@ const arrify = <T>(v: T | T[]) => {
 export const upsert = (
   element: Node,
   children: JSXChildren,
-  nodeCache: Map<Key, JSXNode> = new Map(),
+  nodeCache = new Map<Key, JSXNode>(),
+  upsertCache = new Set<JSXNode>(),
 ) => {
-  let upsertCache = new Set<JSXNode>();
-
-  derive(() => {
+  return effect(() => {
     const _upserCache = new Set<JSXNode>();
     const temp = exchangeNodeCache;
     exchangeNodeCache = nodeCache;
@@ -76,10 +75,10 @@ export const upsert = (
         return element.appendChild(child.childNode);
       }
     });
-    // debugger;
 
     upsertCache.clear();
     upsertCache = _upserCache;
+    return () => {};
   });
 };
 
@@ -113,9 +112,8 @@ function createElement<P extends object>(
     lineNumber: number;
   },
   _self?: unknown,
-  nodeCache: Map<Key, JSXNode> = exchangeNodeCache,
 ): JSXNode {
-  const cache = getCache(nodeCache, key);
+  const cache = getCache(exchangeNodeCache, key);
   if (cache != null) {
     return cache;
   }
@@ -134,7 +132,7 @@ function createElement<P extends object>(
           }
         : node;
     if (key != null) {
-      nodeCache.set(key, jsxNode);
+      exchangeNodeCache.set(key, jsxNode);
     }
     return jsxNode;
   }
@@ -154,11 +152,10 @@ function createElement<P extends object>(
   };
 
   if (key != null) {
-    nodeCache.set(key, jsxNode);
+    exchangeNodeCache.set(key, jsxNode);
   }
 
-  const _nodeCache = new Map<Key, JSXNode>();
-  children && upsert(el, children, _nodeCache);
+  children && upsert(el, children);
 
   return jsxNode;
 }
