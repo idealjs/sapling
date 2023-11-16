@@ -345,6 +345,8 @@ describe("unit test", () => {
         children: () => count.val,
       });
     };
+    const mockFn2 = vi.fn();
+
     const App = () => {
       const hidden = createState(false);
       useEffect(() => {
@@ -353,7 +355,7 @@ describe("unit test", () => {
         }, 1000);
       });
       useEffect(() => {
-        console.log("test test", hidden.val);
+        mockFn2(hidden.val);
       });
 
       return createElement("div", {
