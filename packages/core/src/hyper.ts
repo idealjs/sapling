@@ -61,6 +61,10 @@ const hyperNS =
 
       // Set String Attribute
       if (typeof value === "string") {
+        if (key === "className") {
+          element.setAttribute("class", value);
+          continue;
+        }
         element.setAttribute(key, value);
         continue;
       }
