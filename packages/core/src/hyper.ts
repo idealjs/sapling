@@ -46,7 +46,7 @@ const hyperNS =
       // Add Event Listener
       if (typeof value === "function" && key.startsWith("on")) {
         element.addEventListener(
-          key.replace("on", ""),
+          key.replace("on", "").toLowerCase(),
           value as EventListenerOrEventListenerObject,
         );
         continue;
@@ -63,6 +63,10 @@ const hyperNS =
       if (typeof value === "string") {
         if (key === "className") {
           element.setAttribute("class", value);
+          continue;
+        }
+        if (key === "htmlFor") {
+          element.setAttribute("for", value);
           continue;
         }
         element.setAttribute(key, value);

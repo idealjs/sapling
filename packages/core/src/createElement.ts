@@ -2,7 +2,7 @@ import * as CSS from "csstype";
 
 import { hyper } from "./hyper";
 import { derive, effect, State, StateView } from "./reactive";
-import { Key, OrFunction, Primitive, TagNameMap } from "./type";
+import { InnerElement, Key, OrFunction, Primitive, TagNameMap, TagOption } from "./type";
 
 type Dispose = () => void;
 
@@ -83,13 +83,6 @@ export const upsert = (
   });
 };
 
-export type TagOption<K extends keyof TagNameMap> = Partial<
-  Omit<TagNameMap[K], "children" | "style">
-> & {
-  ref?: State<TagNameMap[K] | null>;
-  children?: JSXChildren;
-  style?: OrFunction<CSS.Properties>;
-};
 
 type JSXTag<P> =
   | keyof TagNameMap
@@ -104,7 +97,7 @@ const getCache = (cache: Map<Key, JSXNode>, key: Key | undefined) => {
 
 function createElement<P extends object>(
   jsxTag: JSXTag<P>,
-  options?: TagOption<keyof TagNameMap> | P,
+  options?: TagOption<keyof InnerElement> | P,
   key?: Key,
   _isStaticChildren?: boolean,
   _source?: {
@@ -140,7 +133,7 @@ function createElement<P extends object>(
   }
 
   const { children, ref, ...props } = (options ?? {}) as TagOption<
-    keyof TagNameMap
+    keyof InnerElement
   >;
 
   const el = hyper(jsxTag, props);

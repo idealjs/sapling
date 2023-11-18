@@ -1,4 +1,4 @@
-import { createElement, createState, upsert } from "@idealjs/reactive";
+import { createState, upsert } from "@idealjs/reactive";
 
 const items = createState<{ id: number; hidden: boolean }[]>([]);
 
@@ -18,7 +18,7 @@ const Component = () => {
   return (
     <div>
       <button
-        onclick={updateList}
+        onClick={updateList}
         style={() => ({
           color: "blue",
         })}
@@ -28,11 +28,7 @@ const Component = () => {
       <div>
         {() =>
           items.val.map((item) => {
-            return item.hidden ? null : (
-              <div ref={ref} key={""}>
-                {item.id}
-              </div>
-            );
+            return item.hidden ? null : <div ref={ref}>{item.id}</div>;
           })
         }
       </div>

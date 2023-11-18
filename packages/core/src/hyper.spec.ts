@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { hyper } from "./hyper";
 
@@ -12,5 +12,24 @@ describe("unit test", () => {
         class="hello"
       />
     `);
+  });
+  it("with htmlFor", () => {
+    const el = hyper("label", {
+      htmlFor: "hello",
+    });
+    expect(el).toMatchInlineSnapshot(`
+      <label
+        for="hello"
+      />
+    `);
+  });
+  it("with eventHandler", () => {
+    const mockFn = vi.fn();
+    const el = hyper("button", {
+      onClick: mockFn,
+    });
+    expect(el).toMatchInlineSnapshot("<button />");
+    el.click();
+    expect(mockFn).toBeCalledTimes(1);
   });
 });
