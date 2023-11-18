@@ -15,14 +15,14 @@ const Hello = () => {
     <div>
       <button
         type="button"
-        onclick={() => {
+        onClick={() => {
           count.val++;
         }}
       >
         {() => count.val}
       </button>
       <button
-        onclick={() => {
+        onClick={() => {
           hidden.val = !hidden.val;
         }}
       >

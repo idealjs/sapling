@@ -1,4 +1,5 @@
-import type { JSXNode, Key, TagNameMap, TagOption } from ".";
+import type { JSXNode } from "./createElement";
+import type { InnerElement, Key, TagOption } from "./type";
 
 export * from ".";
 
@@ -17,11 +18,7 @@ export namespace JSX {
     key?: Key;
   }
 
-  type InnerElement = {
-    [K in keyof TagNameMap]: TagOption<K> & {
-      key?: Key;
-    };
+  export type IntrinsicElements = {
+    [K in keyof InnerElement]: TagOption<K>;
   };
-
-  export interface IntrinsicElements extends InnerElement {}
 }
