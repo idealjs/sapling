@@ -32,4 +32,24 @@ describe("unit test", () => {
     el.click();
     expect(mockFn).toBeCalledTimes(1);
   });
+  it("with style object", () => {
+    const el = hyper("button", {
+      style: { color: "blue" },
+    });
+    expect(el).toMatchInlineSnapshot(`
+      <button
+        style="color:blue;"
+      />
+    `);
+  });
+  it("with style function", () => {
+    const el = hyper("button", {
+      style: () => ({ color: "blue" }),
+    });
+    expect(el).toMatchInlineSnapshot(`
+      <button
+        style="color:blue;"
+      />
+    `);
+  });
 });
