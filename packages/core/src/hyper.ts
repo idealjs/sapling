@@ -18,6 +18,29 @@ const styleToString = (style: CSS.Properties) => {
   );
 };
 
+const setAttribute = (element: Element, key: string, value: unknown) => {
+  // Convert Style Object
+  if (key === "style") {
+    const attr = styleToString(value as CSS.Properties);
+    element.setAttribute(key, attr);
+    return;
+  }
+
+  // Set String Attribute
+  if (typeof value === "string") {
+    if (key === "className") {
+      element.setAttribute("class", value);
+      return;
+    }
+    if (key === "htmlFor") {
+      element.setAttribute("for", value);
+      return;
+    }
+    element.setAttribute(key, value);
+    return;
+  }
+};
+
 const hyperNS =
   (ns?: string) =>
   <K extends keyof TagNameMap>(
@@ -35,10 +58,7 @@ const hyperNS =
       if (typeof value === "function" && !key.startsWith("on")) {
         effect(() => {
           let attr = value();
-          if (key === "style") {
-            attr = styleToString(attr);
-          }
-          element.setAttribute(key, attr);
+          setAttribute(element, key, attr);
         });
         continue;
       }
@@ -51,27 +71,8 @@ const hyperNS =
         );
         continue;
       }
-
-      // Convert Style Object
-      if (key === "style") {
-        const attr = styleToString(value as CSS.Properties);
-        element.setAttribute(key, attr);
-        continue;
-      }
-
-      // Set String Attribute
-      if (typeof value === "string") {
-        if (key === "className") {
-          element.setAttribute("class", value);
-          continue;
-        }
-        if (key === "htmlFor") {
-          element.setAttribute("for", value);
-          continue;
-        }
-        element.setAttribute(key, value);
-        continue;
-      }
+      setAttribute(element, key, value);
+      continue;
     }
     return element;
   };
