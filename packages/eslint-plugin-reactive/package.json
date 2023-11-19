@@ -15,7 +15,6 @@
   "scripts": {
     "test": "vitest",
     "build": "rollup --config rollup.config.js --bundleConfigAsCjs",
-    "postinstall": "rimraf dist && yarn build",
     "prepack": "rimraf dist && yarn build"
   },
   "devDependencies": {
