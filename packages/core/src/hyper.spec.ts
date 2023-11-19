@@ -52,4 +52,24 @@ describe("unit test", () => {
       />
     `);
   });
+  it("with tabIndex string", () => {
+    const el = hyper("label", {
+      tabIndex: "0",
+    });
+    expect(el).toMatchInlineSnapshot(`
+      <label
+        tabindex="0"
+      />
+    `);
+  });
+  it("with tabIndex number", () => {
+    const el = hyper("label", {
+      tabIndex: 0,
+    });
+    expect(el).toMatchInlineSnapshot(`
+      <label
+        tabindex="0"
+      />
+    `);
+  });
 });

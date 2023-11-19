@@ -26,6 +26,13 @@ const setAttribute = (element: Element, key: string, value: unknown) => {
     return;
   }
 
+  if (typeof value === "number") {
+    if (key === "tabIndex") {
+      element.setAttribute("tabindex", value.toString());
+      return;
+    }
+  }
+
   // Set String Attribute
   if (typeof value === "string") {
     if (key === "className") {
@@ -36,6 +43,7 @@ const setAttribute = (element: Element, key: string, value: unknown) => {
       element.setAttribute("for", value);
       return;
     }
+
     element.setAttribute(key, value);
     return;
   }
