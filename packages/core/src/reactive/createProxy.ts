@@ -8,25 +8,23 @@ export const createProxyUtil =
   <T extends object>(val: T = {} as T) => {
     const _val = val as T;
     return new Proxy(_val, {
-      get(target, prop, receiver) {
-        return Reflect.get(target, prop, receiver);
+      get(target, prop) {
+        const value = Reflect.get(target, prop);
+        if (typeof value === "function") {
+          return value.bind(target);
+        }
+        return value;
       },
-      set(
-        target: T,
-        prop: string | symbol,
-        newValue: unknown,
-        receiver: object,
-      ) {
-        const hasPrevValue = Reflect.has(target, prop);
-        const prevValue = Reflect.get(target, prop, receiver);
-        if (hasPrevValue && Object.is(prevValue, newValue)) {
+      set(target: T, prop: string | symbol, newValue: unknown, receiver) {
+        const prevValue = Reflect.get(target, prop);
+        if (Object.is(prevValue, newValue)) {
           return true;
         }
         let nextValue: unknown = newValue;
         if (newValue != null && typeof newValue === "object") {
           nextValue = createProxyUtil(onSet)(newValue);
         }
-        Reflect.set(target, prop, nextValue, receiver);
+        Reflect.set(target, prop, nextValue);
         onSet(nextValue);
         return true;
       },
