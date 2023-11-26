@@ -1,10 +1,15 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import * as State from "../reactive/state";
 import { createState, derive, effect } from ".";
 
-vi.spyOn(State, "createObservable");
-vi.spyOn(State, "createSubscriber");
+const spy1 = vi.spyOn(State, "createObservable");
+const spy2 = vi.spyOn(State, "createSubscriber");
+
+afterEach(() => {
+  spy1.mockClear();
+  spy2.mockClear();
+});
 
 describe("unit test", () => {
   it("derive state val", () => {
@@ -18,6 +23,24 @@ describe("unit test", () => {
 
     state.val++;
 
+    expect(derived.val).toBe(3);
+    expect(State.createObservable).toBeCalledTimes(1);
+    expect(State.createSubscriber).toBeCalledTimes(1);
+  });
+
+  it("derive state object", () => {
+    const state = createState<{ count: number }>();
+    const derived = derive(() => {
+      const value = (state.val?.count ?? 0) + 1;
+      return value;
+    });
+
+    expect(derived.val).toBe(1);
+
+    state.val = { count: 1 };
+    state.val.count++;
+
+    expect(state.val?.count).toBe(2);
     expect(derived.val).toBe(3);
     expect(State.createObservable).toBeCalledTimes(1);
     expect(State.createSubscriber).toBeCalledTimes(1);

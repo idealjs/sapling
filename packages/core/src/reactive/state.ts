@@ -1,3 +1,4 @@
+import { createProxyUtil } from "./createProxy";
 import type { Scope } from "./scope";
 
 export type State<T = unknown> = {
@@ -41,17 +42,19 @@ export function createObservable<T>(scope: Scope, val?: T): Observable<T> {
     _subscribers.delete(subscriber);
   };
 
+  const createProxy = createProxyUtil(noticeSubscribers);
+
+  const proxy = createProxy({
+    val: _val,
+  });
+
   const observable = {
     get val() {
       scope.addDeps(observable);
-      return _val;
+      return proxy.val;
     },
     set val(v: T) {
-      if (v == _val) {
-        return;
-      }
-      _val = v;
-      noticeSubscribers();
+      proxy.val = v;
     },
     addSubscriber,
     deleteSubscriber,
