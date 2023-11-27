@@ -11,6 +11,14 @@ describe("createProxy", () => {
     expect(mockFn).toBeCalledTimes(1);
   });
 
+  it("call update when change value with nested object", () => {
+    const mockFn = vi.fn();
+    const proxy = createProxyUtil(mockFn)({ val: { count: 0 } });
+    proxy.val.count++;
+    expect(proxy.val.count).toBe(1);
+    expect(mockFn).toBeCalledTimes(1);
+  });
+
   it("call update when set value", () => {
     const mockFn = vi.fn();
     const proxy = createProxyUtil(mockFn)<{ val: { count: number } }>();

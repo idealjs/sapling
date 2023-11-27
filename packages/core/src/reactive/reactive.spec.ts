@@ -46,6 +46,23 @@ describe("unit test", () => {
     expect(State.createSubscriber).toBeCalledTimes(1);
   });
 
+  it("derive state object with initial value", () => {
+    const state = createState<{ count: number }>({ count: 0 });
+    const derived = derive(() => {
+      const value = state.val.count + 1;
+      return value;
+    });
+
+    expect(derived.val).toBe(1);
+
+    state.val.count++;
+
+    expect(state.val.count).toBe(1);
+    expect(derived.val).toBe(2);
+    expect(State.createObservable).toBeCalledTimes(1);
+    expect(State.createSubscriber).toBeCalledTimes(1);
+  });
+
   it("derive stateView", () => {
     const state = createState(1);
     const derived = derive(() => {
