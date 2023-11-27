@@ -24,7 +24,7 @@ export const createScopedProxyUtil = () => {
           if (typeof value === "function") {
             return value.bind(target);
           }
-          if (typeof value === "object") {
+          if (value != null && typeof value === "object") {
             const isProxy = Reflect.get(value as object, "__proxy__");
             if (!isProxy) {
               const nextValue = createProxyUtil(onSet)(value as object);

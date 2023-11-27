@@ -3,6 +3,18 @@ import { describe, expect, it, vi } from "vitest";
 import { createProxyUtil } from "./createProxy";
 
 describe("createProxy", () => {
+  it("get null value", () => {
+    const mockFn = vi.fn();
+    const proxy = createProxyUtil(mockFn)<{ val: { count: number | null } }>({
+      val: { count: null },
+    });
+    expect(proxy.val.count).toBe(null);
+    proxy.val.count = 0;
+    expect(proxy.val.count).toBe(0);
+    proxy.val.count++;
+    expect(proxy.val.count).toBe(1);
+    expect(mockFn).toBeCalledTimes(2);
+  });
   it("call update when change value", () => {
     const mockFn = vi.fn();
     const proxy = createProxyUtil(mockFn)({ val: 0 });
