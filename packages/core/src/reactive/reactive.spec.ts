@@ -135,4 +135,45 @@ describe("unit test", () => {
     expect(mockFn1).toBeCalledTimes(3);
     expect(mockFn2).toBeCalledTimes(4);
   });
+  it("effect with complex state", () => {
+    const state = createState({ value: { data: { count: 1 }, count: 1 } });
+    const mockFn = vi.fn((v) => {});
+    const mockFn2 = vi.fn((v) => {});
+
+    effect(() => {
+      mockFn(state.val.value.count);
+    });
+    effect(() => {
+      mockFn2(state.val.value.data.count);
+    });
+    expect(mockFn).toBeCalledTimes(1);
+    expect(mockFn2).toBeCalledTimes(1);
+
+    state.val.value.count++;
+    expect(mockFn).toBeCalledTimes(2);
+    expect(mockFn2).toBeCalledTimes(2);
+    expect(state.val).toMatchInlineSnapshot(`
+      bound Object {
+        "value": bound Object {
+          "count": 2,
+          "data": bound Object {
+            "count": 1,
+          },
+        },
+      }
+    `);
+    state.val.value.data.count++;
+    expect(mockFn).toBeCalledTimes(3);
+    expect(mockFn2).toBeCalledTimes(3);
+    expect(state.val).toMatchInlineSnapshot(`
+      bound Object {
+        "value": bound Object {
+          "count": 2,
+          "data": bound Object {
+            "count": 2,
+          },
+        },
+      }
+    `);
+  });
 });
