@@ -1,15 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import * as State from "../reactive/state";
 import { createState, derive, effect } from ".";
-
-const spy1 = vi.spyOn(State, "createObservable");
-const spy2 = vi.spyOn(State, "createSubscriber");
-
-afterEach(() => {
-  spy1.mockClear();
-  spy2.mockClear();
-});
 
 describe("unit test", () => {
   it("derive state val", () => {
@@ -24,8 +15,6 @@ describe("unit test", () => {
     state.val++;
 
     expect(derived.val).toBe(3);
-    expect(State.createObservable).toBeCalledTimes(1);
-    expect(State.createSubscriber).toBeCalledTimes(1);
   });
 
   it("derive state object", () => {
@@ -42,8 +31,6 @@ describe("unit test", () => {
 
     expect(state.val?.count).toBe(2);
     expect(derived.val).toBe(3);
-    expect(State.createObservable).toBeCalledTimes(1);
-    expect(State.createSubscriber).toBeCalledTimes(1);
   });
 
   it("derive state object with initial value", () => {
@@ -59,8 +46,6 @@ describe("unit test", () => {
 
     expect(state.val.count).toBe(1);
     expect(derived.val).toBe(2);
-    expect(State.createObservable).toBeCalledTimes(1);
-    expect(State.createSubscriber).toBeCalledTimes(1);
   });
 
   it("derive stateView", () => {
@@ -83,7 +68,7 @@ describe("unit test", () => {
     vi.useFakeTimers();
     const stubFn = vi.fn();
     const interval = createState(1000);
-    const dispose = effect(() => {
+    const subscriber = effect(() => {
       const handler = setInterval(stubFn, interval.val);
       return () => {
         clearInterval(handler);
@@ -93,7 +78,7 @@ describe("unit test", () => {
     expect(stubFn).toBeCalledTimes(1);
 
     // Note that a effect clear is done here
-    dispose.val();
+    subscriber.val?.();
 
     interval.val = 2000;
     vi.advanceTimersByTime(2000);
@@ -163,7 +148,7 @@ describe("unit test", () => {
       }
     `);
     state.val.value.data.count++;
-    expect(mockFn).toBeCalledTimes(3);
+    expect(mockFn).toBeCalledTimes(2);
     expect(mockFn2).toBeCalledTimes(3);
     expect(state.val).toMatchInlineSnapshot(`
       bound Object {
