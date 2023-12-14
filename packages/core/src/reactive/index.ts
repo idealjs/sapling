@@ -1,4 +1,220 @@
-import { createScope } from "./scope";
+export type Readonly<T> = T extends object
+  ? {
+      readonly [K in keyof T]: Readonly<T[K]>;
+    }
+  : T;
 
-export const { createState, derive, effect } = createScope();
-export type { State, StateView } from "./state";
+export type Payload<T> = T | ((prev: T) => T);
+export type Getter<T> = () => T;
+export type Setter<T> = (v: Payload<T>) => void;
+export type Listener = () => void;
+export type Dispose = () => void;
+export type State<T = unknown> = {
+  val: T;
+};
+
+export interface StateView<T> extends State<T> {
+  readonly val: T;
+}
+
+export const isSetterFunction = <T>(
+  payload: Payload<T>,
+): payload is (prev: T) => T => {
+  if (typeof payload === "function") {
+    return true;
+  }
+  return false;
+};
+
+export type CreateSignal = {
+  <T>(initialValue: T): [Getter<T>, Setter<T>];
+  <T = unknown>(): [Getter<T | undefined>, Setter<T | undefined>];
+};
+
+export type CreateProxy = {
+  <T extends object>(initialValue: T): T;
+  <T = undefined>(): Partial<T>;
+};
+
+export type CreateState = {
+  <T>(initialValue: T): State<T>;
+  <T>(initialValue: T | null): StateView<T | null>;
+  <T = undefined>(): State<T | undefined>;
+};
+
+export type Proxy = {
+  <T extends object>(initialValue: T): T;
+  <T extends object>(): () => T | undefined;
+};
+
+export class ReactiveScope {
+  private deps: Set<object> | null = null;
+  public collectDeps = (scopeDeps: Set<object>) => {
+    const temp = this.deps;
+    this.deps = scopeDeps;
+    return () => {
+      this.deps = temp;
+    };
+  };
+  public addDep = (getter: object) => {
+    this.deps?.add(getter);
+  };
+
+  private listeners = new WeakMap<object, Set<Listener>>();
+  public subscribeDeps = (callback: Listener) => {
+    const unsubscribes = Array.from(this.deps ?? []).map((dep) => {
+      return this.addListener(dep, callback);
+    });
+    return () => {
+      unsubscribes.forEach((unsubscribe) => unsubscribe());
+    };
+  };
+  public addListener = <Key extends object>(key: Key, callback: Listener) => {
+    const listeners = this.listeners.get(key) ?? new Set();
+    listeners.add(callback);
+    this.listeners.set(key, listeners);
+    return () => {
+      listeners.delete(callback);
+    };
+  };
+  public getListeners = <Key extends object>(key: Key) => {
+    return this.listeners.get(key);
+  };
+}
+
+export class ProxyScope {
+  private trackedProxy = new WeakMap<object, object>();
+  private trackedValue = new WeakMap<object, object>();
+  public getRawValue = <T extends object>(proxy: T) => {
+    return this.trackedValue.get(proxy) as T | undefined;
+  };
+  public getTrackedProxy = <T extends object>(rawValue: T) => {
+    return this.trackedProxy.get(rawValue) as T | undefined;
+  };
+  public trackProxy = <T extends object>(proxy: T, rawValue: T) => {
+    this.trackedValue.set(proxy, rawValue);
+    this.trackedProxy.set(rawValue, proxy);
+  };
+}
+
+export const createReactive = () => {
+  const reactiveScope = new ReactiveScope();
+  const proxyScope = new ProxyScope();
+
+  const notifyChange = (getter: object) => {
+    const listeners = reactiveScope.getListeners(getter);
+    Array.from(listeners ?? []).forEach((listener) => listener());
+  };
+
+  const proxy: CreateProxy = <T extends object>(value: T = {} as T) => {
+    const cachedProxy =
+      proxyScope.getRawValue(value) != null
+        ? value
+        : proxyScope.getTrackedProxy(value) ?? null;
+    if (cachedProxy) {
+      return cachedProxy;
+    }
+    const proxyValue = new Proxy(value, {
+      get(target, p, receiver) {
+        let value = Reflect.get(target, p);
+
+        if (typeof value === "function") {
+          value = value.bind(target);
+        }
+        if (
+          value != null &&
+          typeof value === "object" &&
+          proxyScope.getRawValue(value) == null
+        ) {
+          value = proxy(value);
+          Reflect.set(target, p, value);
+        }
+        reactiveScope.addDep(receiver);
+        return value;
+      },
+      set(target, p, newValue, receiver) {
+        const prevValue = Reflect.get(target, p);
+        if (Object.is(prevValue, newValue)) {
+          return true;
+        }
+        let nextValue = newValue;
+
+        if (typeof newValue === "object") {
+          nextValue = proxy(newValue);
+        }
+
+        Reflect.set(target, p, nextValue);
+        notifyChange(receiver);
+        return true;
+      },
+    });
+    proxyScope.trackProxy(proxyValue, value);
+    return proxyValue;
+  };
+
+  const subscribe = <T extends object>(val: T, callback: Listener) => {
+    const removeListener = reactiveScope.addListener(val, callback);
+    const unsubscribe = () => {
+      removeListener();
+    };
+    return unsubscribe;
+  };
+
+  const derive = <T>(callback: () => T) => {
+    const state = proxy<{ val: T }>();
+    let unsubscribe: () => void;
+    const deps = new Set<object>();
+
+    const next = () => {
+      deps.clear();
+      unsubscribe?.();
+      const resume = reactiveScope.collectDeps(deps);
+      const val = callback();
+      unsubscribe = reactiveScope.subscribeDeps(next);
+      resume();
+      state.val = val;
+    };
+    next();
+    return state as StateView<T>;
+  };
+
+  const effect = (callback: () => Dispose | void) => {
+    const state: { val?: () => void } = {};
+    let unsubscribe: () => void;
+    const deps = new Set<object>();
+
+    const next = () => {
+      deps.clear();
+      unsubscribe?.();
+      const resume = reactiveScope.collectDeps(deps);
+      const val = callback();
+      unsubscribe = reactiveScope.subscribeDeps(next);
+      resume();
+      state.val = () => {
+        val?.();
+        unsubscribe();
+        deps.clear();
+      };
+    };
+    next();
+    return state as StateView<Dispose | void>;
+  };
+
+  return { proxy, subscribe, derive, effect };
+};
+
+export const { proxy, subscribe, derive, effect } = createReactive();
+
+export const createState: CreateState = <T>(value?: T) => {
+  const proxyValue = proxy({
+    val: value as T,
+  });
+  return {
+    get val() {
+      return proxyValue.val;
+    },
+    set val(v: T) {
+      proxyValue.val = v;
+    },
+  };
+};
