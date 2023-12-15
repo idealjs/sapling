@@ -59,6 +59,9 @@ export class ReactiveScope {
   public addDep = (getter: object) => {
     this.deps?.add(getter);
   };
+  public hasCircularDep = (dep: object) => {
+    return this.deps?.has(dep);
+  };
 
   private listeners = new WeakMap<object, Set<Listener>>();
   public subscribeDeps = (callback: Listener) => {
@@ -101,8 +104,12 @@ export const createReactive = () => {
   const reactiveScope = new ReactiveScope();
   const proxyScope = new ProxyScope();
 
-  const notifyChange = (getter: object) => {
-    const listeners = reactiveScope.getListeners(getter);
+  const notifyChange = (dep: object) => {
+    if (reactiveScope.hasCircularDep(dep)) {
+      console.error(JSON.stringify(dep));
+      throw new Error("reactive hasCircularDep setting");
+    }
+    const listeners = reactiveScope.getListeners(dep);
     Array.from(listeners ?? []).forEach((listener) => listener());
   };
 
@@ -200,10 +207,11 @@ export const createReactive = () => {
     return state as StateView<Dispose | void>;
   };
 
-  return { proxy, subscribe, derive, effect };
+  return { proxyScope, proxy, subscribe, derive, effect };
 };
 
-export const { proxy, subscribe, derive, effect } = createReactive();
+export const { proxyScope, proxy, subscribe, derive, effect } =
+  createReactive();
 
 export const createState: CreateState = <T>(value?: T) => {
   const proxyValue = proxy({
@@ -217,4 +225,22 @@ export const createState: CreateState = <T>(value?: T) => {
       proxyValue.val = v;
     },
   };
+};
+
+export const createSignal: CreateSignal = (value?: unknown) => {
+  const proxyData = proxy({
+    value,
+  });
+
+  const get = () => {
+    return proxyData.value;
+  };
+  const set = (payload: Payload<unknown>) => {
+    let nextValue = payload;
+    if (isSetterFunction(payload)) {
+      nextValue = payload(proxyScope.getRawValue(proxyData)?.value);
+    }
+    proxyData.value = nextValue;
+  };
+  return [get, set];
 };
