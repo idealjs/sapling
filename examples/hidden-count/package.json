@@ -9,12 +9,12 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@idealjs/eslint-plugin-reactive": "workspace:^",
+    "@idealjs/eslint-plugin-reactive": "^0.1.13",
     "@types/node": "^20.6.2",
     "typescript": "^5.0.2",
     "vite": "^4.4.5"
   },
   "dependencies": {
-    "@idealjs/reactive": "workspace:^"
+    "@idealjs/reactive": "^0.1.13"
   }
 }
