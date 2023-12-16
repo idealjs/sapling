@@ -39,7 +39,7 @@ export type CreateProxy = {
 export type CreateState = {
   <T>(initialValue: T): State<T>;
   <T>(initialValue: T | null): StateView<T | null>;
-  <T = undefined>(): State<T | undefined>;
+  <T = unknown>(): State<T | undefined>;
 };
 
 export type Proxy = {
@@ -58,6 +58,9 @@ export class ReactiveScope {
   };
   public addDep = (getter: object) => {
     this.deps?.add(getter);
+  };
+  public hasCircularDep = (dep: object) => {
+    return this.deps?.has(dep);
   };
 
   private listeners = new WeakMap<object, Set<Listener>>();
@@ -101,12 +104,19 @@ export const createReactive = () => {
   const reactiveScope = new ReactiveScope();
   const proxyScope = new ProxyScope();
 
-  const notifyChange = (getter: object) => {
-    const listeners = reactiveScope.getListeners(getter);
+  const notifyChange = (dep: object) => {
+    if (
+      reactiveScope.hasCircularDep(dep) &&
+      import.meta.env?.MODE === "development"
+    ) {
+      console.error(JSON.stringify(dep));
+      throw new Error("reactive hasCircularDep setting");
+    }
+    const listeners = reactiveScope.getListeners(dep);
     Array.from(listeners ?? []).forEach((listener) => listener());
   };
 
-  const proxy: CreateProxy = <T extends object>(value: T = {} as T) => {
+  const createProxy: CreateProxy = <T extends object>(value: T = {} as T) => {
     const cachedProxy =
       proxyScope.getRawValue(value) != null
         ? value
@@ -126,7 +136,7 @@ export const createReactive = () => {
           typeof value === "object" &&
           proxyScope.getRawValue(value) == null
         ) {
-          value = proxy(value);
+          value = createProxy(value);
           Reflect.set(target, p, value);
         }
         reactiveScope.addDep(receiver);
@@ -140,7 +150,7 @@ export const createReactive = () => {
         let nextValue = newValue;
 
         if (typeof newValue === "object") {
-          nextValue = proxy(newValue);
+          nextValue = createProxy(newValue);
         }
 
         Reflect.set(target, p, nextValue);
@@ -161,7 +171,7 @@ export const createReactive = () => {
   };
 
   const derive = <T>(callback: () => T) => {
-    const state = proxy<{ val: T }>();
+    const state = createProxy<{ val: T }>();
     let unsubscribe: () => void;
     const deps = new Set<object>();
 
@@ -200,21 +210,40 @@ export const createReactive = () => {
     return state as StateView<Dispose | void>;
   };
 
-  return { proxy, subscribe, derive, effect };
+  return { proxyScope, createProxy, subscribe, derive, effect };
 };
 
-export const { proxy, subscribe, derive, effect } = createReactive();
+export const { proxyScope, createProxy, subscribe, derive, effect } =
+  createReactive();
 
-export const createState: CreateState = <T>(value?: T) => {
-  const proxyValue = proxy({
-    val: value as T,
+export const createState: CreateState = (value?: unknown) => {
+  const proxyValue = createProxy({
+    value,
   });
   return {
     get val() {
-      return proxyValue.val;
+      return proxyValue.value;
     },
-    set val(v: T) {
-      proxyValue.val = v;
+    set val(v) {
+      proxyValue.value = v;
     },
   };
+};
+
+export const createSignal: CreateSignal = (value?: unknown) => {
+  const proxyData = createProxy({
+    value,
+  });
+
+  const get = () => {
+    return proxyData.value;
+  };
+  const set = (payload: Payload<unknown>) => {
+    let nextValue = payload;
+    if (isSetterFunction(payload)) {
+      nextValue = payload(proxyScope.getRawValue(proxyData)?.value);
+    }
+    proxyData.value = nextValue;
+  };
+  return [get, set];
 };
