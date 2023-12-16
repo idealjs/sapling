@@ -42,11 +42,6 @@ export type CreateState = {
   <T = unknown>(): State<T | undefined>;
 };
 
-export type Proxy = {
-  <T extends object>(initialValue: T): T;
-  <T extends object>(): () => T | undefined;
-};
-
 export class ReactiveScope {
   private deps: Set<object> | null = null;
   public collectDeps = (scopeDeps: Set<object>) => {
