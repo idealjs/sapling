@@ -1,4 +1,4 @@
-import { createState, upsert } from "@idealjs/reactive";
+import { createState, upsert } from "@idealjs/sapling";
 
 const Component = () => {
   const ref = createState<HTMLDivElement>(null);

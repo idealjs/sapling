@@ -2,7 +2,7 @@ import { noNestedDeriveCall } from "./noNestedDeriveCall";
 import { noStateCreatedInDerive } from "./noStateCreatedInDerive";
 
 const plugin = {
-  name: "@idealjs/reactive",
+  name: "@idealjs/sapling",
   rules: {
     "no-nested-derive-call": noNestedDeriveCall,
     "no-state-created-in-derive": noStateCreatedInDerive,

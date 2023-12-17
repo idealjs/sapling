@@ -3,9 +3,9 @@
   "compilerOptions": {
     "outDir": "dist",
     "jsx": "react-jsx",
-    "jsxImportSource": "@idealjs/reactive",
+    "jsxImportSource": "@idealjs/sapling",
     "paths": {
-      "@idealjs/reactive/*": ["../../packages/core/src/*"]
+      "@idealjs/sapling/*": ["../../packages/core/src/*"]
     }
   },
   "include": ["src"],

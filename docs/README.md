@@ -1,6 +1,6 @@
-# @idealjs/reactive 是什么？
+# @idealjs/sapling 是什么？
 
-@idealjs/reactive 是一个简易的 jsx-runtime
+@idealjs/sapling 是一个简易的 jsx-runtime
 
 它内置了缓存，用于解决性能问题。并且规避了 react 中的树状更新问题。
 
@@ -15,7 +15,7 @@ yarn create vite my-reactive-app --template vanilla-ts
 2. 安装依赖
 
 ```
-yarn add @idealjs/reactive
+yarn add @idealjs/sapling
 ```
 
 3. 更新 tsconfig.json
@@ -44,7 +44,7 @@ yarn add @idealjs/reactive
 
     /* 添加下面两行 */
     "jsx": "react-jsx",
-    "jsxImportSource": "@idealjs/reactive"
+    "jsxImportSource": "@idealjs/sapling"
   },
   "include": ["src"]
 }
@@ -72,7 +72,7 @@ yarn add @idealjs/reactive
 5. 新建 src/main.tsx
 
 ```tsx
-import { upsert } from "@idealjs/reactive";
+import { upsert } from "@idealjs/sapling";
 
 const root = document.getElementById("app")!;
 

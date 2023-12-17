@@ -1,4 +1,4 @@
-import { createState, upsert, useEffect } from "@idealjs/reactive";
+import { createState, upsert, useEffect } from "@idealjs/sapling";
 
 const Hello = () => {
   const count = createState(0);

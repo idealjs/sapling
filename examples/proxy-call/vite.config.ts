@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [],
   resolve: {
     alias: {
-      "@idealjs/reactive": path.resolve(__dirname, "../../packages/core/src"),
+      "@idealjs/sapling": path.resolve(__dirname, "../../packages/core/src"),
     },
   },
 });
