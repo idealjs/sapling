@@ -1,7 +1,7 @@
 {
   "name": "todo",
   "private": true,
-  "version": "0.1.13",
+  "version": "0.1.14",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,12 +9,12 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@idealjs/eslint-plugin-sapling": "^0.1.13",
+    "@idealjs/eslint-plugin-sapling": "^0.1.14",
     "@types/node": "^20.6.2",
     "typescript": "^5.0.2",
     "vite": "^4.4.5"
   },
   "dependencies": {
-    "@idealjs/sapling": "^0.1.13"
+    "@idealjs/sapling": "^0.1.14"
   }
 }
