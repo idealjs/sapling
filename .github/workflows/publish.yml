@@ -21,7 +21,7 @@ jobs:
         run: yarn workspaces foreach -A run test run
       - name: Publish Package
         run: |
-          yarn workspace @idealjs/reactive npm publish
-          yarn workspace @idealjs/eslint-plugin-reactive npm publish
+          yarn workspace @idealjs/sapling npm publish
+          yarn workspace @idealjs/eslint-plugin-sapling npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

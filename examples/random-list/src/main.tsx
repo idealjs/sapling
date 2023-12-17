@@ -1,4 +1,4 @@
-import { createState, upsert } from "@idealjs/reactive";
+import { createState, upsert } from "@idealjs/sapling";
 
 const items = createState<{ id: number; hidden: boolean }[]>([]);
 
