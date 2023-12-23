@@ -144,7 +144,7 @@ export const createReactive = () => {
         }
         let nextValue = newValue;
 
-        if (typeof newValue === "object") {
+        if (typeof newValue === "object" && newValue != null) {
           nextValue = createProxy(newValue);
         }
 
