@@ -17,6 +17,18 @@ describe("subscribe with createProxy", () => {
     expect(mockFnA).toBeCalledTimes(2);
   });
 
+  it("set null value", () => {
+    const mockFnA = vi.fn();
+    const stateA = createProxy<{ val: { count: number | null } }>({
+      val: { count: 0 },
+    });
+    subscribe(stateA.val, mockFnA);
+    expect(stateA.val.count).toBe(0);
+    stateA.val.count = null;
+    expect(stateA.val.count).toBe(null);
+    expect(mockFnA).toBeCalledTimes(1);
+  });
+
   it("call update when change value", () => {
     const mockFnA = vi.fn();
     const stateA = createProxy({ val: 0 });
