@@ -650,9 +650,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@idealjs/eslint-plugin-sapling@npm:0.1.15, @idealjs/eslint-plugin-sapling@workspace:packages/eslint-plugin-reactive":
+"@idealjs/eslint-plugin-sapling@npm:0.1.15, @idealjs/eslint-plugin-sapling@workspace:packages/eslint-plugin-sapling":
   version: 0.0.0-use.local
-  resolution: "@idealjs/eslint-plugin-sapling@workspace:packages/eslint-plugin-reactive"
+  resolution: "@idealjs/eslint-plugin-sapling@workspace:packages/eslint-plugin-sapling"
   dependencies:
     "@types/eslint": "npm:^8.44.2"
     "@types/eslint-scope": "npm:^3.7.4"
