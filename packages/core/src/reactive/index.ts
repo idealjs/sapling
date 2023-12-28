@@ -95,6 +95,22 @@ export class ProxyScope {
   };
 }
 
+const notifyFunctions: (string | symbol)[] = [
+  // Array
+  "push",
+  "pop",
+  // Set
+  "add",
+  "delete",
+  "clear",
+  // Map
+  "set",
+  "delete",
+  "clear",
+];
+
+const bindProxyFunctions: (string | symbol)[] = ["reduce", "forEach", "map"];
+
 export const createReactive = () => {
   const reactiveScope = new ReactiveScope();
   const proxyScope = new ProxyScope();
@@ -121,10 +137,23 @@ export const createReactive = () => {
     }
     const proxyValue = new Proxy(value, {
       get(target, p, receiver) {
-        let value = Reflect.get(target, p);
+        let value = Reflect.get(target, p) as (params: unknown[]) => unknown;
 
         if (typeof value === "function") {
-          value = value.bind(target);
+          value = new Proxy(value, {
+            apply(target, thisArg, argArray) {
+              const res = Reflect.apply(target, thisArg, argArray);
+              if (notifyFunctions.includes(p)) {
+                notifyChange(receiver);
+              }
+              return res;
+            },
+          });
+          if (bindProxyFunctions.includes(p)) {
+            value = value.bind(receiver);
+          } else {
+            value = value.bind(target);
+          }
         }
         if (
           value != null &&
