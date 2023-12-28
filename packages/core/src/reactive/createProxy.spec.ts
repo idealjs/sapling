@@ -33,6 +33,94 @@ describe("derive with createProxy", () => {
     expect(derivedA.val).toBe(3);
   });
 
+  it("derive array with push value", () => {
+    const stateA = createProxy([1, 2, 3]);
+    const derivedA = derive(() => {
+      return stateA.reduce((p, c) => p + c);
+    });
+    expect(derivedA.val).toBe(6);
+    stateA.push(4);
+    expect(derivedA.val).toBe(10);
+  });
+
+  it("derive array with reduce", () => {
+    const stateA = createProxy([{ count: 1 }, { count: 2 }, { count: 3 }]);
+    const derivedA = derive(() => {
+      return stateA.reduce((p, c) => p + c.count, 0);
+    });
+    expect(derivedA.val).toBe(6);
+    stateA[3] = { count: 4 };
+    expect(derivedA.val).toBe(10);
+    stateA[0].count = 6;
+    expect(derivedA.val).toBe(15);
+  });
+
+  it("derive array with map", () => {
+    const stateA = createProxy([{ count: 1 }, { count: 2 }, { count: 3 }]);
+    const derivedA = derive(() => {
+      return stateA.map((p) => p.count);
+    });
+    expect(derivedA.val).toMatchInlineSnapshot(`
+      bound Array [
+        1,
+        2,
+        3,
+      ]
+    `);
+    stateA[3] = { count: 4 };
+    expect(derivedA.val).toMatchInlineSnapshot(`
+      bound Array [
+        1,
+        2,
+        3,
+        4,
+      ]
+    `);
+    stateA[0].count = 6;
+    expect(derivedA.val).toMatchInlineSnapshot(`
+      bound Array [
+        6,
+        2,
+        3,
+        4,
+      ]
+    `);
+  });
+
+  it("derive array with foreach", () => {
+    const stateA = createProxy([{ count: 1 }, { count: 2 }, { count: 3 }]);
+    const derivedA = derive(() => {
+      const value: number[] = [];
+      stateA.forEach((v) => value.push(v.count));
+      return value;
+    });
+    expect(derivedA.val).toMatchInlineSnapshot(`
+      bound Array [
+        1,
+        2,
+        3,
+      ]
+    `);
+    stateA[3] = { count: 4 };
+    expect(derivedA.val).toMatchInlineSnapshot(`
+      bound Array [
+        1,
+        2,
+        3,
+        4,
+      ]
+    `);
+    stateA[0].count = 6;
+    expect(derivedA.val).toMatchInlineSnapshot(`
+    bound Array [
+      6,
+      2,
+      3,
+      4,
+    ]
+  `);
+  });
+
   it("derive object with initial value", () => {
     const stateA = createProxy<{ val: { count: number } }>({
       val: { count: 0 },

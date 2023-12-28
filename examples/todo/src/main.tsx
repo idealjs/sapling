@@ -15,14 +15,22 @@ const TodoItem = (props: { name: number; count: number }) => {
   });
 
   return (
-    <p>
+    <p ref={ref}>
       <div>
         {() => {
           return `${name} timmer ${state.val}.
           count won't update until timmer update: ${count}`;
         }}
       </div>
-      
+
+      <button
+        onClick={() => {
+          ref.val?.appendChild(document.createElement("div"));
+        }}
+      >
+        test element function
+      </button>
+
       <button
         onClick={() => {
           count++;

@@ -47,6 +47,24 @@ describe("subscribe with createProxy", () => {
     expect(mockFnA).toBeCalledTimes(1);
   });
 
+  it("call update when change array's value", () => {
+    const mockFnA = vi.fn();
+    const stateA = createProxy([1, 2, 3]);
+    subscribe(stateA, mockFnA);
+    stateA[0] = 4;
+    expect(stateA[0]).toBe(4);
+    expect(mockFnA).toBeCalledTimes(1);
+  });
+
+  it("call update when change value in array's item", () => {
+    const mockFnA = vi.fn();
+    const stateA = createProxy([{ count: 1 }, { count: 2 }, { count: 3 }]);
+    subscribe(stateA[0], mockFnA);
+    stateA[0].count = 4;
+    expect(stateA[0].count).toBe(4);
+    expect(mockFnA).toBeCalledTimes(1);
+  });
+
   it("call update when set value", () => {
     const mockFnA = vi.fn();
     const stateA = createProxy<{ val: { count: number } }>();
