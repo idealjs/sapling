@@ -16,6 +16,32 @@ describe("unit test", () => {
     `);
   });
 
+  it("children with string", () => {
+    const node = createElement("div", {
+      children: [createElement("div", { children: "hello world" })],
+    });
+    expect(node.childNode).toMatchInlineSnapshot(`
+      <div>
+        <div>
+          hello world
+        </div>
+      </div>
+    `);
+  });
+
+  it("children with number", () => {
+    const node = createElement("div", {
+      children: [createElement("div", { children: 0 })],
+    });
+    expect(node.childNode).toMatchInlineSnapshot(`
+      <div>
+        <div>
+          0
+        </div>
+      </div>
+    `);
+  });
+
   it("function child", () => {
     const node = createElement("div", {
       children: () => createElement("div"),
@@ -459,5 +485,92 @@ describe("unit test", () => {
     expect(mockClearInterval).toBeCalledTimes(1);
     expect(node.childNode).toMatchInlineSnapshot("<div />");
     expect(mockFn).toBeCalledTimes(2);
+  });
+
+  it("Should not dispose effect", async () => {
+    const mockFn = vi.fn();
+    const hidden = createState(false);
+
+    const App = () => {
+      useEffect(() => {
+        const handler = setInterval(mockFn, 1000);
+        return () => clearInterval(handler);
+      });
+
+      return createElement("div", {
+        children: () => {
+          return hidden.val
+            ? null
+            : createElement("div", { children: "hello" });
+        },
+      });
+    };
+    const node = createElement(App);
+    expect(node.childNode).toMatchInlineSnapshot(`
+      <div>
+        <div>
+          hello
+        </div>
+      </div>
+    `);
+    expect(mockFn).toBeCalledTimes(0);
+    await sleep(1000);
+    expect(mockFn).toBeCalledTimes(1);
+    hidden.val = true;
+    await sleep(1000);
+    expect(mockFn).toBeCalledTimes(2);
+    hidden.val = false;
+    await sleep(1000);
+    expect(mockFn).toBeCalledTimes(3);
+  });
+  it("Should not dispose effect with state", async () => {
+    const hidden = createState(false);
+
+    const App = () => {
+      const state = createState(0);
+
+      useEffect(() => {
+        const handler = setInterval(() => {
+          state.val++;
+        }, 1000);
+        return () => clearInterval(handler);
+      });
+
+      return createElement("div", {
+        children: () => {
+          return hidden.val
+            ? null
+            : createElement("div", { children: () => state.val });
+        },
+      });
+    };
+    const node = createElement(App);
+    expect(node.childNode).toMatchInlineSnapshot(`
+      <div>
+        <div>
+          0
+        </div>
+      </div>
+    `);
+    await sleep(1000);
+    expect(node.childNode).toMatchInlineSnapshot(`
+      <div>
+        <div>
+          1
+        </div>
+      </div>
+    `);
+    hidden.val = true;
+    await sleep(1000);
+    expect(node.childNode).toMatchInlineSnapshot("<div />");
+    hidden.val = false;
+    await sleep(1000);
+    expect(node.childNode).toMatchInlineSnapshot(`
+      <div>
+        <div>
+          3
+        </div>
+      </div>
+    `);
   });
 });
