@@ -9,9 +9,41 @@ describe("unit test", () => {
     const node = createElement("div", {
       children: [createElement("div")],
     });
-    expect(node.childNode).toMatchInlineSnapshot(`
+    expect(node.el).toMatchInlineSnapshot(`
       <div>
         <div />
+      </div>
+    `);
+  });
+
+  it("children with string", () => {
+    const node = createElement("div", {
+      children: [
+        createElement("div", { children: "hello world" }),
+        createElement("div", { children: "hello world" }),
+      ],
+    });
+    expect(node.el).toMatchInlineSnapshot(`
+      <div>
+        <div>
+          hello world
+        </div>
+        <div>
+          hello world
+        </div>
+      </div>
+    `);
+  });
+
+  it("children with number", () => {
+    const node = createElement("div", {
+      children: [createElement("div", { children: 0 })],
+    });
+    expect(node.el).toMatchInlineSnapshot(`
+      <div>
+        <div>
+          0
+        </div>
       </div>
     `);
   });
@@ -20,7 +52,7 @@ describe("unit test", () => {
     const node = createElement("div", {
       children: () => createElement("div"),
     });
-    expect(node.childNode).toMatchInlineSnapshot(`
+    expect(node.el).toMatchInlineSnapshot(`
       <div>
         <div />
       </div>
@@ -31,7 +63,7 @@ describe("unit test", () => {
     const node = createElement("div", {
       children: () => [createElement("div"), createElement("div")],
     });
-    expect(node.childNode).toMatchInlineSnapshot(`
+    expect(node.el).toMatchInlineSnapshot(`
       <div>
         <div />
         <div />
@@ -48,7 +80,7 @@ describe("unit test", () => {
         }),
       ],
     });
-    expect(node.childNode).toMatchInlineSnapshot(`
+    expect(node.el).toMatchInlineSnapshot(`
       <div>
         <div>
           counter 0
@@ -56,7 +88,7 @@ describe("unit test", () => {
       </div>
     `);
     counter.val++;
-    expect(node.childNode).toMatchInlineSnapshot(`
+    expect(node.el).toMatchInlineSnapshot(`
       <div>
         <div>
           counter 1
@@ -95,7 +127,7 @@ describe("unit test", () => {
               });
         }),
     });
-    expect(node.childNode).toMatchInlineSnapshot(`
+    expect(node.el).toMatchInlineSnapshot(`
       <div>
         <div>
           2
@@ -123,7 +155,7 @@ describe("unit test", () => {
         hidden: true,
       },
     ];
-    expect(node.childNode).toMatchInlineSnapshot(`
+    expect(node.el).toMatchInlineSnapshot(`
       <div>
         <div>
           1
@@ -151,7 +183,7 @@ describe("unit test", () => {
         hidden: true,
       },
     ];
-    expect(node.childNode).toMatchInlineSnapshot(`
+    expect(node.el).toMatchInlineSnapshot(`
       <div>
         <div>
           1
@@ -207,7 +239,7 @@ describe("unit test", () => {
       await sleep(1000);
       items.val = [...(items.val ?? []), { id: items.val.length }];
     }
-    expect(node.childNode).toMatchInlineSnapshot(`
+    expect(node.el).toMatchInlineSnapshot(`
       <div>
         <div>
           add item 10
@@ -291,7 +323,7 @@ describe("unit test", () => {
       items.val = [...(items.val ?? []), { id: items.val.length }];
     }
 
-    expect(node.childNode).toMatchInlineSnapshot(`
+    expect(node.el).toMatchInlineSnapshot(`
       <div>
         <div>
           add item 10
@@ -365,7 +397,7 @@ describe("unit test", () => {
       });
     };
     const node = createElement(App);
-    expect(node.childNode).toMatchInlineSnapshot(`
+    expect(node.el).toMatchInlineSnapshot(`
       <div>
         <div>
           0
@@ -375,7 +407,7 @@ describe("unit test", () => {
     expect(mockFn).toBeCalledTimes(1);
 
     count.val++;
-    expect(node.childNode).toMatchInlineSnapshot(`
+    expect(node.el).toMatchInlineSnapshot(`
       <div>
         <div>
           1
@@ -386,7 +418,7 @@ describe("unit test", () => {
 
     vi.advanceTimersToNextTimer();
     count.val++;
-    expect(node.childNode).toMatchInlineSnapshot("<div />");
+    expect(node.el).toMatchInlineSnapshot("<div />");
     expect(mockFn).toBeCalledTimes(2);
     expect(count.val).toBe(2);
     vi.useRealTimers();
@@ -428,7 +460,7 @@ describe("unit test", () => {
     };
 
     const node = createElement(App);
-    expect(node.childNode).toMatchInlineSnapshot(`
+    expect(node.el).toMatchInlineSnapshot(`
       <div>
         <div>
           10
@@ -436,7 +468,7 @@ describe("unit test", () => {
       </div>
     `);
     vi.advanceTimersByTime(1000);
-    expect(node.childNode).toMatchInlineSnapshot(`
+    expect(node.el).toMatchInlineSnapshot(`
       <div>
         <div>
           9
@@ -444,7 +476,7 @@ describe("unit test", () => {
       </div>
     `);
     vi.advanceTimersByTime(1000);
-    expect(node.childNode).toMatchInlineSnapshot(`
+    expect(node.el).toMatchInlineSnapshot(`
       <div>
         <div>
           8
@@ -453,11 +485,162 @@ describe("unit test", () => {
     `);
     hidden.val = true;
     expect(mockClearInterval).toBeCalledTimes(1);
-    expect(node.childNode).toMatchInlineSnapshot("<div />");
+    expect(node.el).toMatchInlineSnapshot("<div />");
     expect(mockFn).toBeCalledTimes(2);
     vi.advanceTimersByTime(1000);
     expect(mockClearInterval).toBeCalledTimes(1);
-    expect(node.childNode).toMatchInlineSnapshot("<div />");
+    expect(node.el).toMatchInlineSnapshot("<div />");
     expect(mockFn).toBeCalledTimes(2);
+  });
+
+  it("Should not dispose effect", async () => {
+    const mockFn = vi.fn();
+    const hidden = createState(false);
+
+    const App = () => {
+      useEffect(() => {
+        const handler = setInterval(mockFn, 1000);
+        return () => clearInterval(handler);
+      });
+
+      return createElement("div", {
+        children: () => {
+          return hidden.val
+            ? null
+            : createElement("div", { children: "hello" });
+        },
+      });
+    };
+    const node = createElement(App);
+    expect(node.el).toMatchInlineSnapshot(`
+      <div>
+        <div>
+          hello
+        </div>
+      </div>
+    `);
+    expect(mockFn).toBeCalledTimes(0);
+    await sleep(1000);
+    expect(mockFn).toBeCalledTimes(1);
+    hidden.val = true;
+    await sleep(1000);
+    expect(mockFn).toBeCalledTimes(2);
+    hidden.val = false;
+    await sleep(1000);
+    expect(mockFn).toBeCalledTimes(3);
+  });
+  it("Should not dispose effect with state", async () => {
+    const hidden = createState(false);
+
+    const App = () => {
+      const state = createState(0);
+
+      useEffect(() => {
+        const handler = setInterval(() => {
+          state.val++;
+        }, 1000);
+        return () => clearInterval(handler);
+      });
+
+      return createElement("div", {
+        children: () => {
+          return hidden.val
+            ? null
+            : createElement("div", { children: () => state.val });
+        },
+      });
+    };
+    const node = createElement(App);
+    expect(node.el).toMatchInlineSnapshot(`
+      <div>
+        <div>
+          0
+        </div>
+      </div>
+    `);
+    await sleep(1000);
+    expect(node.el).toMatchInlineSnapshot(`
+      <div>
+        <div>
+          1
+        </div>
+      </div>
+    `);
+    hidden.val = true;
+    await sleep(1000);
+    expect(node.el).toMatchInlineSnapshot("<div />");
+    hidden.val = false;
+    await sleep(1000);
+    expect(node.el).toMatchInlineSnapshot(`
+      <div>
+        <div>
+          3
+        </div>
+      </div>
+    `);
+  });
+  it("Nested Hidden", async () => {
+    vi.useFakeTimers();
+    const count = createState(0);
+    const mockFn = vi.fn();
+    const Counter = () => {
+      useEffect(() => {
+        mockFn(count.val);
+      });
+      return createElement("div", {
+        children: () => count.val,
+      });
+    };
+    const mockFn2 = vi.fn();
+    const hidden = createState(false);
+    const innerHidden = createState(false);
+    const InnterWrapper = () => {
+      return createElement("div", {
+        children: () => {
+          return innerHidden.val ? null : createElement(Counter);
+        },
+      });
+    };
+    const App = () => {
+      useEffect(() => {
+        mockFn2(hidden.val);
+      });
+
+      return createElement("div", {
+        children: () => {
+          return hidden.val ? null : createElement(InnterWrapper);
+        },
+      });
+    };
+    const node = createElement(App);
+    expect(node.el).toMatchInlineSnapshot(`
+      <div>
+        <div>
+          <div>
+            0
+          </div>
+        </div>
+      </div>
+    `);
+    expect(mockFn).toBeCalledTimes(1);
+
+    count.val++;
+    expect(node.el).toMatchInlineSnapshot(`
+      <div>
+        <div>
+          <div>
+            1
+          </div>
+        </div>
+      </div>
+    `);
+    expect(mockFn).toBeCalledTimes(2);
+
+    hidden.val = true;
+    count.val++;
+    expect(node.el).toMatchInlineSnapshot("<div />");
+    expect(mockFn).toBeCalledTimes(2);
+    expect(count.val).toBe(2);
+    vi.useRealTimers();
   });
 });

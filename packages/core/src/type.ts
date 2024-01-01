@@ -9,6 +9,9 @@ export type Primitive = string | number | boolean | bigint;
 
 export type OrFunction<T> = T | (() => T);
 
+export type AsJSXChild<T> = T | (() => T) | (() => T[]);
+export type AsJSXChildren<T> = AsJSXChild<T> | AsJSXChild<T>[];
+
 export type Key = number | string | symbol;
 
 export type Arrify<T> = T extends [] ? T : T[];
