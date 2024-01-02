@@ -1,6 +1,6 @@
 {
   "name": "@idealjs/eslint-plugin-sapling",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "type": "module",
   "exports": {
     ".": {
