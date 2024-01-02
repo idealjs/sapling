@@ -1,4 +1,4 @@
-import { createState, upsert } from "@idealjs/sapling";
+import { createState, upsert, useEffect } from "@idealjs/sapling";
 
 const items = createState<{ id: number; hidden: boolean }[]>([]);
 
@@ -11,6 +11,30 @@ const updateList = () => {
   });
   console.log("test test", (Math.random() * 10) % 2, values);
   items.val = values;
+};
+
+const Counter = (props: { name: number }) => {
+  let { name } = props;
+  const state = createState(0);
+  useEffect(() => {
+    const handler = setInterval(() => {
+      state.val++;
+    }, 1000);
+
+    return () => {
+      clearInterval(handler);
+    };
+  });
+
+  return (
+    <p>
+      <div>
+        {() => {
+          return `${name} timmer ${state.val}.`;
+        }}
+      </div>
+    </p>
+  );
 };
 
 const Component = () => {
@@ -28,7 +52,9 @@ const Component = () => {
       <div>
         {() =>
           items.val.map((item) => {
-            return item.hidden ? null : <div ref={ref}>{item.id}</div>;
+            return item.hidden ? null : (
+              <Counter key={item.id} name={item.id} />
+            );
           })
         }
       </div>
