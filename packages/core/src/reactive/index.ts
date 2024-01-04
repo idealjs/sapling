@@ -1,6 +1,6 @@
-export type Readonly<T> = T extends object
+export type RecursiveReadonly<T> = T extends Record<string, unknown>
   ? {
-      readonly [K in keyof T]: Readonly<T[K]>;
+      readonly [K in keyof T]: RecursiveReadonly<T[K]>;
     }
   : T;
 
@@ -194,51 +194,42 @@ export const createReactive = () => {
     return unsubscribe;
   };
 
-  const derive = <T>(callback: () => T) => {
-    const state = createProxy<{ val: T }>();
-    let unsubscribe: () => void;
-    const deps = new Set<object>();
-
-    const next = () => {
-      deps.clear();
-      unsubscribe?.();
-      const resume = reactiveScope.collectDeps(deps);
-      const val = callback();
-      unsubscribe = reactiveScope.subscribeDeps(next);
-      resume();
-      state.val = val;
-    };
-    next();
-    return state as StateView<T>;
-  };
-
   const effect = (callback: () => Dispose | void) => {
-    const state: { val?: () => void } = {};
     let unsubscribe: () => void;
+    let dispose: Dispose | void;
     const deps = new Set<object>();
-
-    const next = () => {
-      deps.clear();
-      unsubscribe?.();
-      const resume = reactiveScope.collectDeps(deps);
-      const val = callback();
-      unsubscribe = reactiveScope.subscribeDeps(next);
-      resume();
-      state.val = () => {
-        val?.();
+    const state = {
+      val: () => {
+        dispose?.();
         unsubscribe();
         deps.clear();
-      };
+      },
+    };
+    const next = () => {
+      deps.clear();
+      unsubscribe?.();
+      const resume = reactiveScope.collectDeps(deps);
+      dispose = callback();
+      unsubscribe = reactiveScope.subscribeDeps(next);
+      resume();
     };
     next();
     return state as StateView<Dispose | void>;
   };
 
-  return { proxyScope, createProxy, subscribe, derive, effect };
+  return { proxyScope, createProxy, subscribe, effect };
 };
 
-export const { proxyScope, createProxy, subscribe, derive, effect } =
-  createReactive();
+export const { proxyScope, createProxy, subscribe, effect } = createReactive();
+
+export const derive = <T>(callback: () => T) => {
+  const state = createProxy<{ val: T; dispose: void | Dispose }>();
+  const dispose = effect(() => {
+    state.val = callback();
+  });
+  state.dispose = dispose.val;
+  return state as StateView<T>;
+};
 
 export const createState: CreateState = (value?: unknown) => {
   const proxyValue = createProxy({
