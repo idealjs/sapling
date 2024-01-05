@@ -98,10 +98,21 @@ export class JSXNode {
     this.parent?.children.delete(this);
   };
 
-  public appendChildJSXNode = (childJSXNode: JSXNode) => {
-    childJSXNode.el != null && this.el?.appendChild(childJSXNode.el);
-    this.children.add(childJSXNode);
-    childJSXNode.parent = this;
+  public appendChildJSXNode = (childrenNode: JSXNode[]) => {
+    [...childrenNode].reduceRight((p: JSXNode | null, c): JSXNode => {
+      if (c.el?.parentElement != null) {
+        return c;
+      }
+      if (p == null && c.el != null) {
+        this.el?.appendChild(c.el);
+      }
+      if (p?.el != null && c.el != null) {
+        this.el?.insertBefore(c.el, p.el);
+      }
+      this.children.add(c);
+      c.parent = this;
+      return c;
+    }, null);
     return this;
   };
 
@@ -119,16 +130,11 @@ export class JSXNode {
   };
 }
 
-function prepareChildrenNodes(jsxChildren: AsJSXChildren<RawChild>): JSXNode[] {
-  const children =
-    typeof jsxChildren === "function" ? jsxChildren() : jsxChildren;
+function prepareChildrenNodes(children: RawChild | RawChild[]): JSXNode[] {
   return arrify(children)
     .flatMap((child) => {
       if (isPrimitive(child)) {
         return primitiveToJSXNode(child);
-      }
-      if (typeof child === "function") {
-        return prepareChildrenNodes(child);
       }
       return child;
     })
@@ -200,16 +206,24 @@ const JSXFactory = () => {
     const jsxNode = new JSXNode({
       node: el,
     });
-    const nodeCache = new Map<Key, JSXNode>();
+
     if (children != null) {
-      derive(() => {
-        const resume = jsxScope.collectNodeCache(nodeCache);
-        const childrenNode = new Set(prepareChildrenNodes(children));
-        resume();
-        jsxNode.removeExtraNodes(childrenNode);
-        childrenNode.forEach((child) => {
-          jsxNode.appendChildJSXNode(child);
+      let nodeCaches: (Map<Key, JSXNode> | undefined)[] = [];
+      effect(() => {
+        const childrenNode = arrify(children).map((child, index) => {
+          const nodeCache = (nodeCaches[index] ||= new Map<Key, JSXNode>());
+          const resume = jsxScope.collectNodeCache(nodeCache);
+          const children = prepareChildrenNodes(
+            typeof child === "function" ? child() : child,
+          );
+          resume();
+          return children;
         });
+
+        jsxNode.removeExtraNodes(
+          new Set(childrenNode.flatMap((child) => child)),
+        );
+        jsxNode.appendChildJSXNode(childrenNode.flatMap((child) => child));
       });
     }
 

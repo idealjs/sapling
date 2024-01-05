@@ -137,10 +137,12 @@ export const createReactive = () => {
     }
     const proxyValue = new Proxy(value, {
       get(target, p, receiver) {
-        let value = Reflect.get(target, p) as (params: unknown[]) => unknown;
+        let value = Reflect.get(target, p) as
+          | unknown
+          | ((...parans: unknown[]) => unknown);
 
         if (typeof value === "function") {
-          value = new Proxy(value, {
+          const _value = new Proxy(value, {
             apply(target, thisArg, argArray) {
               const res = Reflect.apply(target, thisArg, argArray);
               if (notifyFunctions.includes(p)) {
@@ -150,9 +152,9 @@ export const createReactive = () => {
             },
           });
           if (bindProxyFunctions.includes(p)) {
-            value = value.bind(receiver);
+            value = _value.bind(receiver);
           } else {
-            value = value.bind(target);
+            value = _value.bind(target);
           }
         }
         if (
