@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from "vitest";
 
 import createElement, { useEffect } from "./createElement";
 import { createState } from "./reactive";
-import { sleep } from "./utils/sleep";
 
 describe("render test", () => {
   it("children", () => {
@@ -250,7 +249,7 @@ describe("reactive test", () => {
     };
     const node = createElement(TodoList);
     for (let index = 0; index < 10; index++) {
-      await sleep(1000);
+      vi.advanceTimersByTime(1000);
       items.val = [...(items.val ?? []), { id: items.val.length }];
     }
     expect(node.el).toMatchInlineSnapshot(`
@@ -333,7 +332,7 @@ describe("reactive test", () => {
     };
     const node = createElement(TodoList);
     for (let index = 0; index < 10; index++) {
-      await sleep(1000);
+      vi.advanceTimersByTime(1000);
       items.val = [...(items.val ?? []), { id: items.val.length }];
     }
 
@@ -379,8 +378,33 @@ describe("reactive test", () => {
     vi.useRealTimers();
   });
 
-  it("Two Todo List with key", async () => {
+  it("Three Todo List with key", async () => {
     vi.useFakeTimers();
+
+    const items = createState<{ id: number; hidden: boolean }[]>([
+      { id: 1, hidden: false },
+      { id: 2, hidden: false },
+      { id: 3, hidden: true },
+      { id: 4, hidden: false },
+    ]);
+
+    const updateList = () => {
+      // const values = new Array(10).fill("").map((v, index) => {
+      //   return {
+      //     id: index,
+      //     hidden: (Math.random() * 10) % 2 > 1,
+      //   };
+      // });
+      // console.log("test test", (Math.random() * 10) % 2, values);
+      // items.val = values;
+      items.val = [
+        { id: 1, hidden: false },
+        { id: 2, hidden: false },
+        { id: 3, hidden: false },
+        { id: 4, hidden: false },
+      ];
+    };
+
     const TodoItem = (props: { name: number }) => {
       const { name } = props;
       const state = createState(0);
@@ -417,7 +441,24 @@ describe("reactive test", () => {
       });
     };
 
-    const items = createState<{ id: number }[]>([]);
+    const TodoItem3 = (props: { name: number }) => {
+      const { name } = props;
+      const state = createState(0);
+      useEffect(() => {
+        const handler = setInterval(() => {
+          state.val++;
+        }, 1000);
+        return () => {
+          clearInterval(handler);
+        };
+      });
+      return createElement("p", {
+        children: () => {
+          return `TodoItem3 ${name} counter ${state.val}`;
+        },
+      });
+    };
+
     const TodoList = () => {
       return createElement("div", {
         children: [
@@ -425,51 +466,115 @@ describe("reactive test", () => {
             children: () => `item length ${items.val.length}`,
           }),
           createElement("div", {
-            children: () =>
-              items.val.map((item) => {
-                return createElement(TodoItem, { name: item.id }, item.id);
-              }),
-          }),
-          createElement("div", {
-            children: () =>
-              items.val.map((item) => {
-                return createElement(TodoItem2, { name: item.id }, item.id);
-              }),
+            children: [
+              () =>
+                items.val.map((item) => {
+                  return item.hidden
+                    ? null
+                    : createElement(TodoItem, { name: item.id }, item.id);
+                }),
+
+              () =>
+                items.val.map((item) => {
+                  return item.hidden
+                    ? null
+                    : createElement(TodoItem2, { name: item.id }, item.id);
+                }),
+              () =>
+                items.val.map((item) => {
+                  return item.hidden
+                    ? null
+                    : createElement(TodoItem3, { name: item.id }, item.id);
+                }),
+            ],
           }),
         ],
       });
     };
     const node = createElement(TodoList);
-    for (let index = 0; index < 3; index++) {
-      await sleep(1000);
-      items.val = [...(items.val ?? []), { id: items.val.length }];
-    }
 
     expect(node.el).toMatchInlineSnapshot(`
       <div>
         <div>
-          item length 3
+          item length 4
         </div>
         <div>
           <p>
-            0 counter 2
-          </p>
-          <p>
-            1 counter 1
+            1 counter 0
           </p>
           <p>
             2 counter 0
           </p>
-        </div>
-        <div>
           <p>
-            TodoItem2 0 counter 2
+            4 counter 0
           </p>
           <p>
-            TodoItem2 1 counter 1
+            TodoItem2 1 counter 0
           </p>
           <p>
             TodoItem2 2 counter 0
+          </p>
+          <p>
+            TodoItem2 4 counter 0
+          </p>
+          <p>
+            TodoItem3 1 counter 0
+          </p>
+          <p>
+            TodoItem3 2 counter 0
+          </p>
+          <p>
+            TodoItem3 4 counter 0
+          </p>
+        </div>
+      </div>
+    `);
+
+    vi.advanceTimersByTime(5000);
+    updateList();
+    vi.advanceTimersByTime(5000);
+
+    expect(node.el).toMatchInlineSnapshot(`
+      <div>
+        <div>
+          item length 4
+        </div>
+        <div>
+          <p>
+            1 counter 10
+          </p>
+          <p>
+            2 counter 10
+          </p>
+          <p>
+            3 counter 5
+          </p>
+          <p>
+            4 counter 10
+          </p>
+          <p>
+            TodoItem2 1 counter 10
+          </p>
+          <p>
+            TodoItem2 2 counter 10
+          </p>
+          <p>
+            TodoItem2 3 counter 5
+          </p>
+          <p>
+            TodoItem2 4 counter 10
+          </p>
+          <p>
+            TodoItem3 1 counter 10
+          </p>
+          <p>
+            TodoItem3 2 counter 10
+          </p>
+          <p>
+            TodoItem3 3 counter 5
+          </p>
+          <p>
+            TodoItem3 4 counter 10
           </p>
         </div>
       </div>
