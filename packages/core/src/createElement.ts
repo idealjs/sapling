@@ -1,10 +1,10 @@
 import { hyper } from "./hyper";
-import { derive, effect, StateView } from "./reactive";
+import { effect, StateView } from "./reactive";
 import {
-  AsJSXChildren,
   InnerElement,
   Key,
   Primitive,
+  PrimitiveChild,
   TagNameMap,
   TagOption,
 } from "./type";
@@ -13,19 +13,22 @@ import isPrimitive from "./utils/isPrimitive";
 
 type Dispose = () => void;
 
-export type PrimitiveChild = Primitive;
-
-export type RawChild = JSXNode | PrimitiveChild | null;
-
-export type JSXChildren = AsJSXChildren<RawChild>;
-
 type JSXTag<P> =
   | keyof TagNameMap
-  | ((props: P) => JSXNode | JSXNode[] | PrimitiveChild | null);
+  | ((props: P) => SaplingElement | SaplingElement[] | PrimitiveChild | null);
+
+export type JSXElementType<P> = (props: P) => SaplingNode | SaplingElement;
+
+export type SaplingNode =
+  | SaplingElement
+  | PrimitiveChild
+  | Iterable<SaplingNode>
+  | (() => SaplingNode)
+  | null;
 
 export class JSXScope {
   private disposeStack: StateView<Dispose | void>[] | null = null;
-  private nodeCache: Map<Key, JSXNode> | null = null;
+  private nodeCache: Map<Key, SaplingElement> | null = null;
 
   constructor() {}
 
@@ -36,7 +39,7 @@ export class JSXScope {
     return this.nodeCache?.get(key);
   };
 
-  public setCache = (key: Key, value: JSXNode) => {
+  public setCache = (key: Key, value: SaplingElement) => {
     this.nodeCache?.set(key, value);
   };
 
@@ -48,7 +51,7 @@ export class JSXScope {
     };
   };
 
-  public collectNodeCache = (nodeCache: Map<Key, JSXNode>) => {
+  public collectNodeCache = (nodeCache: Map<Key, SaplingElement>) => {
     const temp = this.nodeCache;
     this.nodeCache = nodeCache;
     return () => {
@@ -63,11 +66,11 @@ export class JSXScope {
   public getDisposeStack = () => this.disposeStack ?? [];
 }
 
-export class JSXNode {
+export class SaplingElement {
   private _el: Node | null = null;
   private disposeStack: StateView<Dispose | void>[] = [];
-  private children: Set<JSXNode> = new Set();
-  private parent: JSXNode | null = null;
+  private children: Set<SaplingElement> = new Set();
+  private parent: SaplingElement | null = null;
 
   public get el() {
     return this._el;
@@ -76,7 +79,7 @@ export class JSXNode {
   constructor(params?: {
     node?: Node | null;
     disposeStack?: StateView<Dispose | void>[];
-    children?: Set<JSXNode> | null;
+    children?: Set<SaplingElement> | null;
   }) {
     if (params?.node != null) {
       this._el = params.node;
@@ -98,25 +101,28 @@ export class JSXNode {
     this.parent?.children.delete(this);
   };
 
-  public appendChildJSXNode = (childrenNode: JSXNode[]) => {
-    [...childrenNode].reduceRight((p: JSXNode | null, c): JSXNode => {
-      if (c.el?.parentElement != null) {
+  public appendChildJSXNode = (childrenNode: SaplingElement[]) => {
+    [...childrenNode].reduceRight(
+      (p: SaplingElement | null, c): SaplingElement => {
+        if (c.el?.parentElement != null) {
+          return c;
+        }
+        if (p == null && c.el != null) {
+          this.el?.appendChild(c.el);
+        }
+        if (p?.el != null && c.el != null) {
+          this.el?.insertBefore(c.el, p.el);
+        }
+        this.children.add(c);
+        c.parent = this;
         return c;
-      }
-      if (p == null && c.el != null) {
-        this.el?.appendChild(c.el);
-      }
-      if (p?.el != null && c.el != null) {
-        this.el?.insertBefore(c.el, p.el);
-      }
-      this.children.add(c);
-      c.parent = this;
-      return c;
-    }, null);
+      },
+      null,
+    );
     return this;
   };
 
-  public removeExtraNodes = (childrenNode: Set<JSXNode>) => {
+  public removeExtraNodes = (childrenNode: Set<SaplingElement>) => {
     this.children.forEach((child) => {
       if (!childrenNode.has(child)) {
         child.dispose();
@@ -130,7 +136,9 @@ export class JSXNode {
   };
 }
 
-function prepareChildrenNodes(children: RawChild | RawChild[]): JSXNode[] {
+function prepareChildrenNodes(
+  children: SaplingNode | SaplingNode[],
+): SaplingElement[] {
   return arrify(children)
     .flatMap((child) => {
       if (isPrimitive(child)) {
@@ -138,11 +146,11 @@ function prepareChildrenNodes(children: RawChild | RawChild[]): JSXNode[] {
       }
       return child;
     })
-    .filter((v): v is JSXNode => v != null);
+    .filter((v): v is SaplingElement => v != null);
 }
 
 const primitiveToJSXNode = (primitive: Primitive) =>
-  new JSXNode({
+  new SaplingElement({
     node: new Text(primitive.toString()),
     disposeStack: [],
   });
@@ -150,7 +158,7 @@ const primitiveToJSXNode = (primitive: Primitive) =>
 const JSXFactory = () => {
   const jsxScope = new JSXScope();
 
-  const upsert = (element: Node, child: JSXNode) => {
+  const upsert = (element: Node, child: SaplingElement) => {
     child.el && element.appendChild(child.el);
     return () => {
       child.dispose();
@@ -168,10 +176,12 @@ const JSXFactory = () => {
       lineNumber: number;
     },
     _self?: unknown,
-  ): JSXNode;
+  ): SaplingElement;
 
   function createElement<P extends object>(
-    jsxTag: (props: P) => JSXNode | JSXNode[] | PrimitiveChild | null,
+    jsxTag: (
+      props: P,
+    ) => SaplingElement | SaplingElement[] | PrimitiveChild | null,
     options?: P,
     key?: Key,
     _isStaticChildren?: boolean,
@@ -181,7 +191,7 @@ const JSXFactory = () => {
       lineNumber: number;
     },
     _self?: unknown,
-  ): JSXNode;
+  ): SaplingElement;
 
   function createElement<P extends object>(
     jsxTag: JSXTag<P>,
@@ -194,7 +204,7 @@ const JSXFactory = () => {
       lineNumber: number;
     },
     _self?: unknown,
-  ): JSXNode {
+  ): SaplingElement {
     const cache = jsxScope.getCache(key);
     if (cache != null) {
       return cache;
@@ -207,14 +217,14 @@ const JSXFactory = () => {
       const node = jsxTag(options as P);
       resume();
 
-      let jsxNode: JSXNode;
+      let jsxNode: SaplingElement;
       if (Array.isArray(node)) {
-        jsxNode = new JSXNode({
+        jsxNode = new SaplingElement({
           node: document.createDocumentFragment(),
         });
         jsxNode.appendChildJSXNode(node);
       } else if (isPrimitive(node) || node == null) {
-        jsxNode = new JSXNode({
+        jsxNode = new SaplingElement({
           node: node == null ? null : new Text(node.toString()),
           disposeStack,
           children: null,
@@ -238,15 +248,18 @@ const JSXFactory = () => {
       ref.val = el;
     }
 
-    const jsxNode = new JSXNode({
+    const jsxNode = new SaplingElement({
       node: el,
     });
 
     if (children != null) {
-      let nodeCaches: (Map<Key, JSXNode> | undefined)[] = [];
+      let nodeCaches: (Map<Key, SaplingElement> | undefined)[] = [];
       effect(() => {
         const childrenNode = arrify(children).map((child, index) => {
-          const nodeCache = (nodeCaches[index] ||= new Map<Key, JSXNode>());
+          const nodeCache = (nodeCaches[index] ||= new Map<
+            Key,
+            SaplingElement
+          >());
           const resume = jsxScope.collectNodeCache(nodeCache);
           const children = prepareChildrenNodes(
             typeof child === "function" ? child() : child,

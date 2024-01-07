@@ -1,10 +1,11 @@
-import type { JSXNode } from "./createElement";
+/* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import type { JSXElementType, SaplingElement } from "./createElement";
 import type { InnerElement, Key, TagOption } from "./type";
 
-export * from ".";
-
-// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace JSX {
+  export type ElementType = string | JSXElementType<any>;
   export interface ElementAttributesProperty {
     props: object;
   }
@@ -12,7 +13,7 @@ export namespace JSX {
     children: object;
   }
 
-  export type Element = JSXNode;
+  export interface Element extends SaplingElement {}
 
   export interface IntrinsicAttributes {
     key?: Key;

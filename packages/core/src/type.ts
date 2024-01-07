@@ -1,6 +1,6 @@
 import CSS from "csstype";
 
-import type { JSXChildren } from "./createElement";
+import type { SaplingNode } from "./createElement";
 import type { State } from "./reactive";
 
 export type TagNameMap = HTMLElementTagNameMap & SVGElementTagNameMap;
@@ -9,12 +9,11 @@ export type Primitive = string | number | boolean | bigint;
 
 export type OrFunction<T> = T | (() => T);
 
-export type AsJSXChild<T> = T | (() => T) | (() => T[]);
-export type AsJSXChildren<T> = AsJSXChild<T> | AsJSXChild<T>[];
-
 export type Key = number | string | symbol;
 
 export type Arrify<T> = T extends [] ? T : T[];
+
+export type PrimitiveChild = Primitive;
 
 type Booleanish = boolean | "true" | "false";
 type CrossOrigin = "anonymous" | "use-credentials" | "" | undefined;
@@ -520,7 +519,7 @@ export interface DOMAttributes {
 
 export interface ReactiveAttributes<T> {
   ref?: State<T | null>;
-  children?: JSXChildren;
+  children?: SaplingNode;
   key?: Key;
 }
 
