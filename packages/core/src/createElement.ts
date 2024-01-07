@@ -21,7 +21,7 @@ export type JSXChildren = AsJSXChildren<RawChild>;
 
 type JSXTag<P> =
   | keyof TagNameMap
-  | ((props: P) => JSXNode | PrimitiveChild | null);
+  | ((props: P) => JSXNode | JSXNode[] | PrimitiveChild | null);
 
 export class JSXScope {
   private disposeStack: StateView<Dispose | void>[] | null = null;
@@ -157,7 +157,33 @@ const JSXFactory = () => {
     };
   };
 
-  const createElement = <P extends object>(
+  function createElement(
+    jsxTag: keyof TagNameMap,
+    options?: TagOption<keyof InnerElement>,
+    key?: Key,
+    _isStaticChildren?: boolean,
+    _source?: {
+      columnNumber: number;
+      fileName: string;
+      lineNumber: number;
+    },
+    _self?: unknown,
+  ): JSXNode;
+
+  function createElement<P extends object>(
+    jsxTag: (props: P) => JSXNode | JSXNode[] | PrimitiveChild | null,
+    options?: P,
+    key?: Key,
+    _isStaticChildren?: boolean,
+    _source?: {
+      columnNumber: number;
+      fileName: string;
+      lineNumber: number;
+    },
+    _self?: unknown,
+  ): JSXNode;
+
+  function createElement<P extends object>(
     jsxTag: JSXTag<P>,
     options?: TagOption<keyof InnerElement> | P,
     key?: Key,
@@ -168,7 +194,7 @@ const JSXFactory = () => {
       lineNumber: number;
     },
     _self?: unknown,
-  ): JSXNode => {
+  ): JSXNode {
     const cache = jsxScope.getCache(key);
     if (cache != null) {
       return cache;
@@ -180,14 +206,23 @@ const JSXFactory = () => {
       const resume = jsxScope.collectDispose(disposeStack);
       const node = jsxTag(options as P);
       resume();
-      const jsxNode =
-        isPrimitive(node) || node == null
-          ? new JSXNode({
-              node: node == null ? null : new Text(node.toString()),
-              disposeStack,
-              children: null,
-            })
-          : node.mergeDisposeStack(disposeStack);
+
+      let jsxNode: JSXNode;
+      if (Array.isArray(node)) {
+        jsxNode = new JSXNode({
+          node: document.createDocumentFragment(),
+        });
+        jsxNode.appendChildJSXNode(node);
+      } else if (isPrimitive(node) || node == null) {
+        jsxNode = new JSXNode({
+          node: node == null ? null : new Text(node.toString()),
+          disposeStack,
+          children: null,
+        });
+      } else {
+        jsxNode = node;
+      }
+      jsxNode.mergeDisposeStack(disposeStack);
       if (key != null) {
         jsxScope.setCache(key, jsxNode);
       }
@@ -232,7 +267,7 @@ const JSXFactory = () => {
     }
 
     return jsxNode;
-  };
+  }
 
   const useEffect = (callback: () => Dispose | void) => {
     jsxScope.addDispose(effect(callback));

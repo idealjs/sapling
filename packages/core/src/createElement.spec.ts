@@ -81,6 +81,20 @@ describe("render test", () => {
       </div>
     `);
   });
+
+  it("component return array", () => {
+    const Component = () => {
+      return [createElement("div"), createElement("div"), createElement("div")];
+    };
+    const node = createElement("div", { children: createElement(Component) });
+    expect(node.el).toMatchInlineSnapshot(`
+      <div>
+        <div />
+        <div />
+        <div />
+      </div>
+    `);
+  });
 });
 
 describe("reactive test", () => {
