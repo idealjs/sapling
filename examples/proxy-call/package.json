@@ -10,9 +10,9 @@
   },
   "devDependencies": {
     "@idealjs/eslint-plugin-sapling": "0.1.18",
-    "@types/node": "^20.6.2",
-    "typescript": "^5.0.2",
-    "vite": "^4.4.5"
+    "@types/node": "^20.10.7",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.11"
   },
   "dependencies": {
     "@idealjs/sapling": "0.1.18"

@@ -17,7 +17,7 @@
     "./jsx-dev-runtime": {
       "require": "./dist/umd/index.js",
       "import": "./dist/esm/index.js",
-      "types": "./dist/jsx-dev-runtime.d.ts"
+      "types": "./dist/jsx-runtime.d.ts"
     }
   },
   "files": [
@@ -33,20 +33,19 @@
     "debug": "vitest reactive"
   },
   "devDependencies": {
-    "@edge-runtime/vm": "^3.1.6",
-    "@types/lodash.chunk": "^4.2.7",
-    "esbuild": "^0.18.4",
+    "@types/lodash.chunk": "^4.2.9",
+    "esbuild": "^0.19.11",
     "happy-dom": "^12.10.3",
-    "jsdom": "^22.1.0",
+    "jsdom": "^23.2.0",
     "lodash.chunk": "^4.2.0",
-    "rimraf": "^5.0.1",
-    "rollup": "^3.25.1",
-    "rollup-plugin-esbuild": "^5.0.0",
-    "rollup-plugin-visualizer": "^5.9.2",
-    "typescript": "^5.1.3",
-    "vitest": "^1.0.2"
+    "rimraf": "^5.0.5",
+    "rollup": "^4.9.4",
+    "rollup-plugin-esbuild": "^6.1.0",
+    "rollup-plugin-visualizer": "^5.12.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.1.3"
   },
   "dependencies": {
-    "csstype": "^3.1.2"
+    "csstype": "^3.1.3"
   }
 }
