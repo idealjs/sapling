@@ -8,21 +8,19 @@ import {
   TagNameMap,
   TagOption,
 } from "./type";
-import arrify from "./utils/arrify";
 import isPrimitive from "./utils/isPrimitive";
+import numberConcat from "./utils/numberConcat";
 
 type Dispose = () => void;
 
-type JSXTag<P> =
-  | keyof TagNameMap
-  | ((props: P) => SaplingElement | SaplingElement[] | PrimitiveChild | null);
+type JSXTag<P> = keyof TagNameMap | ((props: P) => SaplingNode);
 
 export type JSXElementType<P> = (props: P) => SaplingNode | SaplingElement;
 
 export type SaplingNode =
   | SaplingElement
   | PrimitiveChild
-  | Iterable<SaplingNode>
+  | SaplingNode[]
   | (() => SaplingNode)
   | null;
 
@@ -89,6 +87,9 @@ export class SaplingElement {
     }
     if (params?.children != null) {
       this.children = params.children;
+      Array.from(params.children).forEach(
+        (child) => child.el != null && this._el?.appendChild(child.el),
+      );
     }
   }
 
@@ -101,30 +102,51 @@ export class SaplingElement {
     this.parent?.children.delete(this);
   };
 
-  public appendChildJSXNode = (childrenNode: SaplingElement[]) => {
-    [...childrenNode].reduceRight(
-      (p: SaplingElement | null, c): SaplingElement => {
-        if (c.el?.parentElement != null) {
+  public append = (child: SaplingElement) => {
+    if (child.el != null) {
+      if (child.el.parentElement != null) {
+        // skip append for optimization
+        return this;
+      }
+      this.el?.appendChild(child.el);
+      this.children.add(child);
+      return child;
+    } else {
+      return Array.from(child.children).reduceRight(
+        (p: SaplingElement | null, c): SaplingElement | null => {
+          if (c.el == null) {
+            return this.append(c) ?? p;
+          }
+          if (c.el != null) {
+            if (c.el?.parentElement != null) {
+              return c;
+            }
+            if (p == null) {
+              // start from here
+              this.el?.appendChild(c.el);
+            }
+            if (p?.el != null) {
+              // continue insert
+              this.el?.insertBefore(c.el, p.el);
+            }
+            this.children.add(c);
+            c.parent = this;
+          }
+
           return c;
-        }
-        if (p == null && c.el != null) {
-          this.el?.appendChild(c.el);
-        }
-        if (p?.el != null && c.el != null) {
-          this.el?.insertBefore(c.el, p.el);
-        }
-        this.children.add(c);
-        c.parent = this;
-        return c;
-      },
-      null,
-    );
-    return this;
+        },
+        null,
+      );
+    }
   };
 
-  public removeExtraNodes = (childrenNode: Set<SaplingElement>) => {
+  public hasChild = (childElement: SaplingElement) => {
+    return this.children.has(childElement);
+  };
+
+  public disposeElementNotIn = (childElement: SaplingElement) => {
     this.children.forEach((child) => {
-      if (!childrenNode.has(child)) {
+      if (!childElement.hasChild(child)) {
         child.dispose();
       }
     });
@@ -136,19 +158,6 @@ export class SaplingElement {
   };
 }
 
-function prepareChildrenNodes(
-  children: SaplingNode | SaplingNode[],
-): SaplingElement[] {
-  return arrify(children)
-    .flatMap((child) => {
-      if (isPrimitive(child)) {
-        return primitiveToJSXNode(child);
-      }
-      return child;
-    })
-    .filter((v): v is SaplingElement => v != null);
-}
-
 const primitiveToJSXNode = (primitive: Primitive) =>
   new SaplingElement({
     node: new Text(primitive.toString()),
@@ -157,6 +166,49 @@ const primitiveToJSXNode = (primitive: Primitive) =>
 
 const JSXFactory = () => {
   const jsxScope = new JSXScope();
+
+  // parse SaplingNode to SaplingElement
+  const prepareSaplingElement = (
+    saplingNode: SaplingNode,
+    nodeCaches?: Map<Key, SaplingElement>[],
+    cacheKey: number = 0,
+  ): SaplingElement => {
+    if (saplingNode instanceof SaplingElement) {
+      return saplingNode;
+    }
+    if (Array.isArray(saplingNode)) {
+      return new SaplingElement({
+        children: new Set(
+          saplingNode.map((child, index) =>
+            prepareSaplingElement(
+              child,
+              nodeCaches,
+              numberConcat(index, cacheKey),
+            ),
+          ),
+        ),
+      });
+    }
+    if (isPrimitive(saplingNode)) {
+      return primitiveToJSXNode(saplingNode);
+    }
+    if (typeof saplingNode === "function") {
+      let resume;
+
+      if (nodeCaches != null) {
+        const nodeCache = (nodeCaches[cacheKey] ||= new Map<
+          Key,
+          SaplingElement
+        >());
+        resume = jsxScope.collectNodeCache(nodeCache);
+      }
+
+      const element = prepareSaplingElement(saplingNode(), nodeCaches);
+      resume?.();
+      return element;
+    }
+    return new SaplingElement();
+  };
 
   const upsert = (element: Node, child: SaplingElement) => {
     child.el && element.appendChild(child.el);
@@ -179,9 +231,7 @@ const JSXFactory = () => {
   ): SaplingElement;
 
   function createElement<P extends object>(
-    jsxTag: (
-      props: P,
-    ) => SaplingElement | SaplingElement[] | PrimitiveChild | null,
+    jsxTag: (props: P) => SaplingNode,
     options?: P,
     key?: Key,
     _isStaticChildren?: boolean,
@@ -216,27 +266,12 @@ const JSXFactory = () => {
       const resume = jsxScope.collectDispose(disposeStack);
       const node = jsxTag(options as P);
       resume();
+      const element = prepareSaplingElement(node);
 
-      let jsxNode: SaplingElement;
-      if (Array.isArray(node)) {
-        jsxNode = new SaplingElement({
-          node: document.createDocumentFragment(),
-        });
-        jsxNode.appendChildJSXNode(node);
-      } else if (isPrimitive(node) || node == null) {
-        jsxNode = new SaplingElement({
-          node: node == null ? null : new Text(node.toString()),
-          disposeStack,
-          children: null,
-        });
-      } else {
-        jsxNode = node;
-      }
-      jsxNode.mergeDisposeStack(disposeStack);
       if (key != null) {
-        jsxScope.setCache(key, jsxNode);
+        jsxScope.setCache(key, element);
       }
-      return jsxNode;
+      return element;
     }
 
     const { children, ref, ...props } = (options ?? {}) as TagOption<
@@ -248,38 +283,24 @@ const JSXFactory = () => {
       ref.val = el;
     }
 
-    const jsxNode = new SaplingElement({
+    const currentElement = new SaplingElement({
       node: el,
     });
 
     if (children != null) {
-      let nodeCaches: (Map<Key, SaplingElement> | undefined)[] = [];
+      let nodeCaches: Map<Key, SaplingElement>[] = [];
       effect(() => {
-        const childrenNode = arrify(children).map((child, index) => {
-          const nodeCache = (nodeCaches[index] ||= new Map<
-            Key,
-            SaplingElement
-          >());
-          const resume = jsxScope.collectNodeCache(nodeCache);
-          const children = prepareChildrenNodes(
-            typeof child === "function" ? child() : child,
-          );
-          resume();
-          return children;
-        });
-
-        jsxNode.removeExtraNodes(
-          new Set(childrenNode.flatMap((child) => child)),
-        );
-        jsxNode.appendChildJSXNode(childrenNode.flatMap((child) => child));
+        const element = prepareSaplingElement(children, nodeCaches);
+        currentElement.disposeElementNotIn(element);
+        currentElement.append(element);
       });
     }
 
     if (key != null) {
-      jsxScope.setCache(key, jsxNode);
+      jsxScope.setCache(key, currentElement);
     }
 
-    return jsxNode;
+    return currentElement;
   }
 
   const useEffect = (callback: () => Dispose | void) => {

@@ -84,14 +84,56 @@ describe("render test", () => {
 
   it("component return array", () => {
     const Component = () => {
-      return [createElement("div"), createElement("div"), createElement("div")];
+      return [
+        createElement("div", { children: "A" }),
+        createElement("div", { children: "B" }),
+        createElement("div", { children: "C" }),
+      ];
     };
-    const node = createElement("div", { children: createElement(Component) });
+    const node = createElement("div", {
+      children: [
+        createElement("div", {
+          children: () => createElement(Component),
+        }),
+        createElement("div", {
+          children: () => [createElement(Component)],
+        }),
+        createElement(Component),
+      ],
+    });
     expect(node.el).toMatchInlineSnapshot(`
       <div>
-        <div />
-        <div />
-        <div />
+        <div>
+          <div>
+            A
+          </div>
+          <div>
+            B
+          </div>
+          <div>
+            C
+          </div>
+        </div>
+        <div>
+          <div>
+            A
+          </div>
+          <div>
+            B
+          </div>
+          <div>
+            C
+          </div>
+        </div>
+        <div>
+          A
+        </div>
+        <div>
+          B
+        </div>
+        <div>
+          C
+        </div>
       </div>
     `);
   });
@@ -403,14 +445,6 @@ describe("reactive test", () => {
     ]);
 
     const updateList = () => {
-      // const values = new Array(10).fill("").map((v, index) => {
-      //   return {
-      //     id: index,
-      //     hidden: (Math.random() * 10) % 2 > 1,
-      //   };
-      // });
-      // console.log("test test", (Math.random() * 10) % 2, values);
-      // items.val = values;
       items.val = [
         { id: 1, hidden: false },
         { id: 2, hidden: false },
@@ -514,13 +548,13 @@ describe("reactive test", () => {
         </div>
         <div>
           <p>
-            1 counter 0
+            TodoItem3 1 counter 0
           </p>
           <p>
-            2 counter 0
+            TodoItem3 2 counter 0
           </p>
           <p>
-            4 counter 0
+            TodoItem3 4 counter 0
           </p>
           <p>
             TodoItem2 1 counter 0
@@ -532,13 +566,13 @@ describe("reactive test", () => {
             TodoItem2 4 counter 0
           </p>
           <p>
-            TodoItem3 1 counter 0
+            1 counter 0
           </p>
           <p>
-            TodoItem3 2 counter 0
+            2 counter 0
           </p>
           <p>
-            TodoItem3 4 counter 0
+            4 counter 0
           </p>
         </div>
       </div>
@@ -555,16 +589,16 @@ describe("reactive test", () => {
         </div>
         <div>
           <p>
-            1 counter 10
+            TodoItem3 1 counter 10
           </p>
           <p>
-            2 counter 10
+            TodoItem3 2 counter 10
           </p>
           <p>
-            3 counter 5
+            TodoItem3 3 counter 5
           </p>
           <p>
-            4 counter 10
+            TodoItem3 4 counter 10
           </p>
           <p>
             TodoItem2 1 counter 10
@@ -579,16 +613,16 @@ describe("reactive test", () => {
             TodoItem2 4 counter 10
           </p>
           <p>
-            TodoItem3 1 counter 10
+            1 counter 10
           </p>
           <p>
-            TodoItem3 2 counter 10
+            2 counter 10
           </p>
           <p>
-            TodoItem3 3 counter 5
+            3 counter 5
           </p>
           <p>
-            TodoItem3 4 counter 10
+            4 counter 10
           </p>
         </div>
       </div>
