@@ -10,7 +10,7 @@ const Component = () => {
       <div>{() => <Test />}</div>
       <div>{() => [<Test />, <Test />]}</div>
       <Test />
-      [ <Test />,<Test />,<Test />]
+      {() => [<Test />, <Test />]}
     </div>
   );
 };
