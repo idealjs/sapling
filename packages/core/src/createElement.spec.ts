@@ -84,14 +84,56 @@ describe("render test", () => {
 
   it("component return array", () => {
     const Component = () => {
-      return [createElement("div"), createElement("div"), createElement("div")];
+      return [
+        createElement("div", { children: "A" }),
+        createElement("div", { children: "B" }),
+        createElement("div", { children: "C" }),
+      ];
     };
-    const node = createElement("div", { children: createElement(Component) });
+    const node = createElement("div", {
+      children: [
+        createElement("div", {
+          children: () => createElement(Component),
+        }),
+        createElement("div", {
+          children: () => [createElement(Component)],
+        }),
+        createElement(Component),
+      ],
+    });
     expect(node.el).toMatchInlineSnapshot(`
       <div>
-        <div />
-        <div />
-        <div />
+        <div>
+          <div>
+            A
+          </div>
+          <div>
+            B
+          </div>
+          <div>
+            C
+          </div>
+        </div>
+        <div>
+          <div>
+            A
+          </div>
+          <div>
+            B
+          </div>
+          <div>
+            C
+          </div>
+        </div>
+        <div>
+          A
+        </div>
+        <div>
+          B
+        </div>
+        <div>
+          C
+        </div>
       </div>
     `);
   });
@@ -403,14 +445,6 @@ describe("reactive test", () => {
     ]);
 
     const updateList = () => {
-      // const values = new Array(10).fill("").map((v, index) => {
-      //   return {
-      //     id: index,
-      //     hidden: (Math.random() * 10) % 2 > 1,
-      //   };
-      // });
-      // console.log("test test", (Math.random() * 10) % 2, values);
-      // items.val = values;
       items.val = [
         { id: 1, hidden: false },
         { id: 2, hidden: false },
@@ -432,7 +466,7 @@ describe("reactive test", () => {
       });
       return createElement("p", {
         children: () => {
-          return `${name} counter ${state.val}`;
+          return `TodoItem1 ${name} counter ${state.val}`;
         },
       });
     };
@@ -451,24 +485,6 @@ describe("reactive test", () => {
       return createElement("p", {
         children: () => {
           return `TodoItem2 ${name} counter ${state.val}`;
-        },
-      });
-    };
-
-    const TodoItem3 = (props: { name: number }) => {
-      const { name } = props;
-      const state = createState(0);
-      useEffect(() => {
-        const handler = setInterval(() => {
-          state.val++;
-        }, 1000);
-        return () => {
-          clearInterval(handler);
-        };
-      });
-      return createElement("p", {
-        children: () => {
-          return `TodoItem3 ${name} counter ${state.val}`;
         },
       });
     };
@@ -494,12 +510,6 @@ describe("reactive test", () => {
                     ? null
                     : createElement(TodoItem2, { name: item.id }, item.id);
                 }),
-              () =>
-                items.val.map((item) => {
-                  return item.hidden
-                    ? null
-                    : createElement(TodoItem3, { name: item.id }, item.id);
-                }),
             ],
           }),
         ],
@@ -514,13 +524,13 @@ describe("reactive test", () => {
         </div>
         <div>
           <p>
-            1 counter 0
+            TodoItem1 1 counter 0
           </p>
           <p>
-            2 counter 0
+            TodoItem1 2 counter 0
           </p>
           <p>
-            4 counter 0
+            TodoItem1 4 counter 0
           </p>
           <p>
             TodoItem2 1 counter 0
@@ -530,15 +540,6 @@ describe("reactive test", () => {
           </p>
           <p>
             TodoItem2 4 counter 0
-          </p>
-          <p>
-            TodoItem3 1 counter 0
-          </p>
-          <p>
-            TodoItem3 2 counter 0
-          </p>
-          <p>
-            TodoItem3 4 counter 0
           </p>
         </div>
       </div>
@@ -555,16 +556,16 @@ describe("reactive test", () => {
         </div>
         <div>
           <p>
-            1 counter 10
+            TodoItem1 1 counter 10
           </p>
           <p>
-            2 counter 10
+            TodoItem1 2 counter 10
           </p>
           <p>
-            3 counter 5
+            TodoItem1 3 counter 5
           </p>
           <p>
-            4 counter 10
+            TodoItem1 4 counter 10
           </p>
           <p>
             TodoItem2 1 counter 10
@@ -577,18 +578,6 @@ describe("reactive test", () => {
           </p>
           <p>
             TodoItem2 4 counter 10
-          </p>
-          <p>
-            TodoItem3 1 counter 10
-          </p>
-          <p>
-            TodoItem3 2 counter 10
-          </p>
-          <p>
-            TodoItem3 3 counter 5
-          </p>
-          <p>
-            TodoItem3 4 counter 10
           </p>
         </div>
       </div>
