@@ -1,7 +1,7 @@
 {
   "name": "hidden-count",
   "private": true,
-  "version": "0.1.18",
+  "version": "0.1.19",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,12 +9,12 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@idealjs/eslint-plugin-sapling": "0.1.18",
+    "@idealjs/eslint-plugin-sapling": "0.1.19",
     "@types/node": "^20.10.7",
     "typescript": "^5.3.3",
     "vite": "^5.0.11"
   },
   "dependencies": {
-    "@idealjs/sapling": "0.1.18"
+    "@idealjs/sapling": "0.1.19"
   }
 }
