@@ -26,20 +26,9 @@ export const isSetterFunction = <T>(
   return false;
 };
 
-export type CreateSignal = {
-  <T>(initialValue: T): [Getter<T>, Setter<T>];
-  <T = unknown>(): [Getter<T | undefined>, Setter<T | undefined>];
-};
-
 export type CreateProxy = {
   <T extends object>(initialValue: T): T;
   <T = undefined>(): Partial<T>;
-};
-
-export type CreateState = {
-  <T>(initialValue: T): State<T>;
-  <T>(initialValue: T | null): StateView<T | null>;
-  <T = unknown>(): State<T | undefined>;
 };
 
 export class ReactiveScope {
@@ -219,10 +208,24 @@ export const createReactive = () => {
     return state as StateView<Dispose | void>;
   };
 
-  return { proxyScope, createProxy, subscribe, effect };
+  return {
+    notifyChange,
+    reactiveScope,
+    proxyScope,
+    createProxy,
+    subscribe,
+    effect,
+  };
 };
 
-export const { proxyScope, createProxy, subscribe, effect } = createReactive();
+export const {
+  notifyChange,
+  reactiveScope,
+  proxyScope,
+  createProxy,
+  subscribe,
+  effect,
+} = createReactive();
 
 export const derive = <T>(callback: () => T) => {
   const state = createProxy<{ val: T; dispose: void | Dispose }>();
@@ -231,6 +234,12 @@ export const derive = <T>(callback: () => T) => {
   });
   state.dispose = dispose.val;
   return state as StateView<T>;
+};
+
+export type CreateState = {
+  <T>(initialValue: T): State<T>;
+  <T>(initialValue: T | null): StateView<T | null>;
+  <T = unknown>(): State<T | undefined>;
 };
 
 export const createState: CreateState = (value?: unknown) => {
@@ -245,6 +254,11 @@ export const createState: CreateState = (value?: unknown) => {
       proxyValue.value = v;
     },
   };
+};
+
+export type CreateSignal = {
+  <T>(initialValue: T): [Getter<T>, Setter<T>];
+  <T = unknown>(): [Getter<T | undefined>, Setter<T | undefined>];
 };
 
 export const createSignal: CreateSignal = (value?: unknown) => {
@@ -263,4 +277,34 @@ export const createSignal: CreateSignal = (value?: unknown) => {
     proxyData.value = nextValue;
   };
   return [get, set];
+};
+
+export type Ref<T = unknown> = {
+  current: T;
+};
+
+export interface RefView<T> extends Ref<T> {
+  readonly current: T;
+}
+
+export type CreateRef = {
+  <T>(initialValue: T): Ref<T>;
+  <T>(initialValue: T | null): RefView<T | null>;
+  <T = unknown>(): Ref<T | undefined>;
+};
+
+export const createRef: CreateRef = (value?: unknown) => {
+  let _val = value;
+  const state = {
+    get current() {
+      reactiveScope.addDep(state);
+      return _val;
+    },
+    set current(v) {
+      _val = v;
+      notifyChange(state);
+    },
+  };
+
+  return state;
 };
