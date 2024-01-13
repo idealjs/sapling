@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import createElement, { useEffect } from "./createElement";
-import { createState } from "./reactive";
+import { createProxy } from "./reactive";
 
 describe("render test", () => {
   it("children", () => {
@@ -141,7 +141,7 @@ describe("render test", () => {
 
 describe("reactive test", () => {
   it("function children reactive update", () => {
-    const counter = createState(0);
+    const counter = createProxy({ val: 0 });
     const node = createElement("div", {
       children: () => [
         createElement("div", {
@@ -167,7 +167,7 @@ describe("reactive test", () => {
   });
 
   it("function children reactive update list", () => {
-    const list = createState([
+    const list = createProxy([
       {
         key: 1,
         hidden: true,
@@ -187,7 +187,7 @@ describe("reactive test", () => {
     ]);
     const node = createElement("div", {
       children: () =>
-        list.val.map((v) => {
+        list.map((v) => {
           return v.hidden
             ? null
             : createElement("div", {
@@ -206,24 +206,10 @@ describe("reactive test", () => {
         </div>
       </div>
     `);
-    list.val = [
-      {
-        key: 1,
-        hidden: false,
-      },
-      {
-        key: 2,
-        hidden: true,
-      },
-      {
-        key: 3,
-        hidden: false,
-      },
-      {
-        key: 4,
-        hidden: true,
-      },
-    ];
+    list[0].hidden = false;
+    list[1].hidden = true;
+    list[2].hidden = false;
+    list[3].hidden = true;
     expect(node.el).toMatchInlineSnapshot(`
       <div>
         <div>
@@ -234,24 +220,16 @@ describe("reactive test", () => {
         </div>
       </div>
     `);
-    list.val = [
-      {
-        key: 1,
-        hidden: false,
-      },
-      {
-        key: 5,
-        hidden: false,
-      },
-      {
-        key: 6,
-        hidden: false,
-      },
-      {
-        key: 4,
-        hidden: true,
-      },
-    ];
+    list[0].hidden = false;
+    list[1] = {
+      key: 5,
+      hidden: false,
+    };
+    list[2] = {
+      key: 6,
+      hidden: false,
+    };
+
     expect(node.el).toMatchInlineSnapshot(`
       <div>
         <div>
@@ -271,7 +249,7 @@ describe("reactive test", () => {
     vi.useFakeTimers();
     const TodoItem = (props: { name: number }) => {
       const { name } = props;
-      const state = createState(0);
+      const state = createProxy({ val: 0 });
       useEffect(() => {
         const handler = setInterval(() => {
           state.val++;
@@ -287,16 +265,16 @@ describe("reactive test", () => {
       });
     };
 
-    const items = createState<{ id: number }[]>([]);
+    const items = createProxy<{ id: number }[]>([]);
     const TodoList = () => {
       return createElement("div", {
         children: [
           createElement("div", {
-            children: () => `item length ${items.val.length}`,
+            children: () => `item length ${items.length}`,
           }),
           createElement("div", {
             children: () =>
-              items.val.map((item) => {
+              items.map((item) => {
                 return createElement(TodoItem, { name: item.id }, item.id);
               }),
           }),
@@ -306,7 +284,7 @@ describe("reactive test", () => {
     const node = createElement(TodoList);
     for (let index = 0; index < 10; index++) {
       vi.advanceTimersByTime(1000);
-      items.val = [...(items.val ?? []), { id: items.val.length }];
+      items.push({ id: items.length });
     }
     expect(node.el).toMatchInlineSnapshot(`
       <div>
@@ -354,7 +332,7 @@ describe("reactive test", () => {
     vi.useFakeTimers();
     const TodoItem = (props: { name: number }) => {
       const { name } = props;
-      const state = createState(0);
+      const state = createProxy({ val: 0 });
       useEffect(() => {
         const handler = setInterval(() => {
           state.val++;
@@ -370,16 +348,16 @@ describe("reactive test", () => {
       });
     };
 
-    const items = createState<{ id: number }[]>([]);
+    const items = createProxy<{ id: number }[]>([]);
     const TodoList = () => {
       return createElement("div", {
         children: [
           createElement("div", {
-            children: () => `add item ${items.val.length}`,
+            children: () => `add item ${items.length}`,
           }),
           createElement("div", {
             children: () =>
-              items.val.map((item) => {
+              items.map((item) => {
                 return createElement(TodoItem, { name: item.id });
               }),
           }),
@@ -389,7 +367,7 @@ describe("reactive test", () => {
     const node = createElement(TodoList);
     for (let index = 0; index < 10; index++) {
       vi.advanceTimersByTime(1000);
-      items.val = [...(items.val ?? []), { id: items.val.length }];
+      items.push({ id: items.length });
     }
 
     expect(node.el).toMatchInlineSnapshot(`
@@ -437,7 +415,7 @@ describe("reactive test", () => {
   it("Three Todo List with key", async () => {
     vi.useFakeTimers();
 
-    const items = createState<{ id: number; hidden: boolean }[]>([
+    const items = createProxy<{ id: number; hidden: boolean }[]>([
       { id: 1, hidden: false },
       { id: 2, hidden: false },
       { id: 3, hidden: true },
@@ -445,17 +423,12 @@ describe("reactive test", () => {
     ]);
 
     const updateList = () => {
-      items.val = [
-        { id: 1, hidden: false },
-        { id: 2, hidden: false },
-        { id: 3, hidden: false },
-        { id: 4, hidden: false },
-      ];
+      items[2].hidden = false;
     };
 
     const TodoItem = (props: { name: number }) => {
       const { name } = props;
-      const state = createState(0);
+      const state = createProxy({ val: 0 });
       useEffect(() => {
         const handler = setInterval(() => {
           state.val++;
@@ -473,7 +446,7 @@ describe("reactive test", () => {
 
     const TodoItem2 = (props: { name: number }) => {
       const { name } = props;
-      const state = createState(0);
+      const state = createProxy({ val: 0 });
       useEffect(() => {
         const handler = setInterval(() => {
           state.val++;
@@ -493,19 +466,19 @@ describe("reactive test", () => {
       return createElement("div", {
         children: [
           createElement("div", {
-            children: () => `item length ${items.val.length}`,
+            children: () => `item length ${items.length}`,
           }),
           createElement("div", {
             children: [
               () =>
-                items.val.map((item) => {
+                items.map((item) => {
                   return item.hidden
                     ? null
                     : createElement(TodoItem, { name: item.id }, item.id);
                 }),
 
               () =>
-                items.val.map((item) => {
+                items.map((item) => {
                   return item.hidden
                     ? null
                     : createElement(TodoItem2, { name: item.id }, item.id);
@@ -590,8 +563,8 @@ describe("dispose test", () => {
   it("Hidden Function Children, Should not dispose effect", async () => {
     const mockFn = vi.fn();
     const mockDispose = vi.fn();
-    const hidden = createState(false);
-    const counter = createState(0);
+    const hidden = createProxy({ val: false });
+    const counter = createProxy({ val: 0 });
     const App = () => {
       useEffect(() => {
         mockFn(counter.val);
@@ -626,8 +599,8 @@ describe("dispose test", () => {
   });
 
   it("Hidden Counter", async () => {
-    const count = createState(0);
-    const hidden = createState(false);
+    const count = createProxy({ val: 0 });
+    const hidden = createProxy({ val: false });
 
     const mockFn = vi.fn();
     const Counter = () => {
@@ -679,7 +652,7 @@ describe("dispose test", () => {
   });
 
   it("Hidden Counter With Wrapper", async () => {
-    const count = createState(0);
+    const count = createProxy({ val: 0 });
     const mockFn = vi.fn();
     const mockDispose = vi.fn();
     const Counter = () => {
@@ -696,7 +669,7 @@ describe("dispose test", () => {
     const Wrapper = () => {
       return createElement(Counter);
     };
-    const hidden = createState(false);
+    const hidden = createProxy({ val: false });
 
     const App = () => {
       return createElement("div", {
@@ -741,7 +714,7 @@ describe("dispose test", () => {
   });
 
   it("Hidden Counter With Nested Function Children", async () => {
-    const count = createState(0);
+    const count = createProxy({ val: 0 });
     const mockFn = vi.fn();
     const Counter = () => {
       useEffect(() => {
@@ -752,7 +725,7 @@ describe("dispose test", () => {
       });
     };
     const mockFn2 = vi.fn();
-    const hidden = createState(false);
+    const hidden = createProxy({ val: false });
     const InnterWrapper = () => {
       return createElement("div", {
         children: () => {
