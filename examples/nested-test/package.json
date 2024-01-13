@@ -1,0 +1,20 @@
+{
+  "name": "nested-test",
+  "private": true,
+  "version": "0.1.20",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@idealjs/eslint-plugin-sapling": "0.1.20",
+    "@types/node": "^20.10.7",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.11"
+  },
+  "dependencies": {
+    "@idealjs/sapling": "0.1.20"
+  }
+}
