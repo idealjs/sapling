@@ -1,5 +1,5 @@
 import { hyper } from "./hyper";
-import { effect } from "./reactive";
+import { effect, reactiveScope } from "./reactive";
 import {
   InnerElement,
   Key,
@@ -266,8 +266,12 @@ const JSXFactory = () => {
     },
     _self?: unknown,
   ): SaplingElement {
+    const deps = new Set<object>();
+    const resumeDeps = reactiveScope.collectDeps(deps);
+
     const cache = jsxScope.getCache(key);
     if (cache != null) {
+      resumeDeps();
       return cache;
     }
 
@@ -282,6 +286,7 @@ const JSXFactory = () => {
       if (key != null) {
         jsxScope.setCache(key, element);
       }
+      resumeDeps();
       return element;
     }
 
@@ -310,7 +315,7 @@ const JSXFactory = () => {
     if (key != null) {
       jsxScope.setCache(key, currentElement);
     }
-
+    resumeDeps();
     return currentElement;
   }
 
