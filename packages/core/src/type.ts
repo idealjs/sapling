@@ -1,7 +1,7 @@
 import CSS from "csstype";
 
 import type { SaplingNode } from "./createElement";
-import type { State } from "./reactive";
+import { Ref } from "./reactive";
 
 export type TagNameMap = HTMLElementTagNameMap & SVGElementTagNameMap;
 
@@ -518,7 +518,7 @@ export interface DOMAttributes {
 }
 
 export interface ReactiveAttributes<T> {
-  ref?: State<T | null>;
+  ref?: Ref<T | null>;
   children?: SaplingNode;
   key?: Key;
 }
