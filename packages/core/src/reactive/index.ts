@@ -9,13 +9,6 @@ export type Getter<T> = () => T;
 export type Setter<T> = (v: Payload<T>) => void;
 export type Listener = () => void;
 export type Dispose = () => void;
-export type State<T = unknown> = {
-  val: T;
-};
-
-export interface StateView<T> extends State<T> {
-  readonly val: T;
-}
 
 export const isSetterFunction = <T>(
   payload: Payload<T>,
@@ -205,7 +198,7 @@ export const createReactive = () => {
       resume();
     };
     next();
-    return state as StateView<Dispose | void>;
+    return state as { readonly val: Dispose | void };
   };
 
   return {
@@ -233,27 +226,7 @@ export const derive = <T>(callback: () => T) => {
     state.val = callback();
   });
   state.dispose = dispose.val;
-  return state as StateView<T>;
-};
-
-export type CreateState = {
-  <T>(initialValue: T): State<T>;
-  <T>(initialValue: T | null): StateView<T | null>;
-  <T = unknown>(): State<T | undefined>;
-};
-
-export const createState: CreateState = (value?: unknown) => {
-  const proxyValue = createProxy({
-    value,
-  });
-  return {
-    get val() {
-      return proxyValue.value;
-    },
-    set val(v) {
-      proxyValue.value = v;
-    },
-  };
+  return state as { readonly val: T };
 };
 
 export type CreateSignal = {
