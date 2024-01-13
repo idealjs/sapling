@@ -1,12 +1,19 @@
-import { createProxy, createRef, upsert, useEffect } from "@idealjs/sapling";
+import {
+  createProxy,
+  createRef,
+  derive,
+  upsert,
+  useEffect,
+} from "@idealjs/sapling";
 import { JSX } from "@idealjs/sapling/jsx-runtime";
 
 const counter = createProxy({ val: 0 });
 
 const Test = () => {
+  const value = counter.val + 1;
   return (
     <div>
-      {() => counter.val}
+      {() => counter.val + value}
       <button
         onClick={() => {
           counter.val++;
