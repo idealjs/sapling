@@ -1,5 +1,5 @@
 import { hyper } from "./hyper";
-import { effect, StateView } from "./reactive";
+import { effect } from "./reactive";
 import {
   InnerElement,
   Key,
@@ -10,6 +10,8 @@ import {
 } from "./type";
 import isPrimitive from "./utils/isPrimitive";
 import numberConcat from "./utils/numberConcat";
+
+type DisposeStack = { val: Dispose | void }[];
 
 type Dispose = () => void;
 
@@ -25,7 +27,7 @@ export type SaplingNode =
   | null;
 
 export class JSXScope {
-  private disposeStack: StateView<Dispose | void>[] | null = null;
+  private disposeStack: DisposeStack | null = null;
   private nodeCache: Map<Key, SaplingElement> | null = null;
 
   constructor() {}
@@ -41,7 +43,7 @@ export class JSXScope {
     this.nodeCache?.set(key, value);
   };
 
-  public collectDispose = (disposeStack: StateView<Dispose | void>[]) => {
+  public collectDispose = (disposeStack: DisposeStack) => {
     const temp = this.disposeStack;
     this.disposeStack = disposeStack;
     return () => {
@@ -57,7 +59,7 @@ export class JSXScope {
     };
   };
 
-  public addDispose = (dispose: StateView<Dispose | void>) => {
+  public addDispose = (dispose: { val: Dispose | void }) => {
     this.disposeStack?.push(dispose);
   };
 
@@ -66,7 +68,7 @@ export class JSXScope {
 
 export class SaplingElement {
   private _el: Node | null = null;
-  private disposeStack: StateView<Dispose | void>[] = [];
+  private disposeStack: DisposeStack = [];
   private children: Set<SaplingElement> = new Set();
   private parent: SaplingElement | null = null;
 
@@ -76,7 +78,7 @@ export class SaplingElement {
 
   constructor(params?: {
     node?: Node | null;
-    disposeStack?: StateView<Dispose | void>[];
+    disposeStack?: DisposeStack;
     children?: Set<SaplingElement> | null;
   }) {
     if (params?.node != null) {
@@ -161,7 +163,7 @@ export class SaplingElement {
     });
   };
 
-  public mergeDisposeStack = (disposeStack: StateView<Dispose | void>[]) => {
+  public mergeDisposeStack = (disposeStack: DisposeStack) => {
     this.disposeStack.push(...disposeStack);
     return this;
   };
@@ -271,7 +273,7 @@ const JSXFactory = () => {
 
     if (typeof jsxTag === "function") {
       // collect user component effect's dispose
-      const disposeStack: StateView<void | Dispose>[] = [];
+      const disposeStack: DisposeStack = [];
       const resume = jsxScope.collectDispose(disposeStack);
       const node = jsxTag(options as P);
       resume();
@@ -289,7 +291,7 @@ const JSXFactory = () => {
 
     const el = hyper(jsxTag, props);
     if (!(el instanceof DocumentFragment) && ref != null) {
-      ref.val = el;
+      ref.current = el;
     }
 
     const currentElement = new SaplingElement({

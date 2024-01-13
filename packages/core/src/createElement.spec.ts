@@ -1,14 +1,34 @@
 import { describe, expect, it, vi } from "vitest";
 
 import createElement, { useEffect } from "./createElement";
-import { createProxy } from "./reactive";
+import { createProxy, createRef } from "./reactive";
 
 describe("render test", () => {
   it("children", () => {
     const node = createElement("div", {
       children: [createElement("div")],
     });
+
     expect(node.el).toMatchInlineSnapshot(`
+      <div>
+        <div />
+      </div>
+    `);
+  });
+
+  it("ref test", () => {
+    const ref = createRef<HTMLDivElement>(null);
+    const node = createElement("div", {
+      ref: ref,
+      children: [createElement("div")],
+    });
+
+    expect(node.el).toMatchInlineSnapshot(`
+      <div>
+        <div />
+      </div>
+    `);
+    expect(ref.current).toMatchInlineSnapshot(`
       <div>
         <div />
       </div>
