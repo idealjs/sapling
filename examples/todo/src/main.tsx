@@ -1,9 +1,9 @@
-import { createState, upsert, useEffect } from "@idealjs/sapling";
+import { createProxy, createRef, upsert, useEffect } from "@idealjs/sapling";
 
 const TodoItem = (props: { name: number; count: number }) => {
   let { name, count } = props;
-  const state = createState(0);
-  const ref = createState<HTMLParagraphElement>(null);
+  const state = createProxy({ val: 0 });
+  const ref = createRef<HTMLParagraphElement>(null);
   useEffect(() => {
     const handler = setInterval(() => {
       state.val++;
@@ -25,7 +25,7 @@ const TodoItem = (props: { name: number; count: number }) => {
 
       <button
         onClick={() => {
-          ref.val?.appendChild(document.createElement("div"));
+          ref.current?.appendChild(document.createElement("div"));
         }}
       >
         test element function
@@ -43,7 +43,9 @@ const TodoItem = (props: { name: number; count: number }) => {
 };
 
 const Component = () => {
-  const items = createState<{ id: number; count: number }[]>([]);
+  const items = createProxy<{ val: { id: number; count: number }[] }>({
+    val: [],
+  });
   return (
     <div>
       <button
