@@ -33,6 +33,13 @@ export class ReactiveScope {
       this.deps = temp;
     };
   };
+  public pauseCollectDeps = () => {
+    const temp = this.deps;
+    this.deps = null;
+    return () => {
+      this.deps = temp;
+    };
+  };
   public addDep = (getter: object) => {
     this.deps?.add(getter);
   };
