@@ -104,8 +104,16 @@ export class SaplingElement {
     this.parent?.children.delete(this);
   };
 
-  public append = (child: SaplingElement) => {
-    if (child.el != null) {
+  public mount = (
+    child: SaplingElement,
+    prev: SaplingElement | null = null,
+  ): SaplingElement | null => {
+    if (child.el != null && prev?.el != null) {
+      this.el?.insertBefore(child.el, prev.el.nextSibling);
+      this.children.add(child);
+      return child;
+    }
+    if (child.el != null && prev?.el == null) {
       if (child.el.parentElement != null) {
         // skip append for optimization
         return child;
@@ -113,37 +121,13 @@ export class SaplingElement {
       this.el?.appendChild(child.el);
       this.children.add(child);
       return child;
-    } else {
-      return Array.from(child.children).reduce(
-        (p: SaplingElement | null, c): SaplingElement | null => {
-          if (c.el == null) {
-            return this.append(c) ?? p;
-          }
-          if (c.el != null) {
-            if (c.el?.parentElement != null) {
-              return c;
-            }
-            if (p == null) {
-              // start from here
-              this.el?.appendChild(c.el);
-            }
-            if (p?.el != null) {
-              // continue insert
-              if (p.el.nextSibling != null) {
-                this.el?.insertBefore(c.el, p.el.nextSibling);
-              } else {
-                this.el?.appendChild(c.el);
-              }
-            }
-            this.children.add(c);
-            c.parent = this;
-          }
-
-          return c;
-        },
-        null,
-      );
     }
+    return Array.from(child.children).reduce(
+      (p: SaplingElement | null, c): SaplingElement | null => {
+        return this.mount(c, p);
+      },
+      prev,
+    );
   };
 
   public hasChild = (childElement: SaplingElement): boolean => {
@@ -266,12 +250,11 @@ const JSXFactory = () => {
     },
     _self?: unknown,
   ): SaplingElement {
-    const deps = new Set<object>();
-    const resumeDeps = reactiveScope.collectDeps(deps);
+    const resumeCollectDeps = reactiveScope.pauseCollectDeps();
 
     const cache = jsxScope.getCache(key);
     if (cache != null) {
-      resumeDeps();
+      resumeCollectDeps();
       return cache;
     }
 
@@ -286,7 +269,7 @@ const JSXFactory = () => {
       if (key != null) {
         jsxScope.setCache(key, element);
       }
-      resumeDeps();
+      resumeCollectDeps();
       return element;
     }
 
@@ -308,14 +291,14 @@ const JSXFactory = () => {
       effect(() => {
         const element = prepareSaplingElement(children, nodeCaches);
         currentElement.disposeElementNotIn(element);
-        currentElement.append(element);
+        currentElement.mount(element);
       });
     }
 
     if (key != null) {
       jsxScope.setCache(key, currentElement);
     }
-    resumeDeps();
+    resumeCollectDeps();
     return currentElement;
   }
 

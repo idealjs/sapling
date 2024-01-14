@@ -102,6 +102,73 @@ describe("render test", () => {
     `);
   });
 
+  it("function children update at start", () => {
+    const counter = createProxy({ val: 0 });
+    const Test = () => {
+      return createElement("div", {
+        children: [
+          () => counter.val,
+          createElement("div", { children: "hello" }),
+        ],
+      });
+    };
+    const node = createElement(Test);
+    expect(node.el).toMatchInlineSnapshot(`
+      <div>
+        0
+        <div>
+          hello
+        </div>
+      </div>
+    `);
+    counter.val++;
+    expect(node.el).toMatchInlineSnapshot(`
+      <div>
+        1
+        <div>
+          hello
+        </div>
+      </div>
+    `);
+  });
+
+  it("function children update", () => {
+    const counter = createProxy({ val: 0 });
+    const Test = () => {
+      return createElement("div", {
+        children: [
+          createElement("div", { children: "hello" }),
+          () => counter.val,
+          createElement("div", { children: "hello" }),
+        ],
+      });
+    };
+    const node = createElement(Test);
+    expect(node.el).toMatchInlineSnapshot(`
+      <div>
+        <div>
+          hello
+        </div>
+        0
+        <div>
+          hello
+        </div>
+      </div>
+    `);
+    counter.val++;
+    expect(node.el).toMatchInlineSnapshot(`
+      <div>
+        <div>
+          hello
+        </div>
+        1
+        <div>
+          hello
+        </div>
+      </div>
+    `);
+  });
+
   it("component return array", () => {
     const Component = () => {
       return [
