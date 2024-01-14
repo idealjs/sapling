@@ -109,6 +109,10 @@ export class SaplingElement {
     prev: SaplingElement | null = null,
   ): SaplingElement | null => {
     if (child.el != null && prev?.el != null) {
+      if (child.el.parentElement != null) {
+        // skip append for optimization
+        return child;
+      }
       this.el?.insertBefore(child.el, prev.el.nextSibling);
       this.children.add(child);
       return child;
@@ -118,7 +122,11 @@ export class SaplingElement {
         // skip append for optimization
         return child;
       }
-      this.el?.appendChild(child.el);
+      if (this.el?.firstChild != null) {
+        this.el?.insertBefore(child.el, this.el?.firstChild);
+      } else {
+        this.el?.appendChild(child.el);
+      }
       this.children.add(child);
       return child;
     }
