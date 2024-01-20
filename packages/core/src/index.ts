@@ -5,5 +5,5 @@ export {
   default as jsxDEV,
 } from "./createElement";
 export * from "./hyper";
-export * from "./reactive";
 export * from "./type";
+export * from "@idealjs/sapling-reactive";

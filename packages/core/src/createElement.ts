@@ -1,5 +1,6 @@
+import { effect, reactiveScope } from "@idealjs/sapling-reactive";
+
 import { hyper } from "./hyper";
-import { effect, reactiveScope } from "./reactive";
 import {
   InnerElement,
   Key,

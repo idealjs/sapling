@@ -1,7 +1,7 @@
+import { Ref } from "@idealjs/sapling-reactive";
 import CSS from "csstype";
 
 import type { SaplingNode } from "./createElement";
-import { Ref } from "./reactive";
 
 export type TagNameMap = HTMLElementTagNameMap & SVGElementTagNameMap;
 

@@ -1,7 +1,7 @@
+import { createProxy, createRef } from "@idealjs/sapling-reactive";
 import { describe, expect, it, vi } from "vitest";
 
 import createElement, { useEffect } from "./createElement";
-import { createProxy, createRef } from "./reactive";
 
 describe("render test", () => {
   it("children", () => {

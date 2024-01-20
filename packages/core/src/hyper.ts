@@ -1,6 +1,6 @@
+import { effect } from "@idealjs/sapling-reactive";
 import * as CSS from "csstype";
 
-import { effect } from "./reactive";
 import { TagNameMap } from "./type";
 
 const styleToString = (style: CSS.Properties) => {

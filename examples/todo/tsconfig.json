@@ -5,7 +5,8 @@
     "jsx": "react-jsx",
     "jsxImportSource": "@idealjs/sapling",
     "paths": {
-      "@idealjs/sapling/*": ["../../packages/core/src/*"]
+      "@idealjs/sapling/*": ["../../packages/core/src/*"],
+      "@idealjs/sapling-reactive/*": ["../../packages/reactive/src/*"]
     }
   },
   "include": ["src"],
@@ -13,6 +14,9 @@
   "references": [
     {
       "path": "../../packages/core"
+    },
+    {
+      "path": "../../packages/reactive"
     }
   ]
 }

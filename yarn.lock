@@ -476,10 +476,26 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@idealjs/sapling-reactive@workspace:^, @idealjs/sapling-reactive@workspace:packages/reactive":
+  version: 0.0.0-use.local
+  resolution: "@idealjs/sapling-reactive@workspace:packages/reactive"
+  dependencies:
+    esbuild: "npm:^0.19.11"
+    jsdom: "npm:^23.2.0"
+    rimraf: "npm:^5.0.5"
+    rollup: "npm:^4.9.4"
+    rollup-plugin-esbuild: "npm:^6.1.0"
+    rollup-plugin-visualizer: "npm:^5.12.0"
+    typescript: "npm:^5.3.3"
+    vitest: "npm:^1.1.3"
+  languageName: unknown
+  linkType: soft
+
 "@idealjs/sapling@npm:0.1.21, @idealjs/sapling@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@idealjs/sapling@workspace:packages/core"
   dependencies:
+    "@idealjs/sapling-reactive": "workspace:^"
     "@types/lodash.chunk": "npm:^4.2.9"
     csstype: "npm:^3.1.3"
     esbuild: "npm:^0.19.11"
