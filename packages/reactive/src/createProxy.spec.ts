@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createProxy, derive, effect } from ".";
+import { createProxy, effect } from "./createReactive";
+import { derive } from "./derive";
 
 describe("derive with createProxy", () => {
   it("derive val", () => {

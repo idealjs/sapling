@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createProxy, subscribe } from ".";
+import { createProxy, subscribe } from "./createReactive";
 
 describe("subscribe with createProxy", () => {
   it("get null value", () => {

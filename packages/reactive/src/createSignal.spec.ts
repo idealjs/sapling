@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createSignal, derive, effect, subscribe } from ".";
+import { effect } from "./createReactive";
+import { createSignal } from "./createSignal";
+import { derive } from "./derive";
 
 describe("derive with createSignal", () => {
   it("derive val", () => {
