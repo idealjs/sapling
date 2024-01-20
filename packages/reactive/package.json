@@ -1,6 +1,6 @@
 {
   "name": "@idealjs/sapling-reactive",
-  "version": "0.1.22",
+  "version": "0.1.23",
   "type": "module",
   "types": "./dist/index.d.ts",
   "exports": {
