@@ -22,6 +22,7 @@ jobs:
       - name: Publish Package
         run: |
           yarn workspace @idealjs/sapling npm publish
+          yarn workspace @idealjs/sapling-reactive npm publish
           yarn workspace @idealjs/eslint-plugin-sapling npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
