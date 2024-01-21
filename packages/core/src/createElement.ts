@@ -1,3 +1,4 @@
+"use "
 import { effect, reactiveScope } from "@idealjs/sapling-reactive";
 
 import { hyper } from "./hyper";
