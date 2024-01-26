@@ -9,7 +9,7 @@ export type Primitive = string | number | boolean | bigint;
 
 export type OrFunction<T> = T | (() => T);
 
-export type Key = number | string | symbol;
+export type Key = number | string | symbol | bigint | boolean;
 
 export type Arrify<T> = T extends [] ? T : T[];
 

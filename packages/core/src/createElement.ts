@@ -1,4 +1,3 @@
-"use "
 import { effect, reactiveScope } from "@idealjs/sapling-reactive";
 
 import { hyper } from "./hyper";
@@ -195,18 +194,24 @@ const JSXFactory = () => {
       });
     }
     if (isPrimitive(saplingNode)) {
-      return primitiveToJSXNode(saplingNode);
+      const nodeCache =
+        nodeCaches != null
+          ? (nodeCaches[cacheKey] ||= new Map<Key, SaplingElement>())
+          : null;
+
+      const saplingElement =
+        nodeCache?.get(saplingNode) || primitiveToJSXNode(saplingNode);
+
+      nodeCache?.set(saplingNode, saplingElement);
+      return saplingElement;
     }
     if (typeof saplingNode === "function") {
-      let resume;
-
-      if (nodeCaches != null) {
-        const nodeCache = (nodeCaches[cacheKey] ||= new Map<
-          Key,
-          SaplingElement
-        >());
-        resume = jsxScope.collectNodeCache(nodeCache);
-      }
+      const nodeCache =
+        nodeCaches == null
+          ? null
+          : (nodeCaches[cacheKey] ||= new Map<Key, SaplingElement>());
+      const resume =
+        nodeCache != null ? jsxScope.collectNodeCache(nodeCache) : null;
 
       const element = prepareSaplingElement(saplingNode(), nodeCaches);
       resume?.();

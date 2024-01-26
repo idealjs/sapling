@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import type { JSXElementType, SaplingElement } from "./createElement";
-import type { InnerElement, Key, TagOption } from "./type";
+import type { InnerElement, TagOption } from "./type";
 
 export namespace JSX {
   export type ElementType = string | JSXElementType<any>;
@@ -16,7 +16,7 @@ export namespace JSX {
   export interface Element extends SaplingElement {}
 
   export interface IntrinsicAttributes {
-    key?: Key;
+    key?: number | string | symbol;
   }
 
   export type IntrinsicElements = {

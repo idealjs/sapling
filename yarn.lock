@@ -2009,6 +2009,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"basic-render@workspace:examples/basic-render":
+  version: 0.0.0-use.local
+  resolution: "basic-render@workspace:examples/basic-render"
+  dependencies:
+    "@idealjs/eslint-plugin-sapling": "npm:0.1.23"
+    "@idealjs/sapling": "npm:0.1.23"
+    "@types/node": "npm:^20.10.7"
+    typescript: "npm:^5.3.3"
+    vite: "npm:^5.0.11"
+  languageName: unknown
+  linkType: soft
+
 "before-after-hook@npm:^2.2.0":
   version: 2.2.3
   resolution: "before-after-hook@npm:2.2.3"
@@ -7827,6 +7839,18 @@ __metadata:
   checksum: ecd8469fe0db28e7de9e5289d32bd1b6ba8f7183db34f3bfc4ca53c49891c2d6aa05f3fb3936a81285a905cc509fb641a0c3fc131ec786167eff41236ae32e60
   languageName: node
   linkType: hard
+
+"unmount@workspace:examples/unmount":
+  version: 0.0.0-use.local
+  resolution: "unmount@workspace:examples/unmount"
+  dependencies:
+    "@idealjs/eslint-plugin-sapling": "npm:0.1.23"
+    "@idealjs/sapling": "npm:0.1.23"
+    "@types/node": "npm:^20.10.7"
+    typescript: "npm:^5.3.3"
+    vite: "npm:^5.0.11"
+  languageName: unknown
+  linkType: soft
 
 "upath@npm:2.0.1":
   version: 2.0.1
