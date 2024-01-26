@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "jsx": "react-jsx",
+    "jsxImportSource": "@idealjs/sapling",
+    "paths": {
+      "@idealjs/sapling/*": ["../../packages/core/src/*"],
+      "@idealjs/sapling-reactive/*": ["../../packages/reactive/src/*"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules"],
+  "references": [
+    {
+      "path": "../../packages/core"
+    },
+    {
+      "path": "../../packages/reactive"
+    }
+  ]
+}
