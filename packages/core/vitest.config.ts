@@ -7,10 +7,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@idealjs/sapling-reactive": path.resolve(
-        __dirname,
-        "../../packages/reactive/src",
-      ),
+      "@idealjs/sapling-reactive": path.resolve(__dirname, "../reactive/src"),
     },
   },
 });

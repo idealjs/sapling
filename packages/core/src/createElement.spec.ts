@@ -2,6 +2,7 @@ import { createProxy, createRef } from "@idealjs/sapling-reactive";
 import { describe, expect, it, vi } from "vitest";
 
 import createElement, { useEffect } from "./createElement";
+import createRoot from "./createRoot";
 
 describe("render test", () => {
   it("children", () => {
@@ -102,9 +103,9 @@ describe("render test", () => {
     `);
   });
 
-  it("function children update at start", () => {
+  it("function children update", () => {
     const counter = createProxy({ val: 0 });
-    const Test = () => {
+    const App = () => {
       return createElement("div", {
         children: [
           () => counter.val,
@@ -112,29 +113,35 @@ describe("render test", () => {
         ],
       });
     };
-    const node = createElement(Test);
-    expect(node.el).toMatchInlineSnapshot(`
-      <div>
-        0
+    const body = document.createElement("body");
+    createRoot(body).render(createElement(App));
+
+    expect(body).toMatchInlineSnapshot(`
+      <body>
         <div>
-          hello
+          0
+          <div>
+            hello
+          </div>
         </div>
-      </div>
+      </body>
     `);
     counter.val++;
-    expect(node.el).toMatchInlineSnapshot(`
-      <div>
-        1
+    expect(body).toMatchInlineSnapshot(`
+      <body>
         <div>
-          hello
+          1
+          <div>
+            hello
+          </div>
         </div>
-      </div>
+      </body>
     `);
   });
 
-  it("function children update", () => {
+  it("function children update at start", () => {
     const counter = createProxy({ val: 0 });
-    const Test = () => {
+    const App = () => {
       return createElement("div", {
         children: [
           createElement("div", { children: "hello" }),
@@ -143,29 +150,35 @@ describe("render test", () => {
         ],
       });
     };
-    const node = createElement(Test);
-    expect(node.el).toMatchInlineSnapshot(`
-      <div>
+    const body = document.createElement("body");
+    createRoot(body).render(createElement(App));
+
+    expect(body).toMatchInlineSnapshot(`
+      <body>
         <div>
-          hello
+          <div>
+            hello
+          </div>
+          0
+          <div>
+            hello
+          </div>
         </div>
-        0
-        <div>
-          hello
-        </div>
-      </div>
+      </body>
     `);
     counter.val++;
-    expect(node.el).toMatchInlineSnapshot(`
-      <div>
+    expect(body).toMatchInlineSnapshot(`
+      <body>
         <div>
-          hello
+          <div>
+            hello
+          </div>
+          1
+          <div>
+            hello
+          </div>
         </div>
-        1
-        <div>
-          hello
-        </div>
-      </div>
+      </body>
     `);
   });
 
@@ -353,7 +366,7 @@ describe("reactive test", () => {
     };
 
     const items = createProxy<{ id: number }[]>([]);
-    const TodoList = () => {
+    const App = () => {
       return createElement("div", {
         children: [
           createElement("div", {
@@ -368,49 +381,54 @@ describe("reactive test", () => {
         ],
       });
     };
-    const node = createElement(TodoList);
+
+    const body = document.createElement("body");
+    createRoot(body).render(createElement(App));
+
     for (let index = 0; index < 10; index++) {
       vi.advanceTimersByTime(1000);
       items.push({ id: items.length });
     }
-    expect(node.el).toMatchInlineSnapshot(`
-      <div>
+    expect(body).toMatchInlineSnapshot(`
+      <body>
         <div>
-          item length 10
+          <div>
+            item length 10
+          </div>
+          <div>
+            <p>
+              0 counter 9
+            </p>
+            <p>
+              1 counter 8
+            </p>
+            <p>
+              2 counter 7
+            </p>
+            <p>
+              3 counter 6
+            </p>
+            <p>
+              4 counter 5
+            </p>
+            <p>
+              5 counter 4
+            </p>
+            <p>
+              6 counter 3
+            </p>
+            <p>
+              7 counter 2
+            </p>
+            <p>
+              8 counter 1
+            </p>
+            <p>
+              9 counter 0
+            </p>
+          </div>
         </div>
-        <div>
-          <p>
-            0 counter 9
-          </p>
-          <p>
-            1 counter 8
-          </p>
-          <p>
-            2 counter 7
-          </p>
-          <p>
-            3 counter 6
-          </p>
-          <p>
-            4 counter 5
-          </p>
-          <p>
-            5 counter 4
-          </p>
-          <p>
-            6 counter 3
-          </p>
-          <p>
-            7 counter 2
-          </p>
-          <p>
-            8 counter 1
-          </p>
-          <p>
-            9 counter 0
-          </p>
-        </div>
-      </div>
+      </body>
     `);
     vi.useRealTimers();
   });
@@ -436,7 +454,7 @@ describe("reactive test", () => {
     };
 
     const items = createProxy<{ id: number }[]>([]);
-    const TodoList = () => {
+    const App = () => {
       return createElement("div", {
         children: [
           createElement("div", {
@@ -451,50 +469,55 @@ describe("reactive test", () => {
         ],
       });
     };
-    const node = createElement(TodoList);
+
+    const body = document.createElement("body");
+    createRoot(body).render(createElement(App));
+
     for (let index = 0; index < 10; index++) {
       vi.advanceTimersByTime(1000);
       items.push({ id: items.length });
     }
 
-    expect(node.el).toMatchInlineSnapshot(`
-      <div>
+    expect(body).toMatchInlineSnapshot(`
+      <body>
         <div>
-          add item 10
+          <div>
+            add item 10
+          </div>
+          <div>
+            <p>
+              0 counter 0
+            </p>
+            <p>
+              1 counter 0
+            </p>
+            <p>
+              2 counter 0
+            </p>
+            <p>
+              3 counter 0
+            </p>
+            <p>
+              4 counter 0
+            </p>
+            <p>
+              5 counter 0
+            </p>
+            <p>
+              6 counter 0
+            </p>
+            <p>
+              7 counter 0
+            </p>
+            <p>
+              8 counter 0
+            </p>
+            <p>
+              9 counter 0
+            </p>
+          </div>
         </div>
-        <div>
-          <p>
-            0 counter 0
-          </p>
-          <p>
-            1 counter 0
-          </p>
-          <p>
-            2 counter 0
-          </p>
-          <p>
-            3 counter 0
-          </p>
-          <p>
-            4 counter 0
-          </p>
-          <p>
-            5 counter 0
-          </p>
-          <p>
-            6 counter 0
-          </p>
-          <p>
-            7 counter 0
-          </p>
-          <p>
-            8 counter 0
-          </p>
-          <p>
-            9 counter 0
-          </p>
-        </div>
-      </div>
+      </body>
     `);
     vi.useRealTimers();
   });
@@ -549,7 +572,7 @@ describe("reactive test", () => {
       });
     };
 
-    const TodoList = () => {
+    const App = () => {
       return createElement("div", {
         children: [
           createElement("div", {
@@ -575,72 +598,78 @@ describe("reactive test", () => {
         ],
       });
     };
-    const node = createElement(TodoList);
 
-    expect(node.el).toMatchInlineSnapshot(`
-      <div>
+    const body = document.createElement("body");
+    createRoot(body).render(createElement(App));
+
+    expect(body).toMatchInlineSnapshot(`
+      <body>
         <div>
-          item length 4
+          <div>
+            item length 4
+          </div>
+          <div>
+            <p>
+              TodoItem1 1 counter 0
+            </p>
+            <p>
+              TodoItem1 2 counter 0
+            </p>
+            <p>
+              TodoItem1 4 counter 0
+            </p>
+            <p>
+              TodoItem2 1 counter 0
+            </p>
+            <p>
+              TodoItem2 2 counter 0
+            </p>
+            <p>
+              TodoItem2 4 counter 0
+            </p>
+          </div>
         </div>
-        <div>
-          <p>
-            TodoItem1 1 counter 0
-          </p>
-          <p>
-            TodoItem1 2 counter 0
-          </p>
-          <p>
-            TodoItem1 4 counter 0
-          </p>
-          <p>
-            TodoItem2 1 counter 0
-          </p>
-          <p>
-            TodoItem2 2 counter 0
-          </p>
-          <p>
-            TodoItem2 4 counter 0
-          </p>
-        </div>
-      </div>
+      </body>
     `);
 
     vi.advanceTimersByTime(5000);
     updateList();
     vi.advanceTimersByTime(5000);
 
-    expect(node.el).toMatchInlineSnapshot(`
-      <div>
+    expect(body).toMatchInlineSnapshot(`
+      <body>
         <div>
-          item length 4
+          <div>
+            item length 4
+          </div>
+          <div>
+            <p>
+              TodoItem1 1 counter 10
+            </p>
+            <p>
+              TodoItem1 2 counter 10
+            </p>
+            <p>
+              TodoItem1 3 counter 5
+            </p>
+            <p>
+              TodoItem1 4 counter 10
+            </p>
+            <p>
+              TodoItem2 1 counter 10
+            </p>
+            <p>
+              TodoItem2 2 counter 10
+            </p>
+            <p>
+              TodoItem2 3 counter 5
+            </p>
+            <p>
+              TodoItem2 4 counter 10
+            </p>
+          </div>
         </div>
-        <div>
-          <p>
-            TodoItem1 1 counter 10
-          </p>
-          <p>
-            TodoItem1 2 counter 10
-          </p>
-          <p>
-            TodoItem1 3 counter 5
-          </p>
-          <p>
-            TodoItem1 4 counter 10
-          </p>
-          <p>
-            TodoItem2 1 counter 10
-          </p>
-          <p>
-            TodoItem2 2 counter 10
-          </p>
-          <p>
-            TodoItem2 3 counter 5
-          </p>
-          <p>
-            TodoItem2 4 counter 10
-          </p>
-        </div>
-      </div>
+      </body>
     `);
     vi.useRealTimers();
   });
@@ -666,13 +695,16 @@ describe("dispose test", () => {
         },
       });
     };
-    const node = createElement(App);
-    expect(node.el).toMatchInlineSnapshot(`
-      <div>
+    const body = document.createElement("body");
+    createRoot(body).render(createElement(App));
+    expect(body).toMatchInlineSnapshot(`
+      <body>
         <div>
-          hello
+          <div>
+            hello
+          </div>
         </div>
-      </div>
+      </body>
     `);
     expect(mockFn).toBeCalledTimes(1);
     counter.val++;
@@ -711,29 +743,39 @@ describe("dispose test", () => {
         },
       });
     };
-    const node = createElement(App);
-    expect(node.el).toMatchInlineSnapshot(`
-      <div>
+    const body = document.createElement("body");
+    createRoot(body).render(createElement(App));
+
+    expect(body).toMatchInlineSnapshot(`
+      <body>
         <div>
-          0
+          <div>
+            0
+          </div>
         </div>
-      </div>
+      </body>
     `);
     expect(mockFn).toBeCalledTimes(1);
 
     count.val++;
-    expect(node.el).toMatchInlineSnapshot(`
-      <div>
+    expect(body).toMatchInlineSnapshot(`
+      <body>
         <div>
-          1
+          <div>
+            1
+          </div>
         </div>
-      </div>
+      </body>
     `);
     expect(mockFn).toBeCalledTimes(2);
 
     hidden.val = !hidden.val;
     count.val++;
-    expect(node.el).toMatchInlineSnapshot("<div />");
+    expect(body).toMatchInlineSnapshot(`
+      <body>
+        <div />
+      </body>
+    `);
     expect(mockFn).toBeCalledTimes(2);
     expect(count.val).toBe(2);
   });
@@ -766,37 +808,53 @@ describe("dispose test", () => {
       });
     };
 
-    const node = createElement(App);
-    expect(node.el).toMatchInlineSnapshot(`
-      <div>
+    const body = document.createElement("body");
+    createRoot(body).render(createElement(App));
+
+    expect(body).toMatchInlineSnapshot(`
+      <body>
         <div>
-          0
+          <div>
+            0
+          </div>
         </div>
-      </div>
+      </body>
     `);
     count.val++;
-    expect(node.el).toMatchInlineSnapshot(`
-      <div>
+    expect(body).toMatchInlineSnapshot(`
+      <body>
         <div>
-          1
+          <div>
+            1
+          </div>
         </div>
-      </div>
+      </body>
     `);
     count.val++;
-    expect(node.el).toMatchInlineSnapshot(`
-      <div>
+    expect(body).toMatchInlineSnapshot(`
+      <body>
         <div>
-          2
+          <div>
+            2
+          </div>
         </div>
-      </div>
+      </body>
     `);
     hidden.val = true;
     expect(mockDispose).toBeCalledTimes(1);
-    expect(node.el).toMatchInlineSnapshot("<div />");
+    expect(body).toMatchInlineSnapshot(`
+      <body>
+        <div />
+      </body>
+    `);
     expect(mockFn).toBeCalledTimes(3);
     count.val++;
     expect(mockDispose).toBeCalledTimes(1);
-    expect(node.el).toMatchInlineSnapshot("<div />");
+    expect(body).toMatchInlineSnapshot(`
+      <body>
+        <div />
+      </body>
+    `);
     expect(mockFn).toBeCalledTimes(3);
   });
 
@@ -831,33 +889,43 @@ describe("dispose test", () => {
         },
       });
     };
-    const node = createElement(App);
-    expect(node.el).toMatchInlineSnapshot(`
-      <div>
+    const body = document.createElement("body");
+    createRoot(body).render(createElement(App));
+
+    expect(body).toMatchInlineSnapshot(`
+      <body>
         <div>
           <div>
-            0
+            <div>
+              0
+            </div>
           </div>
         </div>
-      </div>
+      </body>
     `);
     expect(mockFn).toBeCalledTimes(1);
 
     count.val++;
-    expect(node.el).toMatchInlineSnapshot(`
-      <div>
+    expect(body).toMatchInlineSnapshot(`
+      <body>
         <div>
           <div>
-            1
+            <div>
+              1
+            </div>
           </div>
         </div>
-      </div>
+      </body>
     `);
     expect(mockFn).toBeCalledTimes(2);
 
     hidden.val = true;
     count.val++;
-    expect(node.el).toMatchInlineSnapshot("<div />");
+    expect(body).toMatchInlineSnapshot(`
+      <body>
+        <div />
+      </body>
+    `);
     expect(mockFn).toBeCalledTimes(2);
     expect(count.val).toBe(2);
   });

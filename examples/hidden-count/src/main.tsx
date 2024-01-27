@@ -1,9 +1,9 @@
-import { createState, upsert, useEffect } from "@idealjs/sapling";
+import { createProxy, createRoot, useEffect } from "@idealjs/sapling";
 
-const count = createState(0);
+const count = createProxy({ val: 0 });
 
-const Hello = () => {
-  const hidden = createState(false);
+const App = () => {
+  const hidden = createProxy({ val: false });
 
   return (
     <div>
@@ -45,6 +45,5 @@ const Counter = () => {
   });
   return <div>{() => count.val}</div>;
 };
-const root = document.getElementById("app")!;
 
-upsert(root, <Hello />);
+createRoot(document.getElementById("app")!).render(<App />);

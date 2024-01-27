@@ -1,7 +1,9 @@
-import { effect, reactiveScope } from "@idealjs/sapling-reactive";
+import { Dispose, effect, reactiveScope } from "@idealjs/sapling-reactive";
 
 import { hyper } from "./hyper";
+import TreeNode from "./TreeNode";
 import {
+  DisposeStack,
   InnerElement,
   Key,
   Primitive,
@@ -11,10 +13,6 @@ import {
 } from "./type";
 import isPrimitive from "./utils/isPrimitive";
 import numberConcat from "./utils/numberConcat";
-
-type DisposeStack = { val: Dispose | void }[];
-
-type Dispose = () => void;
 
 type JSXTag<P> = keyof TagNameMap | ((props: P) => SaplingNode);
 
@@ -67,100 +65,7 @@ export class JSXScope {
   public getDisposeStack = () => this.disposeStack ?? [];
 }
 
-export class SaplingElement {
-  private _el: Node | null = null;
-  private disposeStack: DisposeStack = [];
-  private children: Set<SaplingElement> = new Set();
-  private parent: SaplingElement | null = null;
-
-  public get el() {
-    return this._el;
-  }
-
-  constructor(params?: {
-    node?: Node | null;
-    disposeStack?: DisposeStack;
-    children?: Set<SaplingElement> | null;
-  }) {
-    if (params?.node != null) {
-      this._el = params.node;
-    }
-    if (params?.disposeStack != null) {
-      this.disposeStack = params.disposeStack;
-    }
-    if (params?.children != null) {
-      this.children = params.children;
-      Array.from(params.children).forEach(
-        (child) => child.el != null && this._el?.appendChild(child.el),
-      );
-    }
-  }
-
-  public dispose = () => {
-    this.el?.parentNode?.removeChild(this.el);
-    Array.from(this.children).forEach((child) => {
-      child.dispose();
-    });
-    this.disposeStack.forEach((dispose) => dispose.val?.());
-    this.parent?.children.delete(this);
-  };
-
-  public mount = (
-    child: SaplingElement,
-    prev: SaplingElement | null = null,
-  ): SaplingElement | null => {
-    if (child.el != null && prev?.el != null) {
-      if (child.el.parentElement != null) {
-        // skip append for optimization
-        return child;
-      }
-      this.el?.insertBefore(child.el, prev.el.nextSibling);
-      this.children.add(child);
-      return child;
-    }
-    if (child.el != null && prev?.el == null) {
-      if (child.el.parentElement != null) {
-        // skip append for optimization
-        return child;
-      }
-      if (this.el?.firstChild != null) {
-        this.el?.insertBefore(child.el, this.el?.firstChild);
-      } else {
-        this.el?.appendChild(child.el);
-      }
-      this.children.add(child);
-      return child;
-    }
-    return Array.from(child.children).reduce(
-      (p: SaplingElement | null, c): SaplingElement | null => {
-        return this.mount(c, p);
-      },
-      prev,
-    );
-  };
-
-  public hasChild = (childElement: SaplingElement): boolean => {
-    return (
-      this.children.has(childElement) ||
-      Array.from(this.children).reduce((p, c) => {
-        return p || c.hasChild(childElement);
-      }, false)
-    );
-  };
-
-  public disposeElementNotIn = (childElement: SaplingElement) => {
-    this.children.forEach((child) => {
-      if (!childElement.hasChild(child)) {
-        child.dispose();
-      }
-    });
-  };
-
-  public mergeDisposeStack = (disposeStack: DisposeStack) => {
-    this.disposeStack.push(...disposeStack);
-    return this;
-  };
-}
+export class SaplingElement extends TreeNode<Node> {}
 
 const primitiveToJSXNode = (primitive: Primitive) =>
   new SaplingElement({
@@ -182,6 +87,7 @@ const JSXFactory = () => {
     }
     if (Array.isArray(saplingNode)) {
       return new SaplingElement({
+        staticContainer: true,
         children: new Set(
           saplingNode.map((child, index) =>
             prepareSaplingElement(
@@ -214,17 +120,11 @@ const JSXFactory = () => {
         nodeCache != null ? jsxScope.collectNodeCache(nodeCache) : null;
 
       const element = prepareSaplingElement(saplingNode(), nodeCaches);
+
       resume?.();
       return element;
     }
     return new SaplingElement();
-  };
-
-  const upsert = (element: Node, child: SaplingElement) => {
-    child.el && element.appendChild(child.el);
-    return () => {
-      child.dispose();
-    };
   };
 
   function createElement(
@@ -278,14 +178,18 @@ const JSXFactory = () => {
       const disposeStack: DisposeStack = [];
       const resume = jsxScope.collectDispose(disposeStack);
       const node = jsxTag(options as P);
+      const currentElement = new SaplingElement({
+        staticContainer: true,
+        disposeStack,
+      });
+      currentElement.migrate(null, prepareSaplingElement(node));
+
       resume();
-      const element = prepareSaplingElement(node);
-      element.mergeDisposeStack(disposeStack);
       if (key != null) {
-        jsxScope.setCache(key, element);
+        jsxScope.setCache(key, currentElement);
       }
       resumeCollectDeps();
-      return element;
+      return currentElement;
     }
 
     const { children, ref, ...props } = (options ?? {}) as TagOption<
@@ -301,12 +205,17 @@ const JSXFactory = () => {
       node: el,
     });
 
+    let childrenElement: SaplingElement | null = null;
+
     if (children != null) {
       let nodeCaches: Map<Key, SaplingElement>[] = [];
       effect(() => {
-        const element = prepareSaplingElement(children, nodeCaches);
-        currentElement.disposeElementNotIn(element);
-        currentElement.mount(element);
+        const currentChildrenElement = prepareSaplingElement(
+          children,
+          nodeCaches,
+        );
+        currentElement.migrate(childrenElement, currentChildrenElement);
+        childrenElement = currentChildrenElement;
       });
     }
 
@@ -321,9 +230,10 @@ const JSXFactory = () => {
     jsxScope.addDispose(effect(callback));
   };
 
-  return { jsxScope, createElement, upsert, useEffect };
+  return { jsxScope, createElement, useEffect, prepareSaplingElement };
 };
 
-export const { jsxScope, createElement, useEffect, upsert } = JSXFactory();
+export const { jsxScope, createElement, useEffect, prepareSaplingElement } =
+  JSXFactory();
 
 export default createElement;

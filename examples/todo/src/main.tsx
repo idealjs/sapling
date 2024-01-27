@@ -1,4 +1,9 @@
-import { createProxy, createRef, upsert, useEffect } from "@idealjs/sapling";
+import {
+  createProxy,
+  createRef,
+  createRoot,
+  useEffect,
+} from "@idealjs/sapling";
 
 const TodoItem = (props: { name: number; count: number }) => {
   let { name, count } = props;
@@ -42,7 +47,7 @@ const TodoItem = (props: { name: number; count: number }) => {
   );
 };
 
-const Component = () => {
+const App = () => {
   const items = createProxy<{ val: { id: number; count: number }[] }>({
     val: [],
   });
@@ -70,6 +75,4 @@ const Component = () => {
   );
 };
 
-const root = document.getElementById("app")!;
-
-upsert(root, <Component />);
+createRoot(document.getElementById("app")!).render(<App />);

@@ -1,8 +1,7 @@
 import {
   createProxy,
   createRef,
-  derive,
-  upsert,
+  createRoot,
   useEffect,
 } from "@idealjs/sapling";
 import { JSX } from "@idealjs/sapling/jsx-runtime";
@@ -25,7 +24,7 @@ const Test = () => {
   );
 };
 
-const Component = () => {
+const App = () => {
   const Comp = createRef<() => JSX.Element>();
   useEffect(() => {
     console.log("test test panel useEffect");
@@ -41,6 +40,4 @@ const Component = () => {
   );
 };
 
-const root = document.getElementById("app")!;
-
-upsert(root, <Component />);
+createRoot(document.getElementById("app")!).render(<App />);
