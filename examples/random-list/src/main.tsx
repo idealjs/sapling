@@ -1,11 +1,18 @@
-import { createState, upsert, useEffect } from "@idealjs/sapling";
+import {
+  createProxy,
+  createRef,
+  createRoot,
+  useEffect,
+} from "@idealjs/sapling";
 
-const items = createState<{ id: number; hidden: boolean }[]>([
-  { id: 1, hidden: false },
-  { id: 2, hidden: false },
-  { id: 3, hidden: true },
-  { id: 4, hidden: false },
-]);
+const items = createProxy({
+  val: [
+    { id: 1, hidden: false },
+    { id: 2, hidden: false },
+    { id: 3, hidden: true },
+    { id: 4, hidden: false },
+  ],
+});
 
 const updateList = () => {
   // const values = new Array(10).fill("").map((v, index) => {
@@ -26,7 +33,7 @@ const updateList = () => {
 
 const Counter = (props: { name: number }) => {
   let { name } = props;
-  const state = createState(0);
+  const state = createProxy({ val: 0 });
   useEffect(() => {
     const handler = setInterval(() => {
       state.val++;
@@ -48,8 +55,8 @@ const Counter = (props: { name: number }) => {
   );
 };
 
-const Component = () => {
-  const ref = createState<HTMLDivElement>(null);
+const App = () => {
+  const ref = createRef<HTMLDivElement>(null);
   return (
     <div>
       <button
@@ -87,6 +94,4 @@ const Component = () => {
   );
 };
 
-const root = document.getElementById("app")!;
-
-upsert(root, <Component />);
+createRoot(document.getElementById("app")!).render(<App />);

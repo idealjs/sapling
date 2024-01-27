@@ -1,9 +1,9 @@
-import { upsert } from "@idealjs/sapling";
+import { createRoot } from "@idealjs/sapling";
 import App from "./App";
 
 const root = document.getElementById("app")!;
 
-const unmount = upsert(root, <App />);
+const unmount = createRoot(document.getElementById("app")!).render(<App />);
 
 const button = document.createElement("button");
 button.textContent = "unmount";

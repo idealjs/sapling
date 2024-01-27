@@ -1,10 +1,10 @@
-import { upsert } from "@idealjs/sapling";
+import { createRoot } from "@idealjs/sapling";
 
 const Test = () => {
   return [<div>A</div>, <div>B</div>];
 };
 
-const Component = () => {
+const App = () => {
   return (
     <div>
       <div>{() => <Test />}</div>
@@ -15,6 +15,4 @@ const Component = () => {
   );
 };
 
-const root = document.getElementById("app")!;
-
-upsert(root, <Component />);
+createRoot(document.getElementById("app")!).render(<App />);

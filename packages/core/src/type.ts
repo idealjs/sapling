@@ -1,7 +1,9 @@
-import { Ref } from "@idealjs/sapling-reactive";
+import { Dispose, Ref } from "@idealjs/sapling-reactive";
 import CSS from "csstype";
 
 import type { SaplingNode } from "./createElement";
+
+export type DisposeStack = { val: Dispose | void }[];
 
 export type TagNameMap = HTMLElementTagNameMap & SVGElementTagNameMap;
 

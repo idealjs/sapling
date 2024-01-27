@@ -1,6 +1,4 @@
-import { upsert } from "@idealjs/sapling";
+import { createRoot } from "@idealjs/sapling";
 import App from "./App";
 
-const root = document.getElementById("app")!;
-
-upsert(root, <App />);
+createRoot(document.getElementById("app")!).render(<App />);

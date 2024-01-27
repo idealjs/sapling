@@ -6,14 +6,14 @@
     "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo",
     "emitDeclarationOnly": true,
     "paths": {
-      "@idealjs/sapling-reactive/*": ["../../packages/reactive/src/*"]
+      "@idealjs/sapling-reactive/*": ["../reactive/src/*"]
     }
   },
   "include": ["src"],
   "exclude": ["node_modules"],
   "references": [
     {
-      "path": "../../packages/reactive"
+      "path": "../reactive"
     }
   ]
 }

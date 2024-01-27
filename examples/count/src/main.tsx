@@ -1,8 +1,8 @@
-import { createState, upsert, useEffect } from "@idealjs/sapling";
+import { createProxy, createRoot, useEffect } from "@idealjs/sapling";
 
-const Hello = () => {
-  const count = createState(0);
-  const hidden = createState(false);
+const App = () => {
+  const count = createProxy({ val: 0 });
+  const hidden = createProxy({ val: false });
 
   useEffect(() => {
     console.log("test test");
@@ -31,6 +31,5 @@ const Hello = () => {
     </div>
   );
 };
-const root = document.getElementById("app")!;
 
-upsert(root, <Hello />);
+createRoot(document.getElementById("app")!).render(<App />);

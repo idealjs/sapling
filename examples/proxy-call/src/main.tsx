@@ -1,14 +1,14 @@
-import { createState, upsert } from "@idealjs/sapling";
+import { createRef, createRoot } from "@idealjs/sapling";
 
-const Component = () => {
-  const ref = createState<HTMLDivElement>(null);
+const App = () => {
+  const ref = createRef<HTMLDivElement>(null);
   return (
     <div>
       <button
         onClick={() => {
-          if (ref.val) {
-            ref.val.click();
-            ref.val.innerHTML = "hello";
+          if (ref.current) {
+            ref.current.click();
+            ref.current.innerHTML = "hello";
           }
         }}
       >
@@ -24,6 +24,4 @@ const Component = () => {
   );
 };
 
-const root = document.getElementById("app")!;
-
-upsert(root, <Component />);
+createRoot(document.getElementById("app")!).render(<App />);
