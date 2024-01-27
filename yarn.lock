@@ -456,7 +456,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@idealjs/eslint-plugin-sapling@npm:0.1.24, @idealjs/eslint-plugin-sapling@workspace:packages/eslint-plugin-sapling":
+"@idealjs/eslint-plugin-sapling@npm:0.1.25, @idealjs/eslint-plugin-sapling@workspace:packages/eslint-plugin-sapling":
   version: 0.0.0-use.local
   resolution: "@idealjs/eslint-plugin-sapling@workspace:packages/eslint-plugin-sapling"
   dependencies:
@@ -491,7 +491,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@idealjs/sapling@npm:0.1.24, @idealjs/sapling@workspace:packages/core":
+"@idealjs/sapling@npm:0.1.25, @idealjs/sapling@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@idealjs/sapling@workspace:packages/core"
   dependencies:
@@ -1934,8 +1934,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "array-test@workspace:examples/array-test"
   dependencies:
-    "@idealjs/eslint-plugin-sapling": "npm:0.1.24"
-    "@idealjs/sapling": "npm:0.1.24"
+    "@idealjs/eslint-plugin-sapling": "npm:0.1.25"
+    "@idealjs/sapling": "npm:0.1.25"
     "@types/node": "npm:^20.10.7"
     typescript: "npm:^5.3.3"
     vite: "npm:^5.0.11"
@@ -2013,8 +2013,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "basic-render@workspace:examples/basic-render"
   dependencies:
-    "@idealjs/eslint-plugin-sapling": "npm:0.1.24"
-    "@idealjs/sapling": "npm:0.1.24"
+    "@idealjs/eslint-plugin-sapling": "npm:0.1.25"
+    "@idealjs/sapling": "npm:0.1.25"
     "@types/node": "npm:^20.10.7"
     typescript: "npm:^5.3.3"
     vite: "npm:^5.0.11"
@@ -2591,8 +2591,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "count@workspace:examples/count"
   dependencies:
-    "@idealjs/eslint-plugin-sapling": "npm:0.1.24"
-    "@idealjs/sapling": "npm:0.1.24"
+    "@idealjs/eslint-plugin-sapling": "npm:0.1.25"
+    "@idealjs/sapling": "npm:0.1.25"
     "@types/node": "npm:^20.10.7"
     typescript: "npm:^5.3.3"
     vite: "npm:^5.0.11"
@@ -3938,8 +3938,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "hidden-count@workspace:examples/hidden-count"
   dependencies:
-    "@idealjs/eslint-plugin-sapling": "npm:0.1.24"
-    "@idealjs/sapling": "npm:0.1.24"
+    "@idealjs/eslint-plugin-sapling": "npm:0.1.25"
+    "@idealjs/sapling": "npm:0.1.25"
     "@types/node": "npm:^20.10.7"
     typescript: "npm:^5.3.3"
     vite: "npm:^5.0.11"
@@ -5431,8 +5431,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "nested-test@workspace:examples/nested-test"
   dependencies:
-    "@idealjs/eslint-plugin-sapling": "npm:0.1.24"
-    "@idealjs/sapling": "npm:0.1.24"
+    "@idealjs/eslint-plugin-sapling": "npm:0.1.25"
+    "@idealjs/sapling": "npm:0.1.25"
     "@types/node": "npm:^20.10.7"
     typescript: "npm:^5.3.3"
     vite: "npm:^5.0.11"
@@ -6376,8 +6376,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "proxy-call@workspace:examples/proxy-call"
   dependencies:
-    "@idealjs/eslint-plugin-sapling": "npm:0.1.24"
-    "@idealjs/sapling": "npm:0.1.24"
+    "@idealjs/eslint-plugin-sapling": "npm:0.1.25"
+    "@idealjs/sapling": "npm:0.1.25"
     "@types/node": "npm:^20.10.7"
     typescript: "npm:^5.3.3"
     vite: "npm:^5.0.11"
@@ -6437,8 +6437,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "random-list@workspace:examples/random-list"
   dependencies:
-    "@idealjs/eslint-plugin-sapling": "npm:0.1.24"
-    "@idealjs/sapling": "npm:0.1.24"
+    "@idealjs/eslint-plugin-sapling": "npm:0.1.25"
+    "@idealjs/sapling": "npm:0.1.25"
     "@types/node": "npm:^20.10.7"
     typescript: "npm:^5.3.3"
     vite: "npm:^5.0.11"
@@ -7518,8 +7518,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "todo@workspace:examples/todo"
   dependencies:
-    "@idealjs/eslint-plugin-sapling": "npm:0.1.24"
-    "@idealjs/sapling": "npm:0.1.24"
+    "@idealjs/eslint-plugin-sapling": "npm:0.1.25"
+    "@idealjs/sapling": "npm:0.1.25"
     "@types/node": "npm:^20.10.7"
     typescript: "npm:^5.3.3"
     vite: "npm:^5.0.11"
@@ -7844,8 +7844,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "unmount@workspace:examples/unmount"
   dependencies:
-    "@idealjs/eslint-plugin-sapling": "npm:0.1.24"
-    "@idealjs/sapling": "npm:0.1.24"
+    "@idealjs/eslint-plugin-sapling": "npm:0.1.25"
+    "@idealjs/sapling": "npm:0.1.25"
     "@types/node": "npm:^20.10.7"
     typescript: "npm:^5.3.3"
     vite: "npm:^5.0.11"
