@@ -1,6 +1,6 @@
 {
   "name": "@idealjs/sapling",
-  "version": "0.1.23",
+  "version": "0.1.24",
   "type": "module",
   "types": "./dist/index.d.ts",
   "exports": {
