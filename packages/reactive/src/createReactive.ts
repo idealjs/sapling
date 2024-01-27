@@ -11,6 +11,9 @@ const notifyFunctions: (string | symbol)[] = [
   // Array
   "push",
   "pop",
+  "splice",
+  "shift",
+  "unshift",
   // Set
   "add",
   "delete",
@@ -21,7 +24,12 @@ const notifyFunctions: (string | symbol)[] = [
   "clear",
 ];
 
-const bindProxyFunctions: (string | symbol)[] = ["reduce", "forEach", "map"];
+const bindProxyFunctions: (string | symbol)[] = [
+  "reduce",
+  "reduceRight",
+  "forEach",
+  "map",
+];
 
 export const createReactive = () => {
   const reactiveScope = new ReactiveScope();
