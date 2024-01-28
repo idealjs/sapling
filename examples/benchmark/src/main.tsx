@@ -1,12 +1,4 @@
-import {
-  createRoot,
-  createSignal,
-  derive,
-  Getter,
-  Setter,
-  Suspense,
-} from "@idealjs/sapling";
-// import debounce from "lodash.debounce";
+import { createProxy, createRef, createRoot, Ref } from "@idealjs/sapling";
 
 let idCounter = 1;
 const adjectives = [
@@ -72,19 +64,16 @@ function _random(max: number) {
 function buildData(count: number) {
   let data = new Array<{
     id: number;
-    label: Getter<string>;
-    setLabel: Setter<string>;
+    label: Ref<string>;
   }>(count);
   for (let i = 0; i < count; i++) {
-    const [label, setLabel] = createSignal(
-      `${adjectives[_random(adjectives.length)]} ${
-        colours[_random(colours.length)]
-      } ${nouns[_random(nouns.length)]}`,
-    );
     data[i] = {
       id: idCounter++,
-      label,
-      setLabel,
+      label: createRef(
+        `${adjectives[_random(adjectives.length)]} ${
+          colours[_random(colours.length)]
+        } ${nouns[_random(nouns.length)]}`,
+      ),
     };
   }
   return data;
@@ -112,37 +101,33 @@ const Button = ({
 );
 
 const App = () => {
-  const [data, setData] = createSignal<
+  const data = createRef<
     {
       id: number;
-      label: Getter<string>;
-      setLabel: Setter<string>;
+      label: Ref<string>;
     }[]
   >([]);
-  const [selected, setSelected] = createSignal<number | null>(null);
-  const run = () => setData(buildData(1000));
-  const runLots = () => setData(buildData(10000));
-  const add = () => setData((d) => [...d, ...buildData(1000)]);
+  const selected = createProxy<{ val: number }>();
+  const run = () => (data.current = buildData(1000));
+  const runLots = () => (data.current = buildData(10000));
+  const add = () => (data.current = [...data.current, ...buildData(1000)]);
   const update = () => {
-    for (let i = 0, d = data(), len = d.length; i < len; i += 10)
-      d[i].setLabel((l) => l + " !!!");
-  };
-  const swapRows = () => {
-    const d = data().slice();
-    if (d.length > 998) {
-      let tmp = d[1];
-      d[1] = d[998];
-      d[998] = tmp;
-      setData(d);
+    for (let i = 0, len = data.current.length; i < len; i += 10) {
+      data.current[i].label.current += " !!!";
     }
   };
-  const clear = () => setData([]);
-  const remove = (id: number) =>
-    setData((d) => {
-      const idx = d.findIndex((d) => d.id === id);
-      return [...d.slice(0, idx), ...d.slice(idx + 1)];
-    });
-  const isSelected = derive(() => selected != null);
+  const swapRows = () => {
+    if (data.current.length > 998) {
+      let tmp = data.current[1];
+      data.current[1] = data.current[998];
+      data.current[998] = tmp;
+    }
+  };
+  const clear = () => (data.current = []);
+  const remove = (id: number) => {
+    const idx = data.current.findIndex((d) => d.id === id);
+    data.current.splice(idx, 1);
+  };
 
   return (
     <div className="container">
@@ -165,42 +150,41 @@ const App = () => {
       </div>
       <table className="table table-hover table-striped test-data">
         <tbody>
-          <Suspense>
-            {() =>
-              data().map((row) => {
-                let rowId = row.id;
-                return (
-                  <tr
-                    key={rowId}
-                    className={() => (isSelected.val ? "danger" : "")}
-                  >
-                    <td className="col-md-1">{rowId}</td>
-                    <td className="col-md-4">
-                      <a
-                        onClick={() => {
-                          setSelected(rowId);
-                        }}
+          {() =>
+            data.current.map((row) => {
+              let rowId = row.id;
+              return (
+                <tr
+                  key={rowId}
+                  className={() => (selected.val === rowId ? "danger" : "")}
+                >
+                  <td className="col-md-1">{rowId}</td>
+                  <td className="col-md-4">
+                    <a
+                      onClick={() => {
+                        selected.val = rowId;
+                      }}
+                    >
+                      {() => row.label.current}
+                    </a>
+                  </td>
+                  <td className="col-md-1">
+                    <a
+                      onClick={() => {
+                        remove(rowId);
+                      }}
+                    >
+                      <span
+                        className="glyphicon glyphicon-remove"
+                        aria-hidden="true"
                       />
-                      {() => row.label()}
-                    </td>
-                    <td className="col-md-1">
-                      <a
-                        onClick={() => {
-                          remove(rowId);
-                        }}
-                      >
-                        <span
-                          className="glyphicon glyphicon-remove"
-                          aria-hidden="true"
-                        />
-                      </a>
-                    </td>
-                    <td className="col-md-6" />
-                  </tr>
-                );
-              })
-            }
-          </Suspense>
+                    </a>
+                  </td>
+                  <td className="col-md-6" />
+                </tr>
+              );
+            })
+          }
         </tbody>
       </table>
       <span
