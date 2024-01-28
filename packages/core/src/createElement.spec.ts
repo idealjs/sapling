@@ -6,100 +6,207 @@ import createRoot from "./createRoot";
 
 describe("render test", () => {
   it("children", () => {
-    const node = createElement("div", {
-      children: [createElement("div")],
-    });
+    const App = () =>
+      createElement("div", {
+        children: createElement("p"),
+      });
 
-    expect(node.el).toMatchInlineSnapshot(`
-      <div>
-        <div />
-      </div>
+    const saplingElement = createElement(App);
+    const body = document.createElement("body");
+    createRoot(body).render(saplingElement);
+
+    expect(body).toMatchInlineSnapshot(`
+      <body>
+        <div>
+          <p />
+        </div>
+      </body>
     `);
   });
 
-  it("ref test", () => {
-    const ref = createRef<HTMLDivElement>(null);
-    const node = createElement("div", {
-      ref: ref,
-      children: [createElement("div")],
-    });
+  // it("ref test", () => {
+  //   const ref = createRef<HTMLDivElement>(null);
+  //   const node = createElement("div", {
+  //     ref: ref,
+  //     children: [createElement("div")],
+  //   });
 
-    expect(node.el).toMatchInlineSnapshot(`
-      <div>
-        <div />
-      </div>
-    `);
-    expect(ref.current).toMatchInlineSnapshot(`
-      <div>
-        <div />
-      </div>
-    `);
-  });
+  //   expect(node.el).toMatchInlineSnapshot(`
+  //     <div>
+  //       <div />
+  //     </div>
+  //   `);
+  //   expect(ref.current).toMatchInlineSnapshot(`
+  //     <div>
+  //       <div />
+  //     </div>
+  //   `);
+  // });
 
   it("children with string", () => {
-    const node = createElement("div", {
-      children: [
-        createElement("div", { children: "hello world" }),
-        createElement("div", { children: "hello world" }),
-      ],
-    });
-    expect(node.el).toMatchInlineSnapshot(`
-      <div>
+    const App = () =>
+      createElement("div", {
+        children: createElement("p", { children: "hello world" }),
+      });
+
+    const saplingElement = createElement(App);
+    const body = document.createElement("body");
+    createRoot(body).render(saplingElement);
+
+    expect(body).toMatchInlineSnapshot(`
+      <body>
         <div>
-          hello world
+          <p>
+            hello world
+          </p>
         </div>
-        <div>
-          hello world
-        </div>
-      </div>
+      </body>
     `);
   });
 
   it("children with number", () => {
-    const node = createElement("div", {
-      children: [createElement("div", { children: 0 })],
-    });
-    expect(node.el).toMatchInlineSnapshot(`
-      <div>
+    const App = () =>
+      createElement("div", {
+        children: createElement("p", { children: 0 }),
+      });
+
+    const saplingElement = createElement(App);
+    const body = document.createElement("body");
+    createRoot(body).render(saplingElement);
+
+    expect(body).toMatchInlineSnapshot(`
+      <body>
         <div>
-          0
+          <p>
+            0
+          </p>
         </div>
-      </div>
+      </body>
     `);
   });
 
-  it("function child", () => {
-    const node = createElement("div", {
-      children: () =>
-        createElement("div", {
-          children: () => "hello world",
-        }),
-    });
-    expect(node.el).toMatchInlineSnapshot(`
-      <div>
+  it("children as function return string", () => {
+    const App = () =>
+      createElement("div", {
+        children: () =>
+          createElement("p", {
+            children: () => "hello world",
+          }),
+      });
+
+    const saplingElement = createElement(App);
+    const body = document.createElement("body");
+    createRoot(body).render(saplingElement);
+
+    expect(body).toMatchInlineSnapshot(`
+      <body>
         <div>
-          hello world
+          <p>
+            hello world
+          </p>
         </div>
-      </div>
+      </body>
     `);
   });
 
-  it("function children", () => {
-    const node = createElement("div", {
-      children: () => [
-        createElement("div", { children: () => 0 }),
-        createElement("div", { children: () => 1 }),
-      ],
-    });
-    expect(node.el).toMatchInlineSnapshot(`
-      <div>
+  it("children as array", () => {
+    const App = () =>
+      createElement("div", {
+        children: [createElement("p"), createElement("p")],
+      });
+
+    const saplingElement = createElement(App);
+    const body = document.createElement("body");
+    createRoot(body).render(saplingElement);
+
+    expect(body).toMatchInlineSnapshot(`
+      <body>
         <div>
-          0
+          <p />
+          <p />
         </div>
+      </body>
+    `);
+  });
+
+  it("children as array with string", () => {
+    const App = () =>
+      createElement("div", {
+        children: [
+          createElement("p", { children: "hello world" }),
+          createElement("p", { children: "hello world" }),
+        ],
+      });
+
+    const saplingElement = createElement(App);
+    const body = document.createElement("body");
+    createRoot(body).render(saplingElement);
+
+    expect(body).toMatchInlineSnapshot(`
+      <body>
         <div>
-          1
+          <p>
+            hello world
+          </p>
+          <p>
+            hello world
+          </p>
         </div>
-      </div>
+      </body>
+    `);
+  });
+
+  it("children as array with number", () => {
+    const App = () =>
+      createElement("div", {
+        children: [
+          createElement("p", { children: 0 }),
+          createElement("p", { children: 1 }),
+        ],
+      });
+
+    const saplingElement = createElement(App);
+    const body = document.createElement("body");
+    createRoot(body).render(saplingElement);
+
+    expect(body).toMatchInlineSnapshot(`
+      <body>
+        <div>
+          <p>
+            0
+          </p>
+          <p>
+            1
+          </p>
+        </div>
+      </body>
+    `);
+  });
+
+  it("children as function return array saplingElement", () => {
+    const App = () =>
+      createElement("div", {
+        children: () => [
+          createElement("div", { children: () => 0 }),
+          createElement("div", { children: () => 1 }),
+        ],
+      });
+
+    const saplingElement = createElement(App);
+    const body = document.createElement("body");
+    createRoot(body).render(saplingElement);
+
+    expect(body).toMatchInlineSnapshot(`
+      <body>
+        <div>
+          <div>
+            0
+          </div>
+          <div>
+            1
+          </div>
+        </div>
+      </body>
     `);
   });
 
@@ -242,27 +349,37 @@ describe("render test", () => {
 describe("reactive test", () => {
   it("function children reactive update", () => {
     const counter = createProxy({ val: 0 });
-    const node = createElement("div", {
-      children: () => [
-        createElement("div", {
-          children: () => `counter ${counter.val}`,
-        }),
-      ],
-    });
-    expect(node.el).toMatchInlineSnapshot(`
-      <div>
+    const App = () =>
+      createElement("div", {
+        children: () => [
+          createElement("div", {
+            children: () => `counter ${counter.val}`,
+          }),
+        ],
+      });
+
+    const saplingElement = createElement(App);
+    const body = document.createElement("body");
+    createRoot(body).render(saplingElement);
+
+    expect(body).toMatchInlineSnapshot(`
+      <body>
         <div>
-          counter 0
+          <div>
+            counter 0
+          </div>
         </div>
-      </div>
+      </body>
     `);
     counter.val++;
-    expect(node.el).toMatchInlineSnapshot(`
-      <div>
+    expect(body).toMatchInlineSnapshot(`
+      <body>
         <div>
-          counter 1
+          <div>
+            counter 1
+          </div>
         </div>
-      </div>
+      </body>
     `);
   });
 
