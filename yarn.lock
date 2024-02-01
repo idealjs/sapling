@@ -60,6 +60,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@egjs/list-differ@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "@egjs/list-differ@npm:1.0.1"
+  checksum: e6b7a3aa6206351c2586b06f2fb2aceb10df16f73209319c4323fd2c0414716ec6e5e7396260e7f0f80cbdc6303921655302f508c57b899e995426548b97a419
+  languageName: node
+  linkType: hard
+
 "@esbuild/aix-ppc64@npm:0.19.11":
   version: 0.19.11
   resolution: "@esbuild/aix-ppc64@npm:0.19.11"
@@ -495,6 +502,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@idealjs/sapling@workspace:packages/core"
   dependencies:
+    "@egjs/list-differ": "npm:^1.0.1"
     "@idealjs/sapling-reactive": "workspace:^"
     "@types/lodash.chunk": "npm:^4.2.9"
     csstype: "npm:^3.1.3"

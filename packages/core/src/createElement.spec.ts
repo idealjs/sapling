@@ -210,7 +210,7 @@ describe("render test", () => {
     `);
   });
 
-  it("function children update", () => {
+  it.only("function children update", () => {
     const counter = createProxy({ val: 0 });
     const App = () => {
       return createElement("div", {

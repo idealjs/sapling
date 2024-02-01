@@ -1,60 +1,48 @@
+import { diff } from "@egjs/list-differ";
 import { Dispose, effect, reactiveScope } from "@idealjs/sapling-reactive";
 
 import { hyper } from "./hyper";
-import TreeNode from "./TreeNode";
 import {
   DisposeStack,
   InnerElement,
   Key,
   Primitive,
   PrimitiveChild,
+  SaplingElement,
   TagNameMap,
   TagOption,
 } from "./type";
+import arrify from "./utils/arrify";
 import isPrimitive from "./utils/isPrimitive";
 import numberConcat from "./utils/numberConcat";
 
-type JSXTag<P> = keyof TagNameMap | ((props: P) => SaplingNode);
+type JSXTag<P> = keyof TagNameMap | ((props: P) => SaplingElement);
 
-export type JSXElementType<P> = (props: P) => SaplingNode | SaplingElement;
+export type WithoutFn<T> = T extends () => SaplingNode ? never : T;
+
+export type WithOutRecursion<T> = T extends () => unknown
+  ? never
+  : T extends () => (infer U extends (infer A)[])[]
+    ? never
+    : T;
 
 export type SaplingNode =
   | SaplingElement
   | PrimitiveChild
   | SaplingNode[]
-  | (() => SaplingNode)
+  | (() => WithOutRecursion<SaplingNode>)
   | null;
 
 export class JSXScope {
   private disposeStack: DisposeStack | null = null;
-  private nodeCache: Map<Key, SaplingElement> | null = null;
 
   constructor() {}
-
-  public getCache = (key: Key | undefined) => {
-    if (key == null) {
-      return null;
-    }
-    return this.nodeCache?.get(key);
-  };
-
-  public setCache = (key: Key, value: SaplingElement) => {
-    this.nodeCache?.set(key, value);
-  };
 
   public collectDispose = (disposeStack: DisposeStack) => {
     const temp = this.disposeStack;
     this.disposeStack = disposeStack;
     return () => {
       this.disposeStack = temp;
-    };
-  };
-
-  public collectNodeCache = (nodeCache: Map<Key, SaplingElement>) => {
-    const temp = this.nodeCache;
-    this.nodeCache = nodeCache;
-    return () => {
-      this.nodeCache = temp;
     };
   };
 
@@ -65,67 +53,37 @@ export class JSXScope {
   public getDisposeStack = () => this.disposeStack ?? [];
 }
 
-export class SaplingElement extends TreeNode<Node> {}
+const dispose = (saplingNode: SaplingNode, el: Node) => {};
 
-const primitiveToJSXNode = (primitive: Primitive) =>
-  new SaplingElement({
-    node: new Text(primitive.toString()),
-    disposeStack: [],
-  });
+const appendChild = (node: SaplingNode, el: Node) => {
+  if (node instanceof Node) {
+    el.appendChild(node);
+  } else if (Array.isArray(node)) {
+    node.forEach((v) => appendChild(v, el));
+  } else if (isPrimitive(node)) {
+    el.textContent = node.toString();
+  } else if (typeof node === "function") {
+    throw new Error("appendChild should not has a function");
+  }
+};
+
+const mountChildren = (el: Node, children: SaplingNode) => {
+  if (children instanceof Node) {
+    el.appendChild(children);
+  } else if (isPrimitive(children)) {
+    el.appendChild(document.createTextNode(children.toString()));
+  } else if (Array.isArray(children)) {
+    children.forEach((child) => mountChildren(el, child));
+  } else if (typeof children === "function") {
+    effect(() => {
+      const node = children();
+      mountChildren(el, node);
+    });
+  }
+};
 
 const JSXFactory = () => {
   const jsxScope = new JSXScope();
-
-  // parse SaplingNode to SaplingElement
-  const prepareSaplingElement = (
-    saplingNode: SaplingNode,
-    nodeCaches?: Map<Key, SaplingElement>[],
-    cacheKey: number = 0,
-  ): SaplingElement => {
-    if (saplingNode instanceof SaplingElement) {
-      return saplingNode;
-    }
-    if (Array.isArray(saplingNode)) {
-      return new SaplingElement({
-        staticContainer: true,
-        children: new Set(
-          saplingNode.map((child, index) =>
-            prepareSaplingElement(
-              child,
-              nodeCaches,
-              numberConcat(index, cacheKey),
-            ),
-          ),
-        ),
-      });
-    }
-    if (isPrimitive(saplingNode)) {
-      const nodeCache =
-        nodeCaches != null
-          ? (nodeCaches[cacheKey] ||= new Map<Key, SaplingElement>())
-          : null;
-
-      const saplingElement =
-        nodeCache?.get(saplingNode) || primitiveToJSXNode(saplingNode);
-
-      nodeCache?.set(saplingNode, saplingElement);
-      return saplingElement;
-    }
-    if (typeof saplingNode === "function") {
-      const nodeCache =
-        nodeCaches == null
-          ? null
-          : (nodeCaches[cacheKey] ||= new Map<Key, SaplingElement>());
-      const resume =
-        nodeCache != null ? jsxScope.collectNodeCache(nodeCache) : null;
-
-      const element = prepareSaplingElement(saplingNode(), nodeCaches);
-
-      resume?.();
-      return element;
-    }
-    return new SaplingElement();
-  };
 
   function createElement(
     jsxTag: keyof TagNameMap,
@@ -141,7 +99,7 @@ const JSXFactory = () => {
   ): SaplingElement;
 
   function createElement<P extends object>(
-    jsxTag: (props: P) => SaplingNode,
+    jsxTag: (props: P) => SaplingElement,
     options?: P,
     key?: Key,
     _isStaticChildren?: boolean,
@@ -165,75 +123,27 @@ const JSXFactory = () => {
     },
     _self?: unknown,
   ): SaplingElement {
-    const resumeCollectDeps = reactiveScope.pauseCollectDeps();
-
-    const cache = jsxScope.getCache(key);
-    if (cache != null) {
-      resumeCollectDeps();
-      return cache;
-    }
-
+    // console.log("test test", jsxTag);
     if (typeof jsxTag === "function") {
-      // collect user component effect's dispose
-      const disposeStack: DisposeStack = [];
-      const resume = jsxScope.collectDispose(disposeStack);
-      const node = jsxTag(options as P);
-      const currentElement = new SaplingElement({
-        staticContainer: true,
-        disposeStack,
-      });
-      currentElement.migrate(null, prepareSaplingElement(node));
-
-      resume();
-      if (key != null) {
-        jsxScope.setCache(key, currentElement);
-      }
-      resumeCollectDeps();
-      return currentElement;
+      return jsxTag(options as P);
     }
 
     const { children, ref, ...props } = (options ?? {}) as TagOption<
       keyof InnerElement
     >;
-
     const el = hyper(jsxTag, props);
-    if (!(el instanceof DocumentFragment) && ref != null) {
-      ref.current = el;
-    }
+    children != null && mountChildren(el, children);
 
-    const currentElement = new SaplingElement({
-      node: el,
-    });
-
-    let childrenElement: SaplingElement | null = null;
-
-    if (children != null) {
-      let nodeCaches: Map<Key, SaplingElement>[] = [];
-      effect(() => {
-        const currentChildrenElement = prepareSaplingElement(
-          children,
-          nodeCaches,
-        );
-        currentElement.migrate(childrenElement, currentChildrenElement);
-        childrenElement = currentChildrenElement;
-      });
-    }
-
-    if (key != null) {
-      jsxScope.setCache(key, currentElement);
-    }
-    resumeCollectDeps();
-    return currentElement;
+    return el;
   }
 
   const useEffect = (callback: () => Dispose | void) => {
     jsxScope.addDispose(effect(callback));
   };
 
-  return { jsxScope, createElement, useEffect, prepareSaplingElement };
+  return { jsxScope, createElement, useEffect };
 };
 
-export const { jsxScope, createElement, useEffect, prepareSaplingElement } =
-  JSXFactory();
+export const { jsxScope, createElement, useEffect } = JSXFactory();
 
 export default createElement;
