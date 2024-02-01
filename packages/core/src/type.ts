@@ -3,6 +3,10 @@ import CSS from "csstype";
 
 import type { SaplingNode } from "./createElement";
 
+export type JSXElementType<P> = (props: P) => SaplingElement;
+
+export type SaplingElement = Element;
+
 export type DisposeStack = { val: Dispose | void }[];
 
 export type TagNameMap = HTMLElementTagNameMap & SVGElementTagNameMap;
