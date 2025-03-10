@@ -3,7 +3,7 @@
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint", "simple-import-sort"],
   "rules": {
-    "quotes": "warn",
+    "quotes": ["warn", "double", { "avoidEscape": true }],
     "simple-import-sort/imports": "warn",
     "simple-import-sort/exports": "warn",
     "@typescript-eslint/no-unused-vars": "off",

@@ -1,6 +1,9 @@
 {
   "recommendations": [
+    "esbenp.prettier-vscode",
+    "vitest.explorer",
+    "dsznajder.es7-react-js-snippets",
     "dbaeumer.vscode-eslint",
-    "esbenp.prettier-vscode"
+    "mhutchie.git-graph"
   ]
 }
