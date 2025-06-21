@@ -1,0 +1,24 @@
+---
+source: packages/sapling-oxc-transformer/tests/transform_test.rs
+expression: result.code
+---
+"use client";
+var _jsxFileName = "tests/test.tsx";
+import { jsxDEV as _jsxDEV } from "react/jsx-dev-runtime";
+const style = (values) => {
+	return "";
+};
+const Test = () => {
+	return /* @__PURE__ */ _jsxDEV("div", {
+		className: style({}),
+		children: "Test"
+	}, void 0, false, {
+		fileName: _jsxFileName,
+		lineNumber: 8,
+		columnNumber: 10
+	}, this);
+};
+_c = Test;
+export default Test;
+var _c;
+$RefreshReg$(_c, "Test");

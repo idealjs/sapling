@@ -1,6 +1,1 @@
-{
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
-  },
-  "rust-analyzer.linkedProjects": ["packages/sapling-swc-plugin/Cargo.toml"]
-}
+{ "editor.codeActionsOnSave": { "source.fixAll.eslint": "explicit" } }
