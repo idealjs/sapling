@@ -13,7 +13,8 @@ use oxc_syntax::symbol::SymbolId;
 use oxc_traverse::{Traverse, TraverseCtx, traverse_mut};
 use std::cell::Cell;
 
-use sapling_oxc_transformer::ssr::template::{TemplateItem, append_templates};
+use sapling_oxc_transformer::ssr::append_templates::append_templates;
+use sapling_oxc_transformer::ssr::template::TemplateItem;
 
 pub struct Transformer<'a> {
     allocator: &'a Allocator,
@@ -52,9 +53,9 @@ impl<'a> Traverse<'a> for Transformer<'a> {
             lone_surrogates: false,
         });
         let template_expr: Expression<'a> = Expression::StringLiteral(str_lit);
-        
+
         let template_item: TemplateItem<'a> = TemplateItem {
-            id:  self.allocator.alloc(id_expr),
+            id: self.allocator.alloc(id_expr),
             template: self.allocator.alloc(template_expr),
         };
         self.templates.push(template_item);
