@@ -18,6 +18,8 @@ oxc_parser = { workspace = true }
 oxc_transformer = { workspace = true }
 oxc_semantic = { workspace = true }
 pico-args = "0.5.0"
+oxc_ast_visit = "0.73.2"
+oxc_traverse = "0.73.2"
 
 [build-dependencies]
 napi-build = { workspace = true }

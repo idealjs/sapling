@@ -3,7 +3,7 @@ source: packages/sapling-oxc-transformer/tests/transform_test.rs
 expression: result.code
 ---
 "use client";
-var _jsxFileName = "tests/test.tsx";
+var _jsxFileName = "tests/Test.tsx";
 import { jsxDEV as _jsxDEV } from "react/jsx-dev-runtime";
 const style = (values) => {
 	return "";
