@@ -73,3 +73,14 @@ let template_item = TemplateItem {
      - value: Atom
      - raw: Option<Atom>
      - lone_surrogates: bool
+
+3. **AST Node Structure Requirements**
+   - Identifier:
+     - type_arguments: Option
+     - optional: bool
+     - pure: bool
+   - CallExpression:
+     - type_arguments: Option
+     - optional: bool
+     - pure: bool
+   - All nodes must include appropriate span information
