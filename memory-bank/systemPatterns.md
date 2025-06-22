@@ -1,72 +1,144 @@
 # System Patterns
 
-## Memory Management Architecture
+## Architectural Patterns
 
-### Arena Allocation Pattern
+1. **Modular Architecture**
+   ```
+   oxc/
+   ├── oxc_parser     # Parser implementation
+   ├── oxc_ast        # AST definitions
+   ├── oxc_semantic   # Semantic analysis
+   ├── oxc_transformer # Code transformation
+   ├── oxc_allocator  # Memory management
+   └── oxc_span       # Source location tracking
+   ```
+
+2. **Memory Management Pattern**
+   - Arena-based allocation using `oxc_allocator`
+   - Bump allocation for fast allocation/deallocation
+   - Lifetime tracking through Rust's borrow checker
+   - Zero-copy string handling with custom string types
+
+3. **Visitor Pattern Implementation**
+   - AST traversal through visitor traits
+   - Mutable and immutable visitors
+   - Scoped traversal with context
+   - Type-safe node visitation
+
+4. **Error Handling Pattern**
+   - Two-phase error handling:
+     1. Parser errors (syntax)
+     2. Semantic errors (validation)
+   - Error recovery for parsing
+   - Detailed diagnostic messages
+   - Source location tracking
+
+## Design Patterns
+
+1. **Builder Pattern**
+   - Parser configuration
+   - AST construction
+   - Semantic analysis setup
+   - Transform pipeline configuration
+
+2. **Factory Pattern**
+   - AST node creation
+   - Scope creation
+   - Symbol table management
+   - Diagnostic message creation
+
+3. **Command Pattern**
+   - Transform operations
+   - AST modifications
+   - Code generation steps
+   - Source map updates
+
+4. **Strategy Pattern**
+   - Parser mode selection
+   - Error recovery strategies
+   - Transform strategies
+   - Code generation strategies
+
+## Data Flow Patterns
+
+1. **AST Construction**
+```mermaid
+graph LR
+    Source[Source Code] --> Lexer[Lexer]
+    Lexer --> Parser[Parser]
+    Parser --> AST[AST]
+    AST --> Semantic[Semantic Analysis]
+    AST --> Transform[Transformation]
+```
+
+2. **Symbol Resolution**
 ```mermaid
 graph TD
-    A[Arena Allocator] --> B[Large Memory Block]
-    B --> C[AST Node 1]
-    B --> D[AST Node 2]
-    B --> E[AST Node N]
-    
-    style A fill:#f9f,stroke:#333
-    style B fill:#fff,stroke:#333
-    style C fill:#dfd,stroke:#333
-    style D fill:#dfd,stroke:#333
-    style E fill:#dfd,stroke:#333
+    AST[AST Node] --> Scope[Scope Analysis]
+    Scope --> Symbol[Symbol Table]
+    Symbol --> Binding[Binding Resolution]
+    Binding --> Reference[Reference Tracking]
 ```
 
-1. **统一生命周期管理**
-   - 所有 AST 节点共享同一个内存块
-   - 整体分配和释放，减少内存碎片
-   - 适合 AST 这种树形结构数据
-
-2. **分层设计模式**
+3. **Transformation Pipeline**
 ```mermaid
-graph TD
-    TC[TraverseCtx] --> AL[Allocator]
-    TC --> TS[Traversal State]
-    TC --> AS[AST Management]
-    
-    style TC fill:#f9f,stroke:#333
-    style AL fill:#dfd,stroke:#333
-    style TS fill:#dfd,stroke:#333
-    style AS fill:#dfd,stroke:#333
+graph LR
+    Input[Input AST] --> Visitor[AST Visitor]
+    Visitor --> Transform[Transform]
+    Transform --> Codegen[Code Generation]
+    Codegen --> Output[Output Code]
 ```
 
-### 内存操作流程
-1. **基础分配流程**
-   - Allocator 负责底层内存块管理
-   - 通过 `new_in(allocator)` 在 arena 中创建集合
-   - 使用 `CloneIn` trait 处理克隆操作
+## Code Organization Patterns
 
-2. **AST 节点管理流程**
-   - TraverseCtx 封装高级操作
-   - 通过 `ctx.alloc()` 分配 AST 节点
-   - 自动管理节点生命周期
+1. **Crate Structure**
+   - Clear separation of concerns
+   - Minimal dependencies between crates
+   - Well-defined interfaces
+   - Consistent API patterns
 
-## 关键实现模式
+2. **Type System Usage**
+   - Extensive use of Rust's type system
+   - Custom types for domain concepts
+   - Type-safe APIs
+   - Generic implementations
 
-### 内存安全保证
-1. **通过生命周期标注**
-```rust
-pub fn append_templates<'a>(
-    ctx: &mut TraverseCtx<'a>,
-    allocator: &'a Allocator,
-    // ...
-)
-```
+3. **Testing Patterns**
+   - Unit tests per module
+   - Integration tests for workflows
+   - Property-based testing
+   - Performance benchmarks
 
-2. **通过类型系统**
-   - 使用泛型和 trait bounds 确保类型安全
-   - 通过 ownership 和 borrowing 规则保证内存安全
+4. **Documentation Patterns**
+   - Inline documentation
+   - API documentation
+   - Example code
+   - Architecture documentation
 
-### 性能优化模式
-1. **批量操作**
-   - 使用 arena 分配避免频繁的内存操作
-   - 统一管理相关资源的生命周期
+## Implementation Patterns
 
-2. **上下文复用**
-   - TraverseCtx 维护遍历状态
-   - 减少重复的内存分配和状态初始化
+1. **Memory Optimization**
+   - Custom allocators
+   - Arena-based allocation
+   - String interning
+   - Minimal cloning
+
+2. **Performance Patterns**
+   - Fast path optimization
+   - Lazy evaluation
+   - Cache-friendly data structures
+   - Minimal allocations
+
+3. **Error Recovery**
+   - Partial AST construction
+   - Error node creation
+   - Context preservation
+   - Diagnostic collection
+
+4. **Source Map Generation**
+   - Incremental updates
+   - Position tracking
+   - Mapping preservation
+   - Source content handling
+
+These patterns form the foundation of oxc's architecture, providing a robust and maintainable codebase that achieves its performance and reliability goals.

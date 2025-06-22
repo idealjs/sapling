@@ -1,81 +1,167 @@
 # Product Context
 
-## Rust Memory Management Patterns
+## Vision Statement
 
-### Arena Allocation (arena allocator)
-Arena allocation 是 Rust 中一种重要的内存管理模式，特别适用于以下场景：
-1. **生命周期一致的数据**
-   - 所有数据同时创建、同时销毁
-   - 例如：解析器中的 AST 节点
+OXC aims to be the foundation for next-generation JavaScript tooling by providing a fast, memory-efficient, and reliable compiler infrastructure written in Rust. It strives to enable better developer tools through high-performance parsing, analysis, and transformation capabilities.
 
-2. **批量分配和释放**
-   - 减少单个对象的分配/释放开销
-   - 避免内存碎片化
+## Problem Space
 
-3. **性能优化**
-   - 减少内存分配次数
-   - 提高内存局部性
-   - 降低内存管理开销
+1. **JavaScript Ecosystem Challenges**
+   - Growing complexity of JavaScript/TypeScript codebases
+   - Performance bottlenecks in existing tools
+   - Memory consumption issues with large projects
+   - Need for reliable static analysis
 
-### 分层抽象（Layered Abstraction）
-Rust 的分层抽象模式体现在：
+2. **Developer Pain Points**
+   - Slow build times
+   - High memory usage
+   - Unreliable error detection
+   - Complex configuration needs
 
-1. **底层：Arena Allocator**
-```rust
-use oxc_allocator::Allocator;
+3. **Tool Integration Needs**
+   - IDE support requirements
+   - Build tool integration
+   - Linting and analysis tools
+   - Code transformation tools
 
-let allocator = &'a Allocator;
-let vec = AstVec::new_in(allocator);
-```
-- 提供基础内存分配功能
-- 管理原始内存资源
-- 实现底层内存操作
+## Solution Approach
 
-2. **高层：Context 封装**
-```rust
-use oxc_traverse::TraverseCtx;
+1. **Core Technology**
+   - Rust-based implementation for performance and safety
+   - Memory-efficient design using arena allocation
+   - Fast parsing with error recovery
+   - Comprehensive AST and analysis capabilities
 
-let ctx = &mut TraverseCtx<'a>;
-let node = ctx.alloc(AstNode { ... });
-```
-- 封装底层资源访问
-- 提供特定领域功能
-- 管理额外的上下文信息
+2. **Developer Experience**
+   - Clear error messages
+   - Reliable source maps
+   - Fast processing times
+   - Low memory footprint
 
-### 生命周期管理
-1. **通过类型系统保证**
-```rust
-pub struct TraverseCtx<'a> {
-    allocator: &'a Allocator,
-    // ...
-}
-```
-- 编译时检查生命周期约束
-- 防止悬垂引用
-- 确保内存安全
+3. **Integration Capabilities**
+   - Plugin architecture
+   - Standard compliant outputs
+   - Flexible API design
+   - Comprehensive documentation
 
-2. **资源生命周期绑定**
-- Context 生命周期不超过 Allocator
-- 分配的对象生命周期不超过 Context
-- 自动化资源清理
+## Target Users
 
-### 最佳实践总结
-1. **选择合适的抽象层次**
-   - 基础操作用底层 API
-   - 领域操作用高层封装
-   - 避免跨层调用
+1. **Tool Developers**
+   - IDE plugin developers
+   - Build tool creators
+   - Static analysis tool authors
+   - Code transformation tool developers
 
-2. **一致的内存管理策略**
-   - 统一使用 arena 分配
-   - 遵循生命周期约束
-   - 明确资源所有权
+2. **JavaScript Developers**
+   - Web application developers
+   - Node.js developers
+   - TypeScript developers
+   - Framework developers
 
-3. **性能优化考虑**
-   - 批量处理优于单次操作
-   - 复用已分配资源
-   - 注意内存局部性
+3. **Development Teams**
+   - Large-scale JavaScript projects
+   - Performance-critical applications
+   - Tool maintainers
+   - Framework creators
 
-这些 Rust 内存管理模式不仅适用于 AST 处理，也可以应用到其他类似场景，如：
-- 游戏引擎的场景管理
-- 编译器的符号表处理
-- 大规模数据处理系统
+## Key Value Propositions
+
+1. **Performance**
+   - Faster parsing and analysis
+   - Lower memory usage
+   - Better resource utilization
+   - Improved build times
+
+2. **Reliability**
+   - Accurate parsing
+   - Reliable error detection
+   - Stable operation
+   - Consistent results
+
+3. **Extensibility**
+   - Plugin support
+   - Custom transformations
+   - Tool integration
+   - API flexibility
+
+## Market Positioning
+
+1. **Competitive Advantages**
+   - Rust-based implementation
+   - Memory efficiency
+   - Performance focus
+   - Modern architecture
+
+2. **Differentiation**
+   - Next-generation design
+   - Memory-first approach
+   - High performance
+   - Developer-friendly
+
+3. **Target Market**
+   - JavaScript ecosystem
+   - Development tools
+   - Build systems
+   - Static analysis
+
+## Success Criteria
+
+1. **Technical Metrics**
+   - Parser performance
+   - Memory efficiency
+   - Test coverage
+   - API stability
+
+2. **User Metrics**
+   - Developer adoption
+   - Tool integration
+   - Community feedback
+   - Usage growth
+
+3. **Project Health**
+   - Active development
+   - Community engagement
+   - Documentation quality
+   - Support responsiveness
+
+## Roadmap Priorities
+
+1. **Core Functionality**
+   - Complete TypeScript support
+   - Enhanced transformation capabilities
+   - Improved error handling
+   - Extended API features
+
+2. **Integration Support**
+   - IDE integration tools
+   - Build system plugins
+   - Analysis tool support
+   - Transformation frameworks
+
+3. **Community Growth**
+   - Documentation expansion
+   - Example implementations
+   - Integration guides
+   - Community tools
+
+## Product Principles
+
+1. **Performance First**
+   - Optimized implementation
+   - Resource efficiency
+   - Fast execution
+   - Minimal overhead
+
+2. **Developer Centric**
+   - Clear documentation
+   - Intuitive APIs
+   - Helpful error messages
+   - Easy integration
+
+3. **Quality Focused**
+   - Reliable operation
+   - Accurate results
+   - Stable interfaces
+   - Comprehensive testing
+
+This product context guides the development of oxc, ensuring alignment with user needs and market requirements while maintaining focus on key technical objectives.

@@ -1,59 +1,154 @@
 # Active Context
 
-## Current Focus
-目前主要关注 Rust AST 转换系统中的内存管理机制，特别是 `allocator` 和 `TraverseCtx` 的使用与关系。
+## Current Development Focus
 
-## Recent Changes
-1. 完成了 Memory Management 相关文档的初始化：
-   - techContext.md：技术细节和使用模式
-   - systemPatterns.md：系统架构和设计模式
-   - progress.md：进度跟踪和下一步计划
+### Babel-to-Rust Transformation
 
-## Active Decisions
+1. **Transform Pipeline Development**
+   - Understanding Babel's transform pipeline
+   - Implementing equivalent transforms in Rust
+   - Maintaining transform order compatibility
+   - Handling edge cases
 
-### Memory Management Strategy
-1. **Arena 分配策略**
-   - 选择理由：适合 AST 这种整体生命周期的数据结构
-   - 实现方式：使用 oxc_allocator 提供的 Arena Allocator
+2. **Current Implementation Points**
+   - ECMAScript feature downleveling
+   - TypeScript transforms
+   - JSX/TSX handling 
+   - Source map generation
 
-2. **分层设计**
-   - 底层：Allocator 处理基础内存分配
-   - 高层：TraverseCtx 管理 AST 相关操作
+3. **Key Patterns**
+   ```rust
+   // Visitor pattern for AST traversal
+   impl<'a> Traverse<'a, TransformState<'a>> for TransformerImpl<'a, '_> {
+       fn enter_program(&mut self, program: &mut Program<'a>, ctx: &mut TraverseCtx<'a>) {
+           // Transform implementations
+       }
+       // Other visitor methods
+   }
+   ```
 
-### Implementation Patterns
-1. **内存分配模式**
-```rust
-// 基础集合类型使用 allocator
-let mut declarators = AstVec::new_in(allocator);
+## Active Learnings
 
-// AST 节点使用 ctx
-let binding = ctx.alloc(BindingIdentifier { ... });
-```
+1. **AST Manipulation**
+   - Node transformation patterns
+   - Scope and context management
+   - Symbol resolution strategies
+   - State management during transforms
 
-2. **生命周期管理**
-- 统一使用 `'a` 生命周期参数
-- 确保 allocator 和 ctx 生命周期一致
+2. **Code Generation**
+   - Converting TypeScript features
+   - Handling JSX syntax
+   - Managing polyfills
+   - Source mapping
 
-## Learnings and Insights
+3. **Error Handling**
+   - Recovery strategies
+   - Diagnostic collection
+   - Source location tracking
+   - Validation approaches
 
-### Key Discoveries
-1. Allocator 和 TraverseCtx 是互补关系：
-   - 不能相互替代
-   - 各自有特定的使用场景
-   - 需要配合使用以实现完整功能
+## Important Patterns
 
-2. 性能考虑：
-   - Arena 分配减少内存碎片
-   - 批量操作提高效率
-   - 状态复用降低开销
+1. **Transform Organization**
+   - Sequential transform stages
+   - Plugin architecture
+   - State management
+   - Context preservation
 
-### Best Practices
-1. **选择合适的工具**
-   - 基础内存操作用 allocator
-   - AST 相关操作用 ctx
-   - 避免混用导致的复杂性
+2. **Type Safety**
+   - Strong type checking
+   - AST node validation
+   - Reference tracking
+   - Memory safety
 
-2. **代码组织**
-   - 清晰的职责分离
-   - 一致的模式使用
-   - 良好的错误处理
+3. **Performance**
+   - Minimal allocations
+   - Efficient traversal
+   - State reuse
+   - Memory pooling
+
+## Next Steps
+
+1. **Immediate Tasks**
+   - Study each ES transform implementation
+   - Understand TypeScript elimination patterns
+   - Analyze JSX conversion strategies
+   - Review helper injection methods
+
+2. **Implementation Focus**
+   - Port complex Babel transforms
+   - Maintain compatibility
+   - Ensure performance
+   - Add test coverage
+
+3. **Documentation Needs**
+   - Transform patterns
+   - AST manipulation guides
+   - Migration strategies
+   - Best practices
+
+## Working Notes
+
+1. **Key Concepts**
+   - Transform pipeline structure
+   - Visitor pattern implementation
+   - State management approaches
+   - Error handling strategies
+
+2. **Implementation Tips**
+   - Use arena allocation for AST nodes
+   - Maintain source locations
+   - Handle edge cases
+   - Write comprehensive tests
+
+3. **Common Patterns**
+   - Node type conversion
+   - Scope management
+   - Symbol resolution
+   - Context preservation
+
+## Reference Information
+
+1. **Important Files**
+   ```
+   oxc/crates/
+   ├── oxc_transformer/     # Core transformation
+   ├── oxc_ast/            # AST definitions
+   ├── oxc_semantic/       # Semantic analysis
+   └── oxc_allocator/      # Memory management
+   ```
+
+2. **Key Transforms**
+   - ECMAScript version transforms
+   - TypeScript elimination
+   - JSX conversion
+   - Decorator handling
+
+3. **Helper Functions**
+   - Runtime function injection
+   - Polyfill management
+   - Type conversions
+   - Source mapping
+
+## Development Guidelines
+
+1. **Code Standards**
+   - Follow Rust idioms
+   - Use strong typing
+   - Handle all error cases
+   - Document complex logic
+
+2. **Testing Requirements**
+   - Unit test transforms
+   - Integration test flows
+   - Edge case coverage
+   - Performance benchmarks
+
+3. **Review Checklist**
+   - Type safety
+   - Memory management
+   - Error handling
+   - Documentation
+   - Test coverage
+
+This active context provides guidance for implementing Babel-to-Rust transformations while maintaining compatibility and performance.
