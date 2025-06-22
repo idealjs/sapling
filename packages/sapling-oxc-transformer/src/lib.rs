@@ -2,6 +2,8 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::*;
 use oxc_traverse::{Traverse, TraverseCtx};
 
+mod utils;
+
 pub struct Transformer<'a> {
     allocator: &'a Allocator,
 }
