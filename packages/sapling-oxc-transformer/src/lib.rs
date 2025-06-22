@@ -1,9 +1,19 @@
-#![expect(clippy::print_stdout)]
-use napi_derive::napi;
-
 use oxc_allocator::Allocator;
-use oxc_codegen::Codegen;
-use oxc_parser::Parser;
-use oxc_span::SourceType;
-use std::path::Path;
+use oxc_ast::ast::*;
+use oxc_traverse::{Traverse, TraverseCtx};
 
+pub struct Transformer<'a> {
+    allocator: &'a Allocator,
+}
+
+impl<'a> Transformer<'a> {
+    pub fn new(allocator: &'a Allocator) -> Self {
+        Self { allocator }
+    }
+}
+
+impl<'a> Transformer<'a> {}
+
+impl<'a> Traverse<'a> for Transformer<'a> {
+    fn enter_statement(&mut self, node: &mut Statement<'a>, ctx: &mut TraverseCtx<'a>) {}
+}

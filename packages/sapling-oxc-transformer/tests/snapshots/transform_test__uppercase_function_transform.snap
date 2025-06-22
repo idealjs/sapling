@@ -1,7 +1,0 @@
----
-source: packages/sapling-oxc-transformer/tests/transform_test.rs
-expression: result.code
----
-function HELLO() {
-	console.log("Hello");
-}

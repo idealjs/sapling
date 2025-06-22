@@ -1,0 +1,12 @@
+---
+source: packages/sapling-oxc-transformer/tests/basic_test.rs
+expression: result.code
+---
+"use client";
+const style = (values: unknown): string => {
+	return "";
+};
+const Test = () => {
+	return <div className={style({})}>Test</div>;
+};
+export default Test;
