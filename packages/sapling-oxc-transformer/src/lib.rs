@@ -3,6 +3,7 @@ use oxc_ast::ast::*;
 use oxc_traverse::{Traverse, TraverseCtx};
 
 mod utils;
+mod validate;
 
 pub struct Transformer<'a> {
     allocator: &'a Allocator,
