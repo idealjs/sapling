@@ -12,6 +12,7 @@ pub mod string_utils;
 pub mod tag_name;
 pub mod text_wrap;
 pub mod utils;
+pub mod validate;
 
 pub use children::*;
 pub use component::*;

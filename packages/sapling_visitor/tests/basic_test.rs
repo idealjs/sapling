@@ -6,7 +6,7 @@ use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use oxc_traverse::traverse_mut;
-use sapling_oxc_transformer::Transformer;
+use sapling_visitor::Transformer;
 
 #[test]
 fn test_uppercase_function_transform() {

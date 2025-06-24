@@ -1,10 +1,16 @@
 [workspace]
 resolver = "2"
-members = ["packages/sapling-oxc-transformer"]
+members = [
+    "packages/sapling_core",
+    "packages/sapling_macros",
+    "packages/sapling_shared",
+    "packages/sapling_visitor",
+]
 
 [workspace.package]
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
 
 [workspace.dependencies]
 napi = { version = "2.14.1", default-features = false, features = ["napi4"] }
@@ -19,3 +25,29 @@ oxc_parser = "0.73.2"
 oxc_transformer = "0.73.2"
 oxc_semantic = "0.73.2"
 insta = "1.34.0"
+bitflags = "2.4.1"
+convert_case = "0.6.0"
+Inflector = "0.11"
+html5ever = "0.26"
+markup5ever = "0.11"
+markup5ever_rcdom = "0.2"
+lazy_static = "1.4.0"
+regex = "1.9"
+indexmap = "2.0"
+itertools = "0.11"
+phf = "0.11"
+rayon = "1.8"
+pico-args = "0.5.0"
+oxc_ast_visit = "0.73.2"
+oxc_traverse = "0.73.2"
+indextree = "4.7.4"
+quote = "1.0.40"
+proc-macro2 = "1.0.95"
+cow-utils = "0.1.3"
+lazy-regex = "3.4.1"
+prettyplease = "0.2.16"
+phf_codegen = "0.11"
+bpaf = "0.9.20"
+oxc_index = "3"
+serde = "1"
+syn = "2"

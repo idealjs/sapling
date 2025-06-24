@@ -3,7 +3,7 @@ use indextree::Node;
 use oxc_ast::AstKind;
 use oxc_ast::ast::*;
 
-use crate::shared::is_component;
+use crate::is_component;
 
 pub fn get_static_expression<'a>(node: Node<AstKind<'a>>, arena: Arena<AstKind<'a>>) -> bool {
     let node_data = node.get();

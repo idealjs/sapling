@@ -6,7 +6,7 @@ use oxc_semantic::SemanticBuilder;
 use oxc_span::{SourceType, Span};
 use oxc_traverse::{Traverse, TraverseCtx, traverse_mut};
 
-use sapling_oxc_transformer::shared::import::register_import_method;
+use sapling_shared::import::register_import_method;
 
 struct TestVisitor<'a> {
     allocator: &'a Allocator,
