@@ -18,3 +18,4 @@ yarn-error.log*
 target
 babel-plugin-jsx-dom-expressions
 oxc
+validate-html-nesting

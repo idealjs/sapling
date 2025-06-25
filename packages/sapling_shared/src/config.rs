@@ -1,84 +1,48 @@
-use oxc_allocator::Allocator;
-use oxc_ast::ast::{Program, Expression, Statement, Directive};
-use oxc_span::{Atom, Span};
-
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Config<'a> {
-    pub module_name: Atom<'a>,
-    pub renderers: Option<Vec<Config<'a>>>,
-    pub name: Atom<'a>,
-    pub static_marker: Atom<'a>,
-    pub memo_wrapper: Atom<'a>,
+    pub module_name: String,
+    pub generate: String,
+    pub hydratable: bool,
+    pub delegate_events: bool,
+    pub delegated_events: Vec<String>,
+    pub built_ins: Vec<String>,
+    pub require_import_source: Option<&'a String>,
+    pub wrap_conditionals: bool,
+    pub omit_nested_closing_tags: bool,
+    pub omit_last_closing_tag: bool,
+    pub omit_quotes: bool,
+    pub context_to_custom_elements: bool,
+    pub static_marker: String,
+    pub effect_wrapper: String,
+    pub memo_wrapper: String,
+    pub validate: bool,
 }
 
-pub trait HasConfig<'a> {
-    fn get_config(&self) -> Option<&Config<'a>>;
-}
-
-pub trait HasMetadata<'a> {
-    fn metadata(&self) -> Option<&'a ProgramContext>;
-}
-
-impl<'a> HasConfig<'a> for Program<'a> {
-    fn get_config(&self) -> Option<&Config<'a>> {
-        // TODO: Properly implement config access through proper channels
-        // For now use a placeholder implementation
-        None
-    }
-}
-
-impl<'a> HasMetadata<'a> for Directive<'a> {
-    fn metadata(&self) -> Option<&'a ProgramContext> {
-        None // TODO: Implement proper metadata access
-    }
-}
-
-#[derive(Debug)]
-pub struct StatementMetadata(ProgramContext);
-
-pub fn get_config<'a, T: HasConfig<'a>>(ctx: &'a T) -> Option<&'a Config<'a>> {
-    ctx.get_config()
-}
-
-pub fn get_renderer_config<'a, 'b>(ctx: &'a (impl HasConfig<'a> + 'a), renderer: &'b str) -> Option<&'a Config<'a>> {
-    let config = get_config(ctx)?;
-    config.renderers
-        .as_ref()
-        .and_then(|renderers| renderers.iter().find(|r| r.name == renderer))
-        .or(Some(config))
-}
-
-#[derive(Debug)]
-pub struct ProgramContext {
-    pub config: Option<Config<'static>>,
-}
-
-pub struct ConfigBuilder<'a> {
-    module_name: Option<Atom<'a>>,
-    renderers: Option<Vec<Config<'a>>>,
-    name: Option<Atom<'a>>,
-    static_marker: Option<Atom<'a>>,
-    memo_wrapper: Option<Atom<'a>>,
-}
-
-impl<'a> ConfigBuilder<'a> {
+impl<'a> Config<'a> {
     pub fn new() -> Self {
         Self {
-            module_name: None,
-            renderers: None,
-            name: None,
-            static_marker: None,
-            memo_wrapper: None,
+            module_name: "dom".to_string(),
+            generate: "dom".to_string(),
+            hydratable: false,
+            delegate_events: true,
+            delegated_events: Vec::new(),
+            built_ins: Vec::new(),
+            require_import_source: None,
+            wrap_conditionals: true,
+            omit_nested_closing_tags: false,
+            omit_last_closing_tag: true,
+            omit_quotes: true,
+            context_to_custom_elements: false,
+            static_marker: "@once".to_string(),
+            effect_wrapper: "effect".to_string(),
+            memo_wrapper: "memo".to_string(),
+            validate: true,
         }
     }
+}
 
-    pub fn build(self) -> Option<Config<'a>> {
-        Some(Config {
-            module_name: self.module_name?,
-            renderers: self.renderers,
-            name: self.name?,
-            static_marker: self.static_marker?,
-            memo_wrapper: self.memo_wrapper?,
-        })
+impl<'a> Default for Config<'a> {
+    fn default() -> Self {
+        Self::new()
     }
 }
