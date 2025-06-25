@@ -12,12 +12,12 @@ pub fn tree_builder(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
     // 保持原有的 derive 属性，并确保它在新结构中能正常工作
     let expanded = quote! {
-        #(#attrs)*  // 包括 #[derive(TreeBuilder)]
-        #vis struct #name<'a> {
-            pub arena: ::indextree::Arena<::oxc_ast::AstKind<'a>>,
-            pub current_parent: ::core::option::Option<::indextree::NodeId>,
-        }
-    };
+            #(#attrs)*  // 包括 #[derive(TreeBuilder)]
+            #vis struct #name<'a> {
+                pub arena: ::indextree::Arena<::oxc_ast::AstKind<'a>>,
+                pub node_stack: ::std::vec::Vec<::indextree::NodeId>,
+            }
+        };
 
     TokenStream::from(expanded)
 }

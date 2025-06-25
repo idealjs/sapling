@@ -12,8 +12,7 @@ syn = { workspace = true }
 prettyplease = { workspace = true }
 cow-utils = { workspace = true }
 lazy-regex = { workspace = true }
-
-oxc_allocator = { workspace = true }
+oxc_allocator.workspace = true
 oxc_ast = { workspace = true }
 oxc_span = { workspace = true }
 oxc_syntax = { workspace = true }
@@ -32,6 +31,7 @@ indextree.workspace = true
 html5ever.workspace = true
 markup5ever.workspace = true
 markup5ever_rcdom.workspace = true
+oxc_ast_visit.workspace = true
 
 [dev-dependencies]
 insta = { workspace = true }

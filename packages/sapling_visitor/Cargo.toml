@@ -9,9 +9,7 @@ sapling_core = { path = "../sapling_core" }
 sapling_macros = { path = "../sapling_macros" }
 sapling_shared = { path = "../sapling_shared" }
 sapling_ssr = { path = "../sapling_ssr" }
-
-# Core dependencies
-oxc_allocator = { workspace = true }
+oxc_allocator.workspace = true
 oxc_ast = { workspace = true }
 oxc_span = { workspace = true }
 oxc_syntax = { workspace = true }
@@ -21,3 +19,5 @@ oxc_transformer = { workspace = true }
 oxc_semantic = { workspace = true }
 oxc_traverse = { workspace = true }
 insta.workspace = true
+indextree.workspace = true
+oxc_ast_visit.workspace = true

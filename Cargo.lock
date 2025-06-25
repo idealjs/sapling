@@ -1147,6 +1147,7 @@ dependencies = [
  "markup5ever_rcdom",
  "oxc_allocator",
  "oxc_ast",
+ "oxc_ast_visit",
  "oxc_codegen",
  "oxc_parser",
  "oxc_semantic",
@@ -1191,9 +1192,11 @@ dependencies = [
 name = "sapling_visitor"
 version = "0.1.0"
 dependencies = [
+ "indextree",
  "insta",
  "oxc_allocator",
  "oxc_ast",
+ "oxc_ast_visit",
  "oxc_codegen",
  "oxc_parser",
  "oxc_semantic",
