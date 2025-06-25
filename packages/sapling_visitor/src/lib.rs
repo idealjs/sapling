@@ -1,33 +1,41 @@
 use indextree::{Arena, NodeId};
 use oxc_allocator::Allocator;
-use oxc_ast::AstKind;
+use oxc_ast::AstType;
 use oxc_ast::ast::{Atom, Statement};
-use oxc_ast_visit::walk_mut::walk_statement;
-use oxc_ast_visit::{Visit, VisitMut};
-use oxc_parser::Parser;
-use oxc_span::SourceType;
+use oxc_ast_visit::VisitMut;
+use oxc_ast_visit::walk_mut::{walk_jsx_element, walk_jsx_fragment, walk_program, walk_statement};
+
 use oxc_traverse::{Traverse, TraverseCtx};
-pub struct Transformer<'a> {
-    allocator: &'a Allocator,
-}
+use sapling_macros::tree_builder_mut;
+use sapling_shared::TreeBuilderMut;
 
-impl<'a> Transformer<'a> {
-    pub fn new(allocator: &'a Allocator) -> Self {
-        Self { allocator }
-    }
-}
-
-impl<'a> Transformer<'a> {}
-
-impl<'a> Traverse<'a> for Transformer<'a> {
-    fn enter_statement(&mut self, node: &mut Statement<'a>, ctx: &mut TraverseCtx<'a>) {}
-}
-
+#[tree_builder_mut]
 pub struct SaplingVisitor<'a> {
     pub allocator: &'a Allocator,
 }
 
+impl<'a> TreeBuilderMut<'a> for SaplingVisitor<'a> {
+    fn arena(&self) -> &Arena<AstType> {
+        &self.arena
+    }
+    fn arena_mut(&mut self) -> &mut Arena<AstType> {
+        &mut self.arena
+    }
+    fn node_stack(&self) -> &Vec<NodeId> {
+        &self.node_stack
+    }
+    fn node_stack_mut(&mut self) -> &mut Vec<NodeId> {
+        &mut self.node_stack
+    }
+}
+
 impl<'a> VisitMut<'a> for SaplingVisitor<'a> {
+    fn enter_node(&mut self, kind: AstType) {
+        <Self as TreeBuilderMut>::enter_node(self, kind);
+    }
+    fn leave_node(&mut self, kind: AstType) {
+        <Self as TreeBuilderMut>::leave_node(self, kind);
+    }
     fn visit_statement(&mut self, node: &mut Statement<'a>) {
         walk_statement(self, node);
         if let Statement::FunctionDeclaration(func) = node {
@@ -37,5 +45,14 @@ impl<'a> VisitMut<'a> for SaplingVisitor<'a> {
                 name.name = Atom::from(allocated);
             }
         }
+    }
+    fn visit_jsx_element(&mut self, it: &mut oxc_ast::ast::JSXElement<'a>) {
+        walk_jsx_element(self, it);
+    }
+    fn visit_jsx_fragment(&mut self, it: &mut oxc_ast::ast::JSXFragment<'a>) {
+        walk_jsx_fragment(self, it);
+    }
+    fn visit_program(&mut self, it: &mut oxc_ast::ast::Program<'a>) {
+        walk_program(self, it);
     }
 }

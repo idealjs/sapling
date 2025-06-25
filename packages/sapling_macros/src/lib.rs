@@ -10,17 +10,98 @@ pub fn tree_builder(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let vis = &input.vis;
     let attrs = &input.attrs;
 
-    // 保持原有的 derive 属性，并确保它在新结构中能正常工作
-    let expanded = quote! {
-            #(#attrs)*  // 包括 #[derive(TreeBuilder)]
-            #vis struct #name<'a> {
-                pub arena: ::indextree::Arena<::oxc_ast::AstKind<'a>>,
-                pub node_stack: ::std::vec::Vec<::indextree::NodeId>,
+    let expanded = match &input.data {
+        syn::Data::Struct(s) => match &s.fields {
+            Fields::Named(FieldsNamed { named, .. }) => {
+                let fields = named.iter();
+
+                quote! {
+                    #(#attrs)*
+                    #vis struct #name<'a> {
+                        #(#fields,)*
+                        pub arena: ::indextree::Arena<::oxc_ast::AstKind<'a>>,
+                        pub node_stack: ::std::vec::Vec<::indextree::NodeId>,
+                    }
+                }
             }
-        };
+            Fields::Unnamed(fields) => {
+                let original_fields = fields.unnamed.iter();
+                quote! {
+                    #(#attrs)*
+                    #vis struct #name<'a>(
+                        #(#original_fields,)*
+                        pub ::indextree::Arena<::oxc_ast::AstKind<'a>>,
+                        pub ::std::vec::Vec<::indextree::NodeId>
+                    );
+                }
+            }
+            Fields::Unit => {
+                quote! {
+                    #(#attrs)*
+                    #vis struct #name<'a> {
+                        pub arena: ::indextree::Arena<::oxc_ast::AstKind<'a>>,
+                        pub node_stack: ::std::vec::Vec<::indextree::NodeId>,
+                    }
+                }
+            }
+        },
+        _ => syn::Error::new(name.span(), "tree_builder can only be applied to structs")
+            .to_compile_error(),
+    };
 
     TokenStream::from(expanded)
 }
+
+#[proc_macro_attribute]
+pub fn tree_builder_mut(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(item as DeriveInput);
+    let name = &input.ident;
+    let vis = &input.vis;
+    let attrs = &input.attrs;
+
+    let expanded = match &input.data {
+        syn::Data::Struct(s) => match &s.fields {
+            Fields::Named(FieldsNamed { named, .. }) => {
+                let fields = named.iter();
+
+                quote! {
+                    #(#attrs)*
+                    #vis struct #name<'a> {
+                        #(#fields,)*
+                        pub arena: ::indextree::Arena<::oxc_ast::AstType>,
+                        pub node_stack: ::std::vec::Vec<::indextree::NodeId>,
+                    }
+                }
+            }
+            Fields::Unnamed(fields) => {
+                let original_fields = fields.unnamed.iter();
+                quote! {
+                    #(#attrs)*
+                    #vis struct #name<'a>(
+                        #(#original_fields,)*
+                        pub ::indextree::Arena<::oxc_ast::AstType>,
+                        pub ::std::vec::Vec<::indextree::NodeId>
+                    );
+                }
+            }
+            Fields::Unit => {
+                quote! {
+                    #(#attrs)*
+                    #vis struct #name<'a> {
+                        pub arena: ::indextree::Arena<::oxc_ast::AstType>,
+                        pub node_stack: ::std::vec::Vec<::indextree::NodeId>,
+                    }
+                }
+            }
+        },
+        _ => syn::Error::new(name.span(), "tree_builder can only be applied to structs")
+            .to_compile_error(),
+    };
+
+    TokenStream::from(expanded)
+}
+
+
 
 #[proc_macro_derive(TreeBuilder)]
 pub fn derive_tree_builder(input: TokenStream) -> TokenStream {

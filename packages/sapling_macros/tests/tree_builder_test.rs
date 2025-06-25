@@ -7,32 +7,12 @@ use oxc_span::SourceType;
 use sapling_macros::tree_builder;
 
 #[tree_builder]
-// #[derive(TreeBuilder)]
 struct TestTreeBuilder<'a> {}
 
-// impl<'a> TreeBuilder<'a> for TestTreeBuilder<'a> {
-//     fn arena(&self) -> &Arena<AstKind<'a>> {
-//         &self.arena
-//     }
-//     fn arena_mut(&mut self) -> &mut Arena<AstKind<'a>> {
-//         &mut self.arena
-//     }
-//     fn node_stack(&self) -> &Vec<NodeId> {
-//         &self.node_stack
-//     }
-//     fn node_stack_mut(&mut self) -> &mut Vec<NodeId> {
-//         &mut self.node_stack
-//     }
-// }
-
-// impl<'a> Visit<'a> for TestTreeBuilder<'a> {
-//     fn enter_node(&mut self, kind: AstKind<'a>) {
-//         <Self as TreeBuilder>::enter_node(self, kind);
-//     }
-//     fn leave_node(&mut self, kind: AstKind<'a>) {
-//         <Self as TreeBuilder>::leave_node(self, kind);
-//     }
-// }
+impl<'a> Visit<'a> for TestTreeBuilder<'a> {
+    fn enter_node(&mut self, kind: AstKind<'a>) {}
+    fn leave_node(&mut self, kind: AstKind<'a>) {}
+}
 
 #[cfg(test)]
 mod tests {

@@ -1,13 +1,12 @@
 use std::{fs, path::Path};
 
+use indextree::Arena;
 use oxc_allocator::Allocator;
+use oxc_ast_visit::VisitMut;
 use oxc_codegen::Codegen;
 use oxc_parser::Parser;
-use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
-use oxc_traverse::traverse_mut;
-use sapling_visitor::{SaplingVisitor, Transformer};
-use oxc_ast_visit::VisitMut; // Import the trait for visit_program
+use sapling_visitor::SaplingVisitor; // Import the trait for visit_program
 
 #[test]
 fn test_uppercase_function_transform() {
@@ -22,8 +21,10 @@ fn test_uppercase_function_transform() {
 
     let mut visitor = SaplingVisitor {
         allocator: &allocator,
+        arena: Arena::new(),
+        node_stack: vec![],
     };
-    
+
     visitor.visit_program(&mut program);
 
     let result = Codegen::new().build(&program);
