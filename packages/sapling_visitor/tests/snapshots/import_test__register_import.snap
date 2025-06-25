@@ -1,8 +1,0 @@
----
-source: packages/sapling-oxc-transformer/tests/import_test.rs
-expression: result.code
----
-_$createElement;
-_$createElement;
-_$Fragment;
-// Initial empty program
