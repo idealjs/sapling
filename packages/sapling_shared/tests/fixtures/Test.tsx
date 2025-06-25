@@ -5,7 +5,7 @@ const style = (values: unknown): string => {
 };
 
 const Test = () => {
-  return <div className={style({})}>Test</div>;
+  return <div className={style({})}>{"Test"}</div>;
 };
 
 export default Test;
