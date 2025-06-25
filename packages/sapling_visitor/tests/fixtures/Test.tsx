@@ -9,3 +9,7 @@ const Test = () => {
 };
 
 export default Test;
+
+function someFunction() {
+  return "This is a function";
+}

@@ -6,7 +6,8 @@ use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use oxc_traverse::traverse_mut;
-use sapling_visitor::Transformer;
+use sapling_visitor::{SaplingVisitor, Transformer};
+use oxc_ast_visit::VisitMut; // Import the trait for visit_program
 
 #[test]
 fn test_uppercase_function_transform() {
@@ -19,12 +20,11 @@ fn test_uppercase_function_transform() {
     let ret = Parser::new(&allocator, &source_text, source_type).parse();
     let mut program = ret.program;
 
-    let semantic_ret = SemanticBuilder::new().build(&program);
-    let scoping = semantic_ret.semantic.into_scoping();
-
-    let mut transformer = Transformer::new(&allocator);
-
-    traverse_mut(&mut transformer, &allocator, &mut program, scoping);
+    let mut visitor = SaplingVisitor {
+        allocator: &allocator,
+    };
+    
+    visitor.visit_program(&mut program);
 
     let result = Codegen::new().build(&program);
 

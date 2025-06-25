@@ -10,3 +10,6 @@ const Test = () => {
 	return <div className={style({})}>Test</div>;
 };
 export default Test;
+function SOMEFUNCTION() {
+	return "This is a function";
+}
