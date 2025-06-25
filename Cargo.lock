@@ -1116,10 +1116,17 @@ dependencies = [
 name = "sapling_macros"
 version = "0.1.0"
 dependencies = [
+ "indextree",
+ "insta",
  "oxc_allocator",
  "oxc_ast",
+ "oxc_ast_visit",
+ "oxc_codegen",
+ "oxc_parser",
+ "oxc_semantic",
  "oxc_span",
  "oxc_syntax",
+ "oxc_traverse",
  "proc-macro2",
  "quote",
  "syn 2.0.104",
