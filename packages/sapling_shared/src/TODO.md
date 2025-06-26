@@ -13,9 +13,8 @@
 
 | 函数/常量名称  | 行数 | 描述                                       | 迁移目标          | 目标函数        | 状态 |
 | -------------- | ---- | ------------------------------------------ | ----------------- | --------------- | ---- |
-| InlineElements | 54   | 内联元素列表常量，定义了HTML中所有内联元素 | html_constants.rs | INLINE_ELEMENTS | TODO |
-| BlockElements  | 35   | 块级元素列表常量，定义了HTML中所有块级元素 | html_constants.rs | BLOCK_ELEMENTS  | TODO |
-| alwaysClose    | 21   | 总是需要闭合的HTML元素列表                 | html_constants.rs | ALWAYS_CLOSE    | TODO |
+| InlineElements | 54   | 内联元素列表常量，定义了HTML中所有内联元素 | html_constants.rs | INLINE_ELEMENTS | DONE |
+| BlockElements  | 35   | 块级元素列表常量，定义了HTML中所有块级元素 | html_constants.rs | BLOCK_ELEMENTS  | DONE |
 
 ### element.js
 
@@ -32,6 +31,7 @@
 | detectResolvableEventHandler | 15   | 检测事件处理器是否可解析                   | event_handler.rs       | detect_resolvable_handler     | TODO |
 | contextToCustomElement       | 15   | 为自定义元素添加上下文支持                 | custom_element.rs      | add_context_to_custom_element | TODO |
 | nextChild                    | 3    | 获取下一个子元素节点                       | element_utils.rs       | next_child                    | TODO |
+| alwaysClose                  | 21   | 总是需要闭合的HTML元素列表                 | html_constants.rs      | ALWAYS_CLOSE                  | TODO |
 
 ### template.js
 
@@ -104,7 +104,7 @@
 | escapeStringForTemplate | 3    | 转义模板字符串            | string_utils.rs        | escape_template_string | DONE |
 | getConfig               | 3    | 获取配置信息              | config_utils.rs        | get_config             | TODO |
 | getRendererConfig       | 3    | 获取渲染器配置            | config_utils.rs        | get_renderer_config    | TODO |
-| getTagName              | 3    | 获取JSX标签名             | jsx_utils.rs           | get_tag_name           | TODO |
+| getTagName              | 3    | 获取JSX标签名             | tag_name.rs            | get_tag_name           | TODO |
 | isComponent             | 3    | 检查是否为组件            | component.rs           | is_component           | DONE |
 | toEventName             | 3    | 转换事件名称              | event_utils.rs         | to_event_name          | TODO |
 | toAttributeName         | 3    | 转换属性名称              | attribute_utils.rs     | to_attribute_name      | TODO |
@@ -115,7 +115,7 @@
 | 函数/常量名称   | 行数 | 描述                                     | 迁移目标          | 目标函数          | 状态 |
 | --------------- | ---- | ---------------------------------------- | ----------------- | ----------------- | ---- |
 | isInvalidMarkup | 85   | 验证HTML标记的有效性，处理特殊情况和转义 | validate.rs       | is_invalid_markup | DONE |
-| bodyElement     | 7    | 用作innerHTML上下文的body元素常量        | html_constants.rs | BODY_ELEMENT      | TODO |
+| bodyElement     | 7    | 用作innerHTML上下文的body元素常量        | html_constants.rs | BODY_ELEMENT      | DONE |
 | innerHTML       | 5    | 解析HTML片段并返回序列化结果             | validate.rs       | inner_html        | DONE |
 
 ## ssr/
@@ -162,3 +162,9 @@
 | -------------- | ---- | -------------------------------------- | --------------------- | --------------- | ---- |
 | wrapDynamics   | 65   | 封装动态属性更新逻辑                   | universal_dynamics.rs | wrap_dynamics   | TODO |
 | createTemplate | 35   | 创建通用模板，处理组件声明和动态表达式 | universal_template.rs | create_template | TODO |
+
+### volidElements.ts
+
+| 函数/常量名称  | 行数 | 描述                       | 迁移目标          | 目标函数      | 状态 |
+| -------------- | ---- | -------------------------- | ----------------- | ------------- | ---- |
+| export default | 21   | 总是需要闭合的HTML元素列表 | html_constants.rs | VOID_ELEMENTS | DONE |
