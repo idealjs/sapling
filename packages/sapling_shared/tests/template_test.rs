@@ -13,8 +13,8 @@ use oxc_syntax::symbol::SymbolId;
 use oxc_traverse::{Traverse, TraverseCtx, traverse_mut};
 use std::cell::Cell;
 
-use sapling_core::ssr::append_templates::append_templates;
-use sapling_core::ssr::template::TemplateItem;
+use sapling_shared::ssr::append_templates::append_templates;
+use sapling_shared::ssr::template::TemplateItem;
 
 pub struct Transformer<'a> {
     allocator: &'a Allocator,

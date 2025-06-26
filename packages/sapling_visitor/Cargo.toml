@@ -5,7 +5,6 @@ edition = "2024"
 publish = false
 
 [dependencies]
-sapling_core = { path = "../sapling_core" }
 sapling_macros = { path = "../sapling_macros" }
 sapling_shared = { path = "../sapling_shared" }
 sapling_ssr = { path = "../sapling_ssr" }
