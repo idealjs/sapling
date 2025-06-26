@@ -1,7 +1,7 @@
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use sapling_shared::{config::Config, pre_process::pre_process};
+use sapling_shared::{config::Config, processor::pre_process_ast};
 
 #[test]
 fn test_config_merging() {
@@ -13,7 +13,7 @@ fn test_config_merging() {
 
     // Test with default config
     let empty_config = Config::default();
-    let result = pre_process(&program, &empty_config);
+    let result = pre_process_ast(&program, &empty_config);
     assert_eq!(result.hydratable, false);
     assert_eq!(result.delegate_events, true);
     assert_eq!(result.validate, true);
@@ -26,7 +26,7 @@ fn test_config_merging() {
         validate: false,
         ..Default::default()
     };
-    let result = pre_process(&program, &custom_config);
+    let result = pre_process_ast(&program, &custom_config);
     assert_eq!(result.hydratable, false);
     assert_eq!(result.delegate_events, false);
     assert_eq!(result.validate, false);
@@ -52,7 +52,7 @@ fn test_jsx_import_source() {
         require_import_source: Some(&sapling_str),
         ..Default::default()
     };
-    let result = pre_process(&program, &config);
+    let result = pre_process_ast(&program, &config);
     assert_eq!(result.require_import_source, Some(sapling_str));
 
     // Test without import source comment
@@ -63,7 +63,7 @@ fn test_jsx_import_source() {
     "#;
     let ret = Parser::new(&allocator, source, source_type).parse();
     let program = ret.program;
-    let result = pre_process(&program, &config);
+    let result = pre_process_ast(&program, &config);
     assert_eq!(result.require_import_source, Some(sapling_str));
 }
 
@@ -90,7 +90,7 @@ fn test_valid_jsx_nesting() {
     };
 
     // Should not panic for valid nesting
-    pre_process(&program, &config);
+    pre_process_ast(&program, &config);
 }
 
 #[test]
@@ -116,7 +116,7 @@ fn test_invalid_jsx_nesting() {
     };
 
     // Should panic for invalid nesting
-    pre_process(&program, &config);
+    pre_process_ast(&program, &config);
 }
 
 #[test]
@@ -143,7 +143,7 @@ fn test_component_nesting() {
     };
 
     // Should not panic as components can contain any elements
-    pre_process(&program, &config);
+    pre_process_ast(&program, &config);
 }
 
 #[test]
@@ -171,5 +171,5 @@ fn test_mixed_jsx_nesting() {
     };
 
     // Should not panic for valid mixed nesting
-    pre_process(&program, &config);
+    pre_process_ast(&program, &config);
 }

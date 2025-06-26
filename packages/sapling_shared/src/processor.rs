@@ -103,7 +103,7 @@ impl<'a> Visit<'a> for JSXValidator<'a> {
     }
 }
 
-pub fn pre_process<'a>(program: &'a Program<'a>, opts: &'a Config<'a>) -> Config<'a> {
+pub fn pre_process_ast<'a>(program: &'a Program<'a>, opts: &'a Config<'a>) -> Config<'a> {
     let merged = Config {
         module_name: opts.module_name.clone(),
         generate: opts.generate.clone(),
@@ -158,4 +158,25 @@ pub fn pre_process<'a>(program: &'a Program<'a>, opts: &'a Config<'a>) -> Config
     }
 
     merged
+}
+
+pub fn post_process_ast() -> Result<(), &'static str> {
+    todo!(
+        "Implement post-processing of transformed AST - adds event delegation and template validation"
+    )
+}
+
+/// Process spreads in transformed AST
+pub fn process_spreads() -> Result<(), &'static str> {
+    todo!("Implement processing of spread attributes in transformed AST")
+}
+
+/// Validate templates in transformed AST
+pub fn validate_templates() -> Result<(), &'static str> {
+    todo!("Implement validation of templates in transformed AST")
+}
+
+/// Add event delegation to transformed AST
+pub fn add_event_delegation() -> Result<(), &'static str> {
+    todo!("Implement addition of event delegation to transformed AST")
 }

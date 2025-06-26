@@ -5,7 +5,7 @@ use oxc_ast_visit::VisitMut;
 use oxc_ast_visit::walk_mut::{walk_jsx_element, walk_jsx_fragment, walk_program, walk_statement};
 
 use sapling_macros::tree_builder_mut;
-use sapling_shared::pre_process::pre_process;
+use sapling_shared::processor::pre_process_ast;
 use sapling_shared::{Config, TreeBuilderMut};
 
 #[tree_builder_mut]
@@ -46,7 +46,7 @@ impl<'a> VisitMut<'a> for SaplingVisitor<'a> {
         walk_jsx_fragment(self, it);
     }
     fn visit_program(&mut self, it: &mut oxc_ast::ast::Program<'a>) {
-        pre_process(it, &Config::default());
+        pre_process_ast(it, &Config::default());
         walk_program(self, it);
     }
 }

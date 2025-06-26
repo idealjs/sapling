@@ -60,15 +60,15 @@
 
 ### postprocess.js
 
-| 函数/常量名称  | 行数 | 描述                                      | 迁移目标          | 目标函数    | 状态 |
-| -------------- | ---- | ----------------------------------------- | ----------------- | ----------- | ---- |
-| default export | 45   | 后处理转换后的AST，添加事件代理和模板验证 | post_processor.rs | process_ast | TODO |
+| 函数/常量名称  | 行数 | 描述                                      | 迁移目标     | 目标函数         | 状态 |
+| -------------- | ---- | ----------------------------------------- | ------------ | ---------------- | ---- |
+| default export | 45   | 后处理转换后的AST，添加事件代理和模板验证 | processor.rs | post_process_ast | TODO |
 
 ### preprocess.js
 
 | 函数/常量名称           | 行数 | 描述                            | 迁移目标         | 目标函数             | 状态 |
 | ----------------------- | ---- | ------------------------------- | ---------------- | -------------------- | ---- |
-| default export          | 25   | 预处理AST，处理导入源和验证选项 | preprocessor.rs  | preprocess_ast       | TODO |
+| default export          | 25   | 预处理AST，处理导入源和验证选项 | processor.rs     | pre_process_ast      | DONE |
 | JSXValidator.JSXElement | 20   | 验证JSX嵌套的合法性             | jsx_validator.rs | validate_jsx_element | TODO |
 
 ### transform.js
