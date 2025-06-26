@@ -9,6 +9,7 @@ use oxc_ast::{
 use oxc_ast_visit::{Visit, walk};
 use oxc_codegen::Codegen;
 use oxc_parser::Parser;
+use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 
 use sapling_macros::tree_builder;
@@ -85,9 +86,14 @@ fn test_get_static_expression() {
     let ret = Parser::new(&allocator, &source_text, source_type).parse();
     let mut program = ret.program;
 
+    let semantic_ret = SemanticBuilder::new().build(&program);
+    let scoping = semantic_ret.semantic.into_scoping();
+
     let mut visitor = TestVisitor {
         arena: Arena::new(),
         node_stack: vec![],
+        allocator: &allocator,
+        scoping: &scoping,
     };
 
     visitor.visit_program(&mut program);

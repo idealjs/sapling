@@ -1,6 +1,6 @@
 ---
 source: packages/sapling_shared/tests/get_static_expression_test.rs
-expression: "format!(\"{:?}\", AstArena { arena: visitor.arena })"
+expression: "format!(\"{:?}\", DebugArena::new(visitor.arena))"
 ---
 AstArena {
     nodes: [
@@ -86,7 +86,11 @@ AstArena {
                                                                 },
                                                                 name: "style",
                                                                 symbol_id: Cell {
-                                                                    value: None,
+                                                                    value: Some(
+                                                                        SymbolId(
+                                                                            0,
+                                                                        ),
+                                                                    ),
                                                                 },
                                                             },
                                                         ),
@@ -125,7 +129,11 @@ AstArena {
                                                                                             },
                                                                                             name: "values",
                                                                                             symbol_id: Cell {
-                                                                                                value: None,
+                                                                                                value: Some(
+                                                                                                    SymbolId(
+                                                                                                        1,
+                                                                                                    ),
+                                                                                                ),
                                                                                             },
                                                                                         },
                                                                                     ),
@@ -209,7 +217,11 @@ AstArena {
                                                                     ),
                                                                 },
                                                                 scope_id: Cell {
-                                                                    value: None,
+                                                                    value: Some(
+                                                                        ScopeId(
+                                                                            1,
+                                                                        ),
+                                                                    ),
                                                                 },
                                                                 expression: false,
                                                                 async: false,
@@ -248,7 +260,11 @@ AstArena {
                                                                 },
                                                                 name: "Test",
                                                                 symbol_id: Cell {
-                                                                    value: None,
+                                                                    value: Some(
+                                                                        SymbolId(
+                                                                            2,
+                                                                        ),
+                                                                    ),
                                                                 },
                                                             },
                                                         ),
@@ -351,7 +367,11 @@ AstArena {
                                                                                                                                                 },
                                                                                                                                                 name: "style",
                                                                                                                                                 reference_id: Cell {
-                                                                                                                                                    value: None,
+                                                                                                                                                    value: Some(
+                                                                                                                                                        ReferenceId(
+                                                                                                                                                            0,
+                                                                                                                                                        ),
+                                                                                                                                                    ),
                                                                                                                                                 },
                                                                                                                                             },
                                                                                                                                         ),
@@ -434,7 +454,11 @@ AstArena {
                                                                     ),
                                                                 },
                                                                 scope_id: Cell {
-                                                                    value: None,
+                                                                    value: Some(
+                                                                        ScopeId(
+                                                                            2,
+                                                                        ),
+                                                                    ),
                                                                 },
                                                                 expression: false,
                                                                 async: false,
@@ -474,7 +498,11 @@ AstArena {
                                                 },
                                                 name: "Test",
                                                 reference_id: Cell {
-                                                    value: None,
+                                                    value: Some(
+                                                        ReferenceId(
+                                                            1,
+                                                        ),
+                                                    ),
                                                 },
                                             },
                                         ),
@@ -483,7 +511,11 @@ AstArena {
                             ],
                         ),
                         scope_id: Cell {
-                            value: None,
+                            value: Some(
+                                ScopeId(
+                                    0,
+                                ),
+                            ),
                         },
                         source_type: SourceType {
                             language: TypeScript,
@@ -659,7 +691,11 @@ AstArena {
                                                 },
                                                 name: "style",
                                                 symbol_id: Cell {
-                                                    value: None,
+                                                    value: Some(
+                                                        SymbolId(
+                                                            0,
+                                                        ),
+                                                    ),
                                                 },
                                             },
                                         ),
@@ -698,7 +734,11 @@ AstArena {
                                                                             },
                                                                             name: "values",
                                                                             symbol_id: Cell {
-                                                                                value: None,
+                                                                                value: Some(
+                                                                                    SymbolId(
+                                                                                        1,
+                                                                                    ),
+                                                                                ),
                                                                             },
                                                                         },
                                                                     ),
@@ -782,7 +822,11 @@ AstArena {
                                                     ),
                                                 },
                                                 scope_id: Cell {
-                                                    value: None,
+                                                    value: Some(
+                                                        ScopeId(
+                                                            1,
+                                                        ),
+                                                    ),
                                                 },
                                                 expression: false,
                                                 async: false,
@@ -849,7 +893,11 @@ AstArena {
                                     },
                                     name: "style",
                                     symbol_id: Cell {
-                                        value: None,
+                                        value: Some(
+                                            SymbolId(
+                                                0,
+                                            ),
+                                        ),
                                     },
                                 },
                             ),
@@ -888,7 +936,11 @@ AstArena {
                                                                 },
                                                                 name: "values",
                                                                 symbol_id: Cell {
-                                                                    value: None,
+                                                                    value: Some(
+                                                                        SymbolId(
+                                                                            1,
+                                                                        ),
+                                                                    ),
                                                                 },
                                                             },
                                                         ),
@@ -972,7 +1024,11 @@ AstArena {
                                         ),
                                     },
                                     scope_id: Cell {
-                                        value: None,
+                                        value: Some(
+                                            ScopeId(
+                                                1,
+                                            ),
+                                        ),
                                     },
                                     expression: false,
                                     async: false,
@@ -1020,7 +1076,11 @@ AstArena {
                         },
                         name: "style",
                         symbol_id: Cell {
-                            value: None,
+                            value: Some(
+                                SymbolId(
+                                    0,
+                                ),
+                            ),
                         },
                     },
                 ),
@@ -1097,7 +1157,11 @@ AstArena {
                                                     },
                                                     name: "values",
                                                     symbol_id: Cell {
-                                                        value: None,
+                                                        value: Some(
+                                                            SymbolId(
+                                                                1,
+                                                            ),
+                                                        ),
                                                     },
                                                 },
                                             ),
@@ -1181,7 +1245,11 @@ AstArena {
                             ),
                         },
                         scope_id: Cell {
-                            value: None,
+                            value: Some(
+                                ScopeId(
+                                    1,
+                                ),
+                            ),
                         },
                         expression: false,
                         async: false,
@@ -1255,7 +1323,11 @@ AstArena {
                                                 },
                                                 name: "values",
                                                 symbol_id: Cell {
-                                                    value: None,
+                                                    value: Some(
+                                                        SymbolId(
+                                                            1,
+                                                        ),
+                                                    ),
                                                 },
                                             },
                                         ),
@@ -1340,7 +1412,11 @@ AstArena {
                                     },
                                     name: "values",
                                     symbol_id: Cell {
-                                        value: None,
+                                        value: Some(
+                                            SymbolId(
+                                                1,
+                                            ),
+                                        ),
                                     },
                                 },
                             ),
@@ -1403,7 +1479,11 @@ AstArena {
                         },
                         name: "values",
                         symbol_id: Cell {
-                            value: None,
+                            value: Some(
+                                SymbolId(
+                                    1,
+                                ),
+                            ),
                         },
                     },
                 ),
@@ -1831,7 +1911,11 @@ AstArena {
                                                 },
                                                 name: "Test",
                                                 symbol_id: Cell {
-                                                    value: None,
+                                                    value: Some(
+                                                        SymbolId(
+                                                            2,
+                                                        ),
+                                                    ),
                                                 },
                                             },
                                         ),
@@ -1934,7 +2018,11 @@ AstArena {
                                                                                                                                 },
                                                                                                                                 name: "style",
                                                                                                                                 reference_id: Cell {
-                                                                                                                                    value: None,
+                                                                                                                                    value: Some(
+                                                                                                                                        ReferenceId(
+                                                                                                                                            0,
+                                                                                                                                        ),
+                                                                                                                                    ),
                                                                                                                                 },
                                                                                                                             },
                                                                                                                         ),
@@ -2017,7 +2105,11 @@ AstArena {
                                                     ),
                                                 },
                                                 scope_id: Cell {
-                                                    value: None,
+                                                    value: Some(
+                                                        ScopeId(
+                                                            2,
+                                                        ),
+                                                    ),
                                                 },
                                                 expression: false,
                                                 async: false,
@@ -2084,7 +2176,11 @@ AstArena {
                                     },
                                     name: "Test",
                                     symbol_id: Cell {
-                                        value: None,
+                                        value: Some(
+                                            SymbolId(
+                                                2,
+                                            ),
+                                        ),
                                     },
                                 },
                             ),
@@ -2187,7 +2283,11 @@ AstArena {
                                                                                                                     },
                                                                                                                     name: "style",
                                                                                                                     reference_id: Cell {
-                                                                                                                        value: None,
+                                                                                                                        value: Some(
+                                                                                                                            ReferenceId(
+                                                                                                                                0,
+                                                                                                                            ),
+                                                                                                                        ),
                                                                                                                     },
                                                                                                                 },
                                                                                                             ),
@@ -2270,7 +2370,11 @@ AstArena {
                                         ),
                                     },
                                     scope_id: Cell {
-                                        value: None,
+                                        value: Some(
+                                            ScopeId(
+                                                2,
+                                            ),
+                                        ),
                                     },
                                     expression: false,
                                     async: false,
@@ -2318,7 +2422,11 @@ AstArena {
                         },
                         name: "Test",
                         symbol_id: Cell {
-                            value: None,
+                            value: Some(
+                                SymbolId(
+                                    2,
+                                ),
+                            ),
                         },
                     },
                 ),
@@ -2459,7 +2567,11 @@ AstArena {
                                                                                                         },
                                                                                                         name: "style",
                                                                                                         reference_id: Cell {
-                                                                                                            value: None,
+                                                                                                            value: Some(
+                                                                                                                ReferenceId(
+                                                                                                                    0,
+                                                                                                                ),
+                                                                                                            ),
                                                                                                         },
                                                                                                     },
                                                                                                 ),
@@ -2542,7 +2654,11 @@ AstArena {
                             ),
                         },
                         scope_id: Cell {
-                            value: None,
+                            value: Some(
+                                ScopeId(
+                                    2,
+                                ),
+                            ),
                         },
                         expression: false,
                         async: false,
@@ -2709,7 +2825,11 @@ AstArena {
                                                                                                     },
                                                                                                     name: "style",
                                                                                                     reference_id: Cell {
-                                                                                                        value: None,
+                                                                                                        value: Some(
+                                                                                                            ReferenceId(
+                                                                                                                0,
+                                                                                                            ),
+                                                                                                        ),
                                                                                                     },
                                                                                                 },
                                                                                             ),
@@ -2893,7 +3013,11 @@ AstArena {
                                                                                     },
                                                                                     name: "style",
                                                                                     reference_id: Cell {
-                                                                                        value: None,
+                                                                                        value: Some(
+                                                                                            ReferenceId(
+                                                                                                0,
+                                                                                            ),
+                                                                                        ),
                                                                                     },
                                                                                 },
                                                                             ),
@@ -3066,7 +3190,11 @@ AstArena {
                                                                         },
                                                                         name: "style",
                                                                         reference_id: Cell {
-                                                                            value: None,
+                                                                            value: Some(
+                                                                                ReferenceId(
+                                                                                    0,
+                                                                                ),
+                                                                            ),
                                                                         },
                                                                     },
                                                                 ),
@@ -3238,7 +3366,11 @@ AstArena {
                                                                     },
                                                                     name: "style",
                                                                     reference_id: Cell {
-                                                                        value: None,
+                                                                        value: Some(
+                                                                            ReferenceId(
+                                                                                0,
+                                                                            ),
+                                                                        ),
                                                                     },
                                                                 },
                                                             ),
@@ -3386,7 +3518,11 @@ AstArena {
                                                     },
                                                     name: "style",
                                                     reference_id: Cell {
-                                                        value: None,
+                                                        value: Some(
+                                                            ReferenceId(
+                                                                0,
+                                                            ),
+                                                        ),
                                                     },
                                                 },
                                             ),
@@ -3514,7 +3650,11 @@ AstArena {
                                         },
                                         name: "style",
                                         reference_id: Cell {
-                                            value: None,
+                                            value: Some(
+                                                ReferenceId(
+                                                    0,
+                                                ),
+                                            ),
                                         },
                                     },
                                 ),
@@ -3589,7 +3729,11 @@ AstArena {
                                 },
                                 name: "style",
                                 reference_id: Cell {
-                                    value: None,
+                                    value: Some(
+                                        ReferenceId(
+                                            0,
+                                        ),
+                                    ),
                                 },
                             },
                         ),
@@ -3649,7 +3793,11 @@ AstArena {
                         },
                         name: "style",
                         reference_id: Cell {
-                            value: None,
+                            value: Some(
+                                ReferenceId(
+                                    0,
+                                ),
+                            ),
                         },
                     },
                 ),
@@ -3999,7 +4147,11 @@ AstArena {
                                     },
                                     name: "Test",
                                     reference_id: Cell {
-                                        value: None,
+                                        value: Some(
+                                            ReferenceId(
+                                                1,
+                                            ),
+                                        ),
                                     },
                                 },
                             ),
@@ -4064,7 +4216,11 @@ AstArena {
                                 },
                                 name: "Test",
                                 reference_id: Cell {
-                                    value: None,
+                                    value: Some(
+                                        ReferenceId(
+                                            1,
+                                        ),
+                                    ),
                                 },
                             },
                         ),
@@ -4143,7 +4299,11 @@ AstArena {
                         },
                         name: "Test",
                         reference_id: Cell {
-                            value: None,
+                            value: Some(
+                                ReferenceId(
+                                    1,
+                                ),
+                            ),
                         },
                     },
                 ),

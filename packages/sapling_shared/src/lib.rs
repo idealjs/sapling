@@ -36,6 +36,7 @@ pub mod text_wrap;
 pub mod tree_builder;
 pub mod utils;
 pub mod validate;
+pub mod visitor;
 
 // Re-exports of commonly used items
 pub use children::*;
@@ -56,6 +57,7 @@ pub use string_utils::*;
 pub use tag_name::*;
 pub use text_wrap::*;
 pub use tree_builder::*;
+pub use visitor::*;
 
 use lazy_static::lazy_static;
 use std::collections::HashSet;
