@@ -1,4 +1,4 @@
-use std::{fmt, fs, path::Path};
+use std::{fs, path::Path};
 
 use indextree::{Arena, NodeId};
 use oxc_allocator::Allocator;
@@ -13,6 +13,9 @@ use oxc_span::SourceType;
 
 use sapling_macros::tree_builder;
 use sapling_shared::{TreeBuilder, get_static_expression};
+
+mod debug;
+use debug::DebugArena;
 
 #[tree_builder]
 struct TestVisitor<'a> {}
@@ -89,5 +92,5 @@ fn test_get_static_expression() {
 
     visitor.visit_program(&mut program);
 
-    insta::assert_snapshot!(format!("{:?}", visitor.arena));
+    insta::assert_snapshot!(format!("{:?}", DebugArena::new(visitor.arena)));
 }
