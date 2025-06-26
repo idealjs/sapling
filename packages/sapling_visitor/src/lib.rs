@@ -1,13 +1,12 @@
 use indextree::{Arena, NodeId};
 use oxc_allocator::Allocator;
 use oxc_ast::AstType;
-use oxc_ast::ast::{Atom, Statement};
 use oxc_ast_visit::VisitMut;
 use oxc_ast_visit::walk_mut::{walk_jsx_element, walk_jsx_fragment, walk_program, walk_statement};
 
-use oxc_traverse::{Traverse, TraverseCtx};
 use sapling_macros::tree_builder_mut;
-use sapling_shared::TreeBuilderMut;
+use sapling_shared::pre_process::pre_process;
+use sapling_shared::{Config, TreeBuilderMut};
 
 #[tree_builder_mut]
 pub struct SaplingVisitor<'a> {
@@ -35,15 +34,9 @@ impl<'a> VisitMut<'a> for SaplingVisitor<'a> {
     }
     fn leave_node(&mut self, kind: AstType) {
         <Self as TreeBuilderMut>::leave_node(self, kind);
-    }
-    fn visit_statement(&mut self, node: &mut Statement<'a>) {
-        walk_statement(self, node);
-        if let Statement::FunctionDeclaration(func) = node {
-            if let Some(name) = func.id.as_mut() {
-                let uppercase_name = name.name.to_uppercase();
-                let allocated = self.allocator.alloc_str(&uppercase_name);
-                name.name = Atom::from(allocated);
-            }
+        match kind {
+            AstType::Program => {}
+            _ => {}
         }
     }
     fn visit_jsx_element(&mut self, it: &mut oxc_ast::ast::JSXElement<'a>) {
@@ -53,6 +46,7 @@ impl<'a> VisitMut<'a> for SaplingVisitor<'a> {
         walk_jsx_fragment(self, it);
     }
     fn visit_program(&mut self, it: &mut oxc_ast::ast::Program<'a>) {
+        pre_process(it, &Config::default());
         walk_program(self, it);
     }
 }
