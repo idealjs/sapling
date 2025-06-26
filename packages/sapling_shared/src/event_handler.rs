@@ -18,7 +18,7 @@ pub fn to_attribute_name() -> Result<(), &'static str> {
 /// Convert property name to camelCase
 ///
 /// Converts a property name from kebab-case to camelCase
-/// 
+///
 /// # Examples
 ///
 /// ```
@@ -29,7 +29,7 @@ pub fn to_attribute_name() -> Result<(), &'static str> {
 pub fn to_property_name(name: &str) -> Result<String, &'static str> {
     let mut result = String::with_capacity(name.len());
     let mut capitalize_next = false;
-    
+
     for c in name.chars() {
         if c == '-' {
             capitalize_next = true;
@@ -40,7 +40,7 @@ pub fn to_property_name(name: &str) -> Result<String, &'static str> {
             result.push(c.to_ascii_lowercase());
         }
     }
-    
+
     Ok(result)
 }
 
@@ -56,7 +56,7 @@ mod tests {
             ("simple", "simple"),
             ("with-multiple-dashes", "withMultipleDashes"),
             ("already-camelCase", "alreadyCamelcase"),
-            ("UPPER-CASE", "uppercase"),
+            ("UPPER-CASE", "upperCase"),
             ("", ""),
         ];
 
