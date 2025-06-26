@@ -1,0 +1,84 @@
+Function Search Results
+======================
+Generated at: Thu Jun 26 11:35:15 CST 2025
+
+## DOM Functions
+
+Found in: ./packages/oxc/crates/oxc_transformer/src/es2017/async_to_generator.rs
+    fn create_placeholder_params(
+Found in: ./packages/oxc/crates/oxc_transformer/src/jsx/jsx_impl.rs
+    fn transform_element_name(
+
+## Component Functions
+
+
+## Transform Functions
+
+Found in: ./packages/oxc/crates/oxc_transformer/src/jsx/jsx_impl.rs
+    fn transform_jsx_element(
+    fn transform_jsx(
+    fn transform_jsx_member_expression(
+    fn transform_jsx_attribute_value(
+    fn transform_jsx_child_automatic(
+    fn transform_jsx_child_classic(
+    fn transform_jsx_child(
+    fn transform_jsx_text(text: &JSXText<'a>, ctx: &TraverseCtx<'a>) -> Option<Expression<'a>> {
+
+## Utility Functions Group 1
+
+Found in: ./packages/sapling_shared/src/jsx_element.rs
+    // pub fn jsx_element_name_to_string(node: &JsxElementName) -> String {
+    // pub fn convert_jsx_identifier(node: &JsxElementName) -> Expression {
+Found in: ./packages/sapling_shared/src/tag_name.rs
+    pub fn jsx_element_name_to_string(node: &JSXElementName) -> String {
+Found in: ./packages/sapling_shared/src/text_wrap.rs
+    pub fn wrapped_by_text<'a>(list: &[Option<TextNode<'a>>], start_index: usize) -> bool {
+Found in: ./packages/sapling_shared/src/string_utils.rs
+    pub fn escape_html(s: &str, attr: bool) -> String {
+Found in: ./packages/sapling_shared/src/condition.rs
+    // pub fn transform_condition(path: &AstPath, inline: bool, deep: bool) -> Expression {
+
+## Utility Functions Group 2
+
+Found in: ./packages/sapling_shared/src/children.rs
+    pub fn filter_children<'a>(children: &'a [JSXChild<'a>]) -> Vec<&'a JSXChild<'a>> {
+Found in: ./packages/sapling_shared/src/jsx_element.rs
+    // pub fn tag_name_to_identifier(name: &str) -> Expression {
+Found in: ./packages/sapling_shared/src/length_checker.rs
+    pub fn check_length<'a>(children: &'a [JSXChild<'a>]) -> bool {
+Found in: ./packages/sapling_shared/src/dynamic.rs
+    pub fn get_static_expression<'a>(node: &Node<AstKind<'a>>, arena: &Arena<AstKind<'a>>) -> bool {
+Found in: ./packages/sapling_shared/src/string_utils.rs
+    pub fn trim_whitespace(text: &str) -> String {
+Found in: ./packages/sapling_shared/src/native_spread.rs
+    pub fn can_native_spread(key: &str, check_namespaces: bool) -> bool {
+
+## Utility Functions Group 3
+
+Found in: ./packages/sapling_shared/src/jsx_element.rs
+    // pub fn get_tag_name(tag: &JSXElement) -> String {
+    // pub fn is_component(tag_name: &str) -> bool {
+Found in: ./packages/sapling_shared/src/tag_name.rs
+    pub fn get_tag_name(tag: &JSXElement) -> String {
+Found in: ./packages/sapling_shared/src/id_gen.rs
+    pub fn get_numbered_id(mut num: u32) -> String {
+Found in: ./packages/sapling_shared/src/component.rs
+    pub fn is_component(tag_name: &str) -> bool {
+Found in: ./packages/sapling_shared/src/string_utils.rs
+    pub fn escape_string_for_template(s: &str) -> String {
+Found in: ./packages/oxc/crates/oxc_transformer/src/jsx/refresh.rs
+    fn is_componentish_name(name: &str) -> bool {
+Found in: ./packages/oxc/crates/oxc_minifier/src/peephole/replace_known_methods.rs
+    pub fn escape_string_for_template_literal(s: &str) -> Cow<'_, str> {
+
+## Validation Functions
+
+Found in: ./packages/sapling_shared/src/validate.rs
+    pub fn is_invalid_markup(html: &str) -> Option<InvalidMarkup> {
+
+## SSR Functions
+
+
+## Universal Functions
+
+
