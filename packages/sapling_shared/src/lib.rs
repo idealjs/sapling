@@ -12,8 +12,9 @@ pub mod string_utils;
 pub mod tag_name;
 pub mod text_wrap;
 pub mod utils;
-pub mod preprocess;
+pub mod pre_process;
 pub mod validate;
+pub mod html_nesting;
 
 pub use children::*;
 pub use component::*;
