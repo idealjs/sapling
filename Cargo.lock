@@ -275,7 +275,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f85dac6c239acc85fd61934c572292d93adfd2de459d9c032aa22b553506e915"
 dependencies = [
  "either",
- "itertools 0.14.0",
+ "itertools",
  "proc-macro2",
  "quote",
  "strum",
@@ -292,15 +292,6 @@ dependencies = [
  "console",
  "once_cell",
  "similar",
-]
-
-[[package]]
-name = "itertools"
-version = "0.11.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1c173a5686ce8bfa551b3563d0c2170bf24ca44da99c7ca4bfdab5418c3fe57"
-dependencies = [
- "either",
 ]
 
 [[package]]
@@ -579,7 +570,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4d561bbe6e05cd3be34802a22e799c3c9bd5987daee2dbb51b2561ab78d39420"
 dependencies = [
  "bitflags",
- "itertools 0.14.0",
+ "itertools",
  "nonmax",
  "oxc_index",
  "oxc_syntax",
@@ -698,7 +689,7 @@ version = "0.73.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b916b0e8bf2045895726a5069947789226eaae47e0f27412956163e02bd20816"
 dependencies = [
- "itertools 0.14.0",
+ "itertools",
  "oxc_allocator",
  "oxc_ast",
  "oxc_ast_visit",
@@ -1140,29 +1131,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sapling_ssr"
-version = "0.1.0"
-dependencies = [
- "insta",
- "itertools 0.11.0",
- "lazy-regex",
- "oxc_allocator",
- "oxc_ast",
- "oxc_codegen",
- "oxc_parser",
- "oxc_semantic",
- "oxc_span",
- "oxc_syntax",
- "oxc_transformer",
- "oxc_traverse",
- "proc-macro2",
- "quote",
- "sapling_macros",
- "sapling_shared",
- "syn 2.0.104",
-]
-
-[[package]]
 name = "sapling_visitor"
 version = "0.1.0"
 dependencies = [
@@ -1180,7 +1148,6 @@ dependencies = [
  "oxc_traverse",
  "sapling_macros",
  "sapling_shared",
- "sapling_ssr",
 ]
 
 [[package]]

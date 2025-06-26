@@ -77,7 +77,7 @@ pub fn tree_builder_mut(_attr: TokenStream, item: TokenStream) -> TokenStream {
                         pub arena: ::indextree::Arena<::oxc_ast::AstType>,
                         pub node_stack: ::std::vec::Vec<::indextree::NodeId>,
                         pub allocator: &'a ::oxc_allocator::Allocator,
-                        pub scoping: &'a ::oxc_semantic::Scoping,
+                        pub scoping: &'a mut ::oxc_semantic::Scoping,
                     }
                 }
             }
@@ -90,7 +90,7 @@ pub fn tree_builder_mut(_attr: TokenStream, item: TokenStream) -> TokenStream {
                         pub arena: ::indextree::Arena<::oxc_ast::AstType>,
                         pub node_stack: ::std::vec::Vec<::indextree::NodeId>,
                         pub allocator: &'a ::oxc_allocator::Allocator,
-                        pub scoping: &'a ::oxc_semantic::Scoping,
+                        pub scoping: &'a mut ::oxc_semantic::Scoping,
                     );
                 }
             }
@@ -101,7 +101,7 @@ pub fn tree_builder_mut(_attr: TokenStream, item: TokenStream) -> TokenStream {
                         pub arena: ::indextree::Arena<::oxc_ast::AstType>,
                         pub node_stack: ::std::vec::Vec<::indextree::NodeId>,
                         pub allocator: &'a ::oxc_allocator::Allocator,
-                        pub scoping: &'a ::oxc_semantic::Scoping,
+                        pub scoping: &'a mut ::oxc_semantic::Scoping,
                     }
                 }
             }
