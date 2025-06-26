@@ -9,7 +9,7 @@ use oxc_span::SourceType;
 use sapling_visitor::SaplingVisitor; // Import the trait for visit_program
 
 #[test]
-fn test_uppercase_function_transform() {
+fn test_basic_transform() {
     let path = Path::new("tests/fixtures/Test.tsx");
     let source_text = fs::read_to_string(path).unwrap();
 
