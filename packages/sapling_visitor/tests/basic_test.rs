@@ -6,7 +6,7 @@ use oxc_ast_visit::VisitMut;
 use oxc_codegen::Codegen;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use sapling_visitor::SaplingVisitor; // Import the trait for visit_program
+use sapling_visitor::SaplingVisitorMut; // Import the trait for visit_program
 
 #[test]
 fn test_basic_transform() {
@@ -19,7 +19,7 @@ fn test_basic_transform() {
     let ret = Parser::new(&allocator, &source_text, source_type).parse();
     let mut program = ret.program;
 
-    let mut visitor = SaplingVisitor {
+    let mut visitor = SaplingVisitorMut {
         allocator: &allocator,
         arena: Arena::new(),
         node_stack: vec![],

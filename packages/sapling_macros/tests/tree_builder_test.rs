@@ -16,6 +16,8 @@ impl<'a> Visit<'a> for TestTreeBuilder<'a> {
 
 #[cfg(test)]
 mod tests {
+    use oxc_semantic::SemanticBuilder;
+
     use super::*;
 
     #[test]
@@ -31,10 +33,15 @@ mod tests {
         let ret = Parser::new(&allocator, source, source_type).parse();
         let program = ret.program;
 
+        let semantic_ret = SemanticBuilder::new().build(&program);
+        let scoping = semantic_ret.semantic.into_scoping();
+
         // Create test tree builder
         let mut tree_builder = TestTreeBuilder {
             arena: Arena::new(),
             node_stack: vec![],
+            allocator: &allocator,
+            scoping: &scoping,
         };
 
         // This will trigger enter_node through the visit trait

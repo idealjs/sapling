@@ -153,6 +153,8 @@ pub fn pre_process_ast<'a>(program: &'a Program<'a>, opts: &'a Config<'a>) -> Co
         let mut validator = JSXValidator {
             arena: indextree::Arena::new(),
             node_stack: Vec::new(),
+            allocator: &oxc_allocator::Allocator::default(),
+            scoping: &oxc_semantic::Scoping::default(),
         };
         validator.visit_program(program);
     }

@@ -1,19 +1,14 @@
 use indextree::{Arena, NodeId};
-use oxc_allocator::Allocator;
-use oxc_ast::AstType;
-use oxc_ast_visit::VisitMut;
-use oxc_ast_visit::walk_mut::{walk_jsx_element, walk_jsx_fragment, walk_program, walk_statement};
+use oxc_ast::{AstKind, AstType};
+use oxc_ast_visit::{Visit, VisitMut, walk, walk_mut};
 
-use sapling_macros::tree_builder_mut;
-use sapling_shared::processor::pre_process_ast;
-use sapling_shared::{Config, TreeBuilderMut};
+use sapling_macros::{tree_builder, tree_builder_mut};
+use sapling_shared::{processor::pre_process_ast, TreeBuilder, TreeBuilderMut};
 
 #[tree_builder_mut]
-pub struct SaplingVisitor<'a> {
-    pub allocator: &'a Allocator,
-}
+pub struct SaplingVisitorMut<'a> {}
 
-impl<'a> TreeBuilderMut<'a> for SaplingVisitor<'a> {
+impl<'a> TreeBuilderMut<'a> for SaplingVisitorMut<'a> {
     fn arena(&self) -> &Arena<AstType> {
         &self.arena
     }
@@ -28,25 +23,58 @@ impl<'a> TreeBuilderMut<'a> for SaplingVisitor<'a> {
     }
 }
 
-impl<'a> VisitMut<'a> for SaplingVisitor<'a> {
+impl<'a> VisitMut<'a> for SaplingVisitorMut<'a> {
     fn enter_node(&mut self, kind: AstType) {
         <Self as TreeBuilderMut>::enter_node(self, kind);
     }
     fn leave_node(&mut self, kind: AstType) {
         <Self as TreeBuilderMut>::leave_node(self, kind);
-        match kind {
-            AstType::Program => {}
-            _ => {}
-        }
     }
     fn visit_jsx_element(&mut self, it: &mut oxc_ast::ast::JSXElement<'a>) {
-        walk_jsx_element(self, it);
+        walk_mut::walk_jsx_element(self, it);
     }
     fn visit_jsx_fragment(&mut self, it: &mut oxc_ast::ast::JSXFragment<'a>) {
-        walk_jsx_fragment(self, it);
+        walk_mut::walk_jsx_fragment(self, it);
     }
     fn visit_program(&mut self, it: &mut oxc_ast::ast::Program<'a>) {
+        // pre_process_ast(it, &Config::default());
+        walk_mut::walk_program(self, it);
+    }
+}
+
+#[tree_builder]
+pub struct SaplingVisitor<'a> {}
+
+impl<'a> TreeBuilder<'a> for SaplingVisitor<'a> {
+    fn arena(&self) -> &Arena<AstKind<'a>> {
+        &self.arena
+    }
+    fn arena_mut(&mut self) -> &mut Arena<AstKind<'a>> {
+        &mut self.arena
+    }
+    fn node_stack(&self) -> &Vec<NodeId> {
+        &self.node_stack
+    }
+    fn node_stack_mut(&mut self) -> &mut Vec<NodeId> {
+        &mut self.node_stack
+    }
+}
+
+impl<'a> Visit<'a> for SaplingVisitor<'a> {
+    fn enter_node(&mut self, kind: AstKind<'a>) {
+        <Self as TreeBuilder>::enter_node(self, kind);
+    }
+    fn leave_node(&mut self, kind: AstKind<'a>) {
+        <Self as TreeBuilder>::leave_node(self, kind);
+    }
+    fn visit_jsx_element(&mut self, it: &oxc_ast::ast::JSXElement<'a>) {
+        walk::walk_jsx_element(self, it);
+    }
+    fn visit_jsx_fragment(&mut self, it: &oxc_ast::ast::JSXFragment<'a>) {
+        walk::walk_jsx_fragment(self, it);
+    }
+    fn visit_program(&mut self, it: &oxc_ast::ast::Program<'a>) {
         pre_process_ast(it, &Config::default());
-        walk_program(self, it);
+        walk::walk_program(self, it);
     }
 }
