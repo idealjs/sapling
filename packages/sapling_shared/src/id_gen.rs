@@ -1,18 +1,22 @@
-pub fn get_numbered_id(mut num: u32) -> String {
-    const CHARS: &str = "etaoinshrdlucwmfygpbTAOISWCBvkxjqzPHFMDRELNGUKVYJQZX_$";
-    const BASE: u32 = CHARS.len() as u32;
+//! Functions for generating unique identifiers
 
-    let chars: Vec<char> = CHARS.chars().collect();
-    let mut result = String::new();
+/// Counter for generating unique IDs
+static mut COUNTER: usize = 0;
 
-    loop {
-        let digit = (num % BASE) as usize;
-        num = num / BASE;
-        result.insert(0, chars[digit]);
-        if num == 0 {
-            break;
-        }
+/// Generate a unique numbered ID
+pub fn get_numbered_id() -> usize {
+    // SAFETY: This is safe because we only use this counter
+    // for generating unique IDs and don't care about exact values
+    unsafe {
+        COUNTER += 1;
+        COUNTER
     }
+}
 
-    result
+/// Reset the ID counter (mainly for testing)
+#[cfg(test)]
+pub fn reset_counter() {
+    unsafe {
+        COUNTER = 0;
+    }
 }

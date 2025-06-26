@@ -1,40 +1,25 @@
-use oxc_ast::ast::{
-    Expression, JSXElement, JSXElementName, JSXIdentifier, JSXMemberExpression,
-    JSXMemberExpressionObject, JSXNamespacedName, ThisExpression,
-};
+//! Functions for handling JSX element tag names
 
-fn jsx_member_expression_object_to_string(obj: &JSXMemberExpressionObject) -> String {
-    match obj {
-        JSXMemberExpressionObject::IdentifierReference(ident) => ident.name.to_string(),
-        JSXMemberExpressionObject::MemberExpression(expr) => {
-            format!(
-                "{}.{}",
-                jsx_member_expression_object_to_string(&expr.object),
-                expr.property.name.to_string()
-            )
-        }
-        JSXMemberExpressionObject::ThisExpression(_) => "this".to_string(),
+/// Convert JSX element name to string representation
+pub fn jsx_element_name_to_string(element_name: &str) -> String {
+    // Remove namespace prefixes if present
+    if let Some(idx) = element_name.rfind(':') {
+        element_name[idx + 1..].to_string()
+    } else {
+        element_name.to_string()
     }
 }
 
-pub fn jsx_element_name_to_string(node: &JSXElementName) -> String {
-    match node {
-        JSXElementName::MemberExpression(expr) => {
-            format!(
-                "{}.{}",
-                jsx_member_expression_object_to_string(&expr.object),
-                expr.property.name.to_string()
-            )
-        }
-        JSXElementName::Identifier(ident) => ident.name.to_string(),
-        JSXElementName::NamespacedName(ns) => {
-            format!("{}:{}", ns.namespace.name, ns.name.name)
-        }
-        JSXElementName::IdentifierReference(ident) => ident.name.to_string(),
-        JSXElementName::ThisExpression(_) => "this".to_string(),
-    }
+/// Convert tag name to valid identifier
+pub fn tag_name_to_identifier(tag_name: &str) -> String {
+    tag_name
+        .replace('-', "_")
+        .replace(':', "__")
+        .replace('.', "_dot_")
 }
 
-pub fn get_tag_name(tag: &JSXElement) -> String {
-    jsx_element_name_to_string(&tag.opening_element.name)
+/// Get normalized tag name from element
+pub fn get_tag_name(element_name: &str) -> String {
+    let name = jsx_element_name_to_string(element_name);
+    name.to_lowercase()
 }

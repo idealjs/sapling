@@ -1,28 +1,12 @@
-use oxc_ast::ast::*;
+//! Functions for checking array lengths and child node counts
 
-pub fn check_length<'a>(children: &'a [JSXChild<'a>]) -> bool {
-    let mut count = 0;
-    for child in children {
-        if match child {
-            JSXChild::ExpressionContainer(expr) => {
-                !matches!(expr.expression, JSXExpression::EmptyExpression(_))
-            }
-            JSXChild::Text(text) => {
-                let raw = &text.value;
-
-                let is_pure_whitespace = raw.chars().all(|c| c.is_whitespace());
-                let is_pure_spaces = raw.chars().all(|c| c == ' ');
-
-                !is_pure_whitespace || is_pure_spaces
-            }
-            _ => true,
-        } {
-            count += 1;
-        }
-
-        if count > 1 {
-            return true;
-        }
-    }
-    false
+/// Check length of children array
+pub fn check_length(children: &[&str]) -> usize {
+    children
+        .iter()
+        .filter(|&child| {
+            let trimmed = child.trim();
+            !trimmed.is_empty() && !trimmed.starts_with("<!--")
+        })
+        .count()
 }
