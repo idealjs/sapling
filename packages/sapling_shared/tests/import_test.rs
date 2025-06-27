@@ -1,42 +1,59 @@
+use indextree::Arena;
+use indextree::NodeId;
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{ExpressionStatement, Program, Statement};
+use oxc_ast::ast::Program;
+use oxc_ast_visit::VisitMut;
+use oxc_ast_visit::walk_mut;
 use oxc_codegen::Codegen;
 use oxc_parser::Parser;
-use oxc_semantic::SemanticBuilder;
-use oxc_span::{SourceType, Span};
-use oxc_traverse::{Traverse, TraverseCtx, traverse_mut};
+use oxc_semantic::{Scoping, SemanticBuilder};
+use oxc_span::SourceType;
+use sapling_macros::tree_builder_mut;
+use sapling_shared::TreeBuilderMut;
 
 use sapling_shared::import::register_import_method;
 
-struct TestVisitor<'a> {
-    allocator: &'a Allocator,
+#[tree_builder_mut]
+struct TestVisitor<'a> {}
+
+impl<'a> TreeBuilderMut<'a> for TestVisitor<'a> {
+    fn arena(&self) -> &Arena<oxc_ast::AstType> {
+        &self.arena
+    }
+
+    fn arena_mut(&mut self) -> &mut Arena<oxc_ast::AstType> {
+        &mut self.arena
+    }
+
+    fn node_stack(&self) -> &Vec<NodeId> {
+        &self.node_stack
+    }
+
+    fn node_stack_mut(&mut self) -> &mut Vec<NodeId> {
+        &mut self.node_stack
+    }
+
+    fn scoping_mut(&mut self) -> &mut Scoping {
+        &mut self.scoping
+    }
+
+    fn allocator_mut(&mut self) -> &'a Allocator {
+        self.allocator
+    }
 }
 
-impl<'a> Traverse<'a> for TestVisitor<'a> {
-    fn enter_program(&mut self, node: &mut Program<'a>, ctx: &mut TraverseCtx<'a>) {
+impl<'a> VisitMut<'a> for TestVisitor<'a> {
+    fn visit_program(&mut self, it: &mut Program<'a>) {
         // Test first import
-        let expr1 = register_import_method(ctx, self.allocator, "createElement", "sapling");
-        let expr_stmt1 = ctx.alloc(ExpressionStatement {
-            expression: expr1,
-            span: Span::default(),
-        });
-        node.body.push(Statement::ExpressionStatement(expr_stmt1));
+        let _ = register_import_method(self, it, "createElement", "sapling");
 
         // Test same import should return the same expression
-        let expr2 = register_import_method(ctx, self.allocator, "createElement", "sapling");
-        let expr_stmt2 = ctx.alloc(ExpressionStatement {
-            expression: expr2,
-            span: Span::default(),
-        });
-        node.body.push(Statement::ExpressionStatement(expr_stmt2));
+        let _ = register_import_method(self, it, "createElement", "sapling");
 
         // Test different import should return different expression
-        let expr3 = register_import_method(ctx, self.allocator, "Fragment", "sapling");
-        let expr_stmt3 = ctx.alloc(ExpressionStatement {
-            expression: expr3,
-            span: Span::default(),
-        });
-        node.body.push(Statement::ExpressionStatement(expr_stmt3));
+        let _ = register_import_method(self, it, "Fragment", "sapling");
+
+        walk_mut::walk_program(self, it);
     }
 }
 
@@ -50,12 +67,15 @@ fn test_register_import() {
     let mut program = ret.program;
 
     let semantic_ret = SemanticBuilder::new().build(&program);
-    let scoping = semantic_ret.semantic.into_scoping();
+    let mut scoping = semantic_ret.semantic.into_scoping();
 
     let mut visitor = TestVisitor {
+        arena: Arena::new(),
+        node_stack: vec![],
         allocator: &allocator,
+        scoping: &mut scoping,
     };
-    traverse_mut(&mut visitor, &allocator, &mut program, scoping);
+    visitor.visit_program(&mut program);
 
     // Generate and verify the output code
     let result = Codegen::new().build(&program);
