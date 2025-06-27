@@ -2,7 +2,6 @@
 source: packages/sapling_shared/tests/import_test.rs
 expression: result.code
 ---
-_$createElement;
-_$createElement;
-_$Fragment;
+import { createElement as _$createElement } from "sapling";
+import { Fragment as _$Fragment } from "sapling";
 // Initial empty program

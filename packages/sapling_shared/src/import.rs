@@ -9,11 +9,31 @@ use oxc_ast::ast::{
 };
 use oxc_span::{Atom, Span};
 use oxc_syntax::node::NodeId;
-use oxc_syntax::reference::{Reference, ReferenceFlags};
-use oxc_syntax::symbol::SymbolFlags;
+use oxc_syntax::reference::{Reference, ReferenceFlags, ReferenceId};
+use oxc_syntax::symbol::{SymbolFlags, SymbolId};
+use oxc_semantic::Scoping;
 use std::cell::Cell;
 
 use crate::TreeBuilderMut;
+
+/// Generate a unique identifier name for imported variables.
+/// The generated name follows the pattern '_$name' to:
+/// 1. Avoid naming conflicts with user variables
+/// 2. Match Babel's naming convention for transformed imports
+/// 3. Clearly identify imported variables in the generated code
+fn generate_import_string(name: &str) -> String {
+    format!("_${}", name)
+}
+
+/// Create a reference for an imported symbol.
+fn create_import_reference(
+    scoping: &mut Scoping,
+    symbol_id: SymbolId,
+    node_id: NodeId,
+) -> ReferenceId {
+    let reference = Reference::new_with_symbol_id(node_id, symbol_id, ReferenceFlags::read());
+    scoping.create_reference(reference)
+}
 
 pub fn register_import_method<'a, V>(
     visitor: &mut V,
@@ -31,8 +51,7 @@ where
         panic!("Root scope not found in program");
     };
 
-    // Create unique identifier name for import
-    let import_base_name = format!("_${name}");
+    let import_base_name = generate_import_string(name);
     let allocator = visitor.allocator_mut();
 
     // Store lookup key for future reference if needed
@@ -45,14 +64,7 @@ where
         let scoping = visitor.scoping_mut();
         let scope_id = scoping.symbol_scope_id(symbol_id);
         let node_id = scoping.get_node_id(scope_id);
-
-        // Create reference - since this is an import, we're reading its value
-        let reference = Reference::new_with_symbol_id(node_id, symbol_id, ReferenceFlags::read());
-
-        // Register the reference in scoping
-        let reference_id = visitor.scoping_mut().create_reference(reference);
-
-        reference_id
+        create_import_reference(scoping, symbol_id, node_id)
     } else {
         // Create new import declaration node
         let node_id = NodeId::new(0);
@@ -104,15 +116,11 @@ where
             allocator,
         )));
 
-        // Create reference - since this is an import, we're reading its value
-        let reference = Reference::new_with_symbol_id(node_id, symbol_id, ReferenceFlags::read());
-
-        // Register the reference in scoping
-        let reference_id = visitor.scoping_mut().create_reference(reference);
-        visitor
-            .scoping_mut()
-            .add_binding(root_scope, &import_lookup_key, symbol_id);
-
+        // Create reference and binding for the import
+        let mut scoping = visitor.scoping_mut();
+        let reference_id = create_import_reference(&mut scoping, symbol_id, node_id);
+        scoping.add_binding(root_scope, &import_lookup_key, symbol_id);
+        
         reference_id
     };
 
