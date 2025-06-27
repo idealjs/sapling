@@ -95,7 +95,11 @@ AstArena {
                                                                 },
                                                                 name: "a",
                                                                 symbol_id: Cell {
-                                                                    value: None,
+                                                                    value: Some(
+                                                                        SymbolId(
+                                                                            0,
+                                                                        ),
+                                                                    ),
                                                                 },
                                                             },
                                                             import_kind: Value,
@@ -144,7 +148,7 @@ AstArena {
                                                                 symbol_id: Cell {
                                                                     value: Some(
                                                                         SymbolId(
-                                                                            0,
+                                                                            1,
                                                                         ),
                                                                     ),
                                                                 },
@@ -187,7 +191,7 @@ AstArena {
                                                                                             symbol_id: Cell {
                                                                                                 value: Some(
                                                                                                     SymbolId(
-                                                                                                        1,
+                                                                                                        2,
                                                                                                     ),
                                                                                                 ),
                                                                                             },
@@ -318,7 +322,7 @@ AstArena {
                                                                 symbol_id: Cell {
                                                                     value: Some(
                                                                         SymbolId(
-                                                                            2,
+                                                                            3,
                                                                         ),
                                                                     ),
                                                                 },
@@ -757,7 +761,11 @@ AstArena {
                                                     },
                                                     name: "a",
                                                     symbol_id: Cell {
-                                                        value: None,
+                                                        value: Some(
+                                                            SymbolId(
+                                                                0,
+                                                            ),
+                                                        ),
                                                     },
                                                 },
                                                 import_kind: Value,
@@ -849,7 +857,11 @@ AstArena {
                                                 },
                                                 name: "a",
                                                 symbol_id: Cell {
-                                                    value: None,
+                                                    value: Some(
+                                                        SymbolId(
+                                                            0,
+                                                        ),
+                                                    ),
                                                 },
                                             },
                                             import_kind: Value,
@@ -938,7 +950,11 @@ AstArena {
                             },
                             name: "a",
                             symbol_id: Cell {
-                                value: None,
+                                value: Some(
+                                    SymbolId(
+                                        0,
+                                    ),
+                                ),
                             },
                         },
                         import_kind: Value,
@@ -1017,7 +1033,11 @@ AstArena {
                         },
                         name: "a",
                         symbol_id: Cell {
-                            value: None,
+                            value: Some(
+                                SymbolId(
+                                    0,
+                                ),
+                            ),
                         },
                     },
                 ),
@@ -1135,7 +1155,7 @@ AstArena {
                                                 symbol_id: Cell {
                                                     value: Some(
                                                         SymbolId(
-                                                            0,
+                                                            1,
                                                         ),
                                                     ),
                                                 },
@@ -1178,7 +1198,7 @@ AstArena {
                                                                             symbol_id: Cell {
                                                                                 value: Some(
                                                                                     SymbolId(
-                                                                                        1,
+                                                                                        2,
                                                                                     ),
                                                                                 ),
                                                                             },
@@ -1337,7 +1357,7 @@ AstArena {
                                     symbol_id: Cell {
                                         value: Some(
                                             SymbolId(
-                                                0,
+                                                1,
                                             ),
                                         ),
                                     },
@@ -1380,7 +1400,7 @@ AstArena {
                                                                 symbol_id: Cell {
                                                                     value: Some(
                                                                         SymbolId(
-                                                                            1,
+                                                                            2,
                                                                         ),
                                                                     ),
                                                                 },
@@ -1520,7 +1540,7 @@ AstArena {
                         symbol_id: Cell {
                             value: Some(
                                 SymbolId(
-                                    0,
+                                    1,
                                 ),
                             ),
                         },
@@ -1601,7 +1621,7 @@ AstArena {
                                                     symbol_id: Cell {
                                                         value: Some(
                                                             SymbolId(
-                                                                1,
+                                                                2,
                                                             ),
                                                         ),
                                                     },
@@ -1767,7 +1787,7 @@ AstArena {
                                                 symbol_id: Cell {
                                                     value: Some(
                                                         SymbolId(
-                                                            1,
+                                                            2,
                                                         ),
                                                     ),
                                                 },
@@ -1856,7 +1876,7 @@ AstArena {
                                     symbol_id: Cell {
                                         value: Some(
                                             SymbolId(
-                                                1,
+                                                2,
                                             ),
                                         ),
                                     },
@@ -1923,7 +1943,7 @@ AstArena {
                         symbol_id: Cell {
                             value: Some(
                                 SymbolId(
-                                    1,
+                                    2,
                                 ),
                             ),
                         },
@@ -2355,7 +2375,7 @@ AstArena {
                                                 symbol_id: Cell {
                                                     value: Some(
                                                         SymbolId(
-                                                            2,
+                                                            3,
                                                         ),
                                                     ),
                                                 },
@@ -2620,7 +2640,7 @@ AstArena {
                                     symbol_id: Cell {
                                         value: Some(
                                             SymbolId(
-                                                2,
+                                                3,
                                             ),
                                         ),
                                     },
@@ -2866,7 +2886,7 @@ AstArena {
                         symbol_id: Cell {
                             value: Some(
                                 SymbolId(
-                                    2,
+                                    3,
                                 ),
                             ),
                         },
