@@ -4,6 +4,7 @@ expression: result.code
 ---
 "use client";
 var testTemplate = "Test template content";
+import { a } from "./A.ts";
 const style = (values: unknown): string => {
 	return "";
 };
