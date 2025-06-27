@@ -185,7 +185,7 @@ pub fn pre_process_ast<'a>(program: &'a Program<'a>, opts: &'a Config<'a>) -> Co
             arena: indextree::Arena::new(),
             node_stack: std::vec::Vec::new(),
             allocator: &oxc_allocator::Allocator::default(),
-            scoping: &oxc_semantic::Scoping::default(),
+            scoping: &mut oxc_semantic::Scoping::default(),
         };
         validator.visit_program(program);
     }

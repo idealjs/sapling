@@ -6,7 +6,9 @@ use crate::{Config, TreeBuilder, TreeBuilderMut, processor::pre_process_ast};
 use sapling_macros::{tree_builder, tree_builder_mut};
 
 #[tree_builder_mut]
-pub struct SaplingVisitorMut<'a> {}
+pub struct SaplingVisitorMut<'a> {
+    phanton_data: std::marker::PhantomData<&'a ()>,
+}
 
 impl<'a> TreeBuilderMut<'a> for SaplingVisitorMut<'a> {
     fn arena(&self) -> &Arena<AstType> {
@@ -20,6 +22,12 @@ impl<'a> TreeBuilderMut<'a> for SaplingVisitorMut<'a> {
     }
     fn node_stack_mut(&mut self) -> &mut Vec<NodeId> {
         &mut self.node_stack
+    }
+    fn scoping_mut(&mut self) -> &mut oxc_semantic::Scoping {
+        self.scoping
+    }
+    fn allocator_mut(&mut self) -> &'a oxc_allocator::Allocator {
+        self.allocator
     }
 }
 

@@ -36,6 +36,8 @@ pub trait TreeBuilderMut<'a>: VisitMut<'a> {
     fn current_parent(&self) -> Option<&NodeId> {
         self.node_stack().last()
     }
+    fn scoping_mut(&mut self) -> &mut oxc_semantic::Scoping;
+    fn allocator_mut(&mut self) -> &'a oxc_allocator::Allocator;
     fn push_parent(&mut self, node_id: NodeId) {
         self.node_stack_mut().push(node_id);
     }

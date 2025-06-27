@@ -1,37 +1,29 @@
 use core::panic;
+use oxc_allocator::Box;
+use oxc_allocator::FromIn;
 use oxc_allocator::Vec;
-use oxc_allocator::{Allocator, FromIn, HashMap};
-use oxc_allocator::{Box, CloneIn};
 use oxc_ast::ast::{
     BindingIdentifier, Expression, IdentifierName, IdentifierReference, ImportDeclaration,
     ImportDeclarationSpecifier, ImportOrExportKind, ImportSpecifier, ModuleExportName, Program,
     Statement,
 };
-use oxc_semantic::SymbolId;
 use oxc_span::{Atom, Span};
 use oxc_syntax::node::NodeId;
-use oxc_syntax::reference::{self, Reference, ReferenceFlags, ReferenceId};
+use oxc_syntax::reference::{Reference, ReferenceFlags};
 use oxc_syntax::symbol::SymbolFlags;
-use oxc_traverse::TraverseCtx;
 use std::cell::Cell;
-use syn::token::Default;
 
-use crate::{SaplingVisitor, SaplingVisitorMut};
+use crate::TreeBuilderMut;
 
-/// Register an import method and return an Expression referencing it.
-/// Similar to @babel/helper-module-imports addNamed functionality.
-///
-/// # Arguments
-/// * `ctx` - Traverse context for scope management
-/// * `name` - Name of import to register
-/// * `module_name` - Module to import from
-
-pub fn register_import_method<'a>(
-    visitor: SaplingVisitorMut<'a>,
+pub fn register_import_method<'a, V>(
+    visitor: &mut V,
     program: &mut Program<'a>,
     name: &str,
     module_name: &str,
-) -> Expression<'a> {
+) -> Expression<'a>
+where
+    V: TreeBuilderMut<'a>,
+{
     // Create import lookup key using same format as JS version
     let root_scope = if let Some(root_scope) = program.scope_id.get() {
         root_scope
@@ -41,23 +33,24 @@ pub fn register_import_method<'a>(
 
     // Create unique identifier name for import
     let import_base_name = format!("_${name}");
-    let allocator = visitor.allocator;
+    let allocator = visitor.allocator_mut();
 
     // Store lookup key for future reference if needed
     let import_lookup_key = format!("{}:{}", module_name, name);
     // Check if binding already exists (placeholder for future logic)
-    let reference_id = if let Some(symbol_id) =
-        visitor.scoping.find_binding(root_scope, &import_lookup_key)
+    let reference_id = if let Some(symbol_id) = visitor
+        .scoping_mut()
+        .find_binding(root_scope, &import_lookup_key)
     {
-        let node_id = visitor
-            .scoping
-            .get_node_id(visitor.scoping.symbol_scope_id(symbol_id));
+        let scoping = visitor.scoping_mut();
+        let scope_id = scoping.symbol_scope_id(symbol_id);
+        let node_id = scoping.get_node_id(scope_id);
 
         // Create reference - since this is an import, we're reading its value
         let reference = Reference::new_with_symbol_id(node_id, symbol_id, ReferenceFlags::read());
 
         // Register the reference in scoping
-        let reference_id = visitor.scoping.create_reference(reference);
+        let reference_id = visitor.scoping_mut().create_reference(reference);
 
         reference_id
     } else {
@@ -65,7 +58,7 @@ pub fn register_import_method<'a>(
         let node_id = NodeId::new(0);
 
         // Create symbol for the import
-        let symbol_id = visitor.scoping.create_symbol(
+        let symbol_id = visitor.scoping_mut().create_symbol(
             Span::default(),
             name,
             SymbolFlags::Import | SymbolFlags::Value,
@@ -115,9 +108,9 @@ pub fn register_import_method<'a>(
         let reference = Reference::new_with_symbol_id(node_id, symbol_id, ReferenceFlags::read());
 
         // Register the reference in scoping
-        let reference_id = visitor.scoping.create_reference(reference);
+        let reference_id = visitor.scoping_mut().create_reference(reference);
         visitor
-            .scoping
+            .scoping_mut()
             .add_binding(root_scope, &import_lookup_key, symbol_id);
 
         reference_id

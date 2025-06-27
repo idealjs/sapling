@@ -87,13 +87,13 @@ fn test_get_static_expression() {
     let mut program = ret.program;
 
     let semantic_ret = SemanticBuilder::new().build(&program);
-    let scoping = semantic_ret.semantic.into_scoping();
+    let mut scoping = semantic_ret.semantic.into_scoping();
 
     let mut visitor = TestVisitor {
         arena: Arena::new(),
         node_stack: vec![],
         allocator: &allocator,
-        scoping: &scoping,
+        scoping: &mut scoping,
     };
 
     visitor.visit_program(&mut program);
