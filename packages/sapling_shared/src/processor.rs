@@ -4,8 +4,10 @@ use crate::TreeBuilder;
 use crate::component::is_component;
 use crate::config::Config;
 use crate::config_utils::get_renderer_config;
+use crate::dom;
 use crate::html_nesting::is_valid_html_nesting;
 use crate::register_import_method;
+use crate::ssr;
 use indextree::Node;
 use oxc_allocator::Allocator;
 use oxc_allocator::Box;
@@ -193,14 +195,6 @@ pub fn pre_process_ast<'a>(program: &'a Program<'a>, opts: &'a Config<'a>) -> Co
     merged
 }
 
-fn append_templates_dom(path: &str, templates: Vec<Template>) {
-    todo!("Mock implementation")
-}
-
-fn append_templates_ssr(path: &str, templates: Vec<Template>) {
-    todo!("Mock implementation")
-}
-
 pub fn post_process_ast<'a>(
     allocator: &'a Allocator,
     program: &Program,
@@ -271,11 +265,11 @@ pub fn post_process_ast<'a>(
     //     let ssr_templates: Vec<_> = templates.iter().filter(|t| t.renderer == "ssr").collect();
 
     //     if !dom_templates.is_empty() {
-    //         append_templates_dom(program, dom_templates);
+    //         dom::append_templates(program, dom_templates);
     //     }
 
     //     if !ssr_templates.is_empty() {
-    //         append_templates_ssr(program, ssr_templates);
+    //         ssr::append_templates(program, ssr_templates);
     //     }
     // }
 

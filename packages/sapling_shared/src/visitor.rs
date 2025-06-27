@@ -2,12 +2,13 @@ use indextree::{Arena, NodeId};
 use oxc_ast::{AstKind, AstType};
 use oxc_ast_visit::{Visit, VisitMut, walk, walk_mut};
 
-use crate::{Config, TreeBuilder, TreeBuilderMut, processor::pre_process_ast};
+use crate::{Config, Template, TreeBuilder, TreeBuilderMut, processor::pre_process_ast};
 use sapling_macros::{tree_builder, tree_builder_mut};
 
 #[tree_builder_mut]
 pub struct SaplingVisitorMut<'a> {
     phanton_data: std::marker::PhantomData<&'a ()>,
+    templates: &'a mut Vec<Template<'a>>,
 }
 
 impl<'a> TreeBuilderMut<'a> for SaplingVisitorMut<'a> {
@@ -28,6 +29,9 @@ impl<'a> TreeBuilderMut<'a> for SaplingVisitorMut<'a> {
     }
     fn allocator_mut(&mut self) -> &'a oxc_allocator::Allocator {
         self.allocator
+    }
+    fn templates_mut(&mut self) -> & mut Vec<crate::Template<'a>> {
+        self.templates
     }
 }
 

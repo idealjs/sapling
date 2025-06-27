@@ -26,7 +26,7 @@ fn generate_import_string(name: &str) -> String {
 }
 
 /// Create a reference for an imported symbol.
-fn create_import_reference(
+pub fn create_import_reference(
     scoping: &mut Scoping,
     symbol_id: SymbolId,
     node_id: NodeId,

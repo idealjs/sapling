@@ -43,7 +43,7 @@ pub use children::*;
 pub use component::*;
 pub use condition::*;
 pub use config::*;
-pub use dom::constants::*;
+pub use dom::*;
 pub use dom_element::*;
 pub use dynamic::*;
 pub use element_attributes::*;

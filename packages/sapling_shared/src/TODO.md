@@ -33,14 +33,14 @@
 | nextChild                    | 3    | 获取下一个子元素节点                       | element_utils.rs       | next_child                    | TODO |
 | alwaysClose                  | 21   | 总是需要闭合的HTML元素列表                 | html_constants.rs      | ALWAYS_CLOSE                  | TODO |
 
-### template.js
+### dom/template.js
 
 | 函数/常量名称    | 行数 | 描述                                       | 迁移目标             | 目标函数          | 状态 |
 | ---------------- | ---- | ------------------------------------------ | -------------------- | ----------------- | ---- |
-| wrapDynamics     | 95   | 封装动态属性的更新逻辑，处理动态样式和类名 | dynamic_wrapper.rs   | wrap_dynamics     | TODO |
-| appendTemplates  | 45   | 添加模板到AST，处理SVG和MathML特殊情况     | template_append.rs   | append_templates  | TODO |
-| registerTemplate | 42   | 注册模板并处理模板的hydration逻辑          | template_registry.rs | register_template | TODO |
-| createTemplate   | 35   | 创建模板，处理模板的声明和动态表达式       | template_creator.rs  | create_template   | TODO |
+| wrapDynamics     | 95   | 封装动态属性的更新逻辑，处理动态样式和类名 | dom/template.rs   | wrap_dynamics     | TODO |
+| appendTemplates  | 45   | 添加模板到AST，处理SVG和MathML特殊情况     | dom/template.rs   | append_templates  | TODO |
+| registerTemplate | 42   | 注册模板并处理模板的hydration逻辑          | dom/template.rs | register_template | TODO |
+| createTemplate   | 35   | 创建模板，处理模板的声明和动态表达式       | dom/template.rs  | create_template   | TODO |
 
 ## shared/
 
@@ -136,12 +136,12 @@
 | appendToTemplate         | 8    | 向模板添加值和数组     | ssr_template.rs         | append_to_template   | TODO |
 | toAttribute              | 5    | 转换属性名为SSR格式    | ssr_attributes.rs       | to_attribute         | TODO |
 
-### template.js
+### ssr/template.js
 
 | 函数/常量名称   | 行数 | 描述                              | 迁移目标        | 目标函数         | 状态 |
 | --------------- | ---- | --------------------------------- | --------------- | ---------------- | ---- |
-| createTemplate  | 65   | 创建SSR模板，处理模板字符串和缓存 | ssr_template.rs | create_template  | TODO |
-| appendTemplates | 5    | 添加模板声明到程序体中            | ssr_template.rs | append_templates | TODO |
+| createTemplate  | 65   | 创建SSR模板，处理模板字符串和缓存 | ssr/template.rs | create_template  | DONE |
+| appendTemplates | 5    | 添加模板声明到程序体中            | ssr/template.rs | append_templates | TODO |
 
 ## universal/
 
