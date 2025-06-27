@@ -7,11 +7,11 @@ use oxc_ast::ast::{
     ImportDeclarationSpecifier, ImportOrExportKind, ImportSpecifier, ModuleExportName, Program,
     Statement,
 };
+use oxc_semantic::Scoping;
 use oxc_span::{Atom, Span};
 use oxc_syntax::node::NodeId;
 use oxc_syntax::reference::{Reference, ReferenceFlags, ReferenceId};
 use oxc_syntax::symbol::{SymbolFlags, SymbolId};
-use oxc_semantic::Scoping;
 use std::cell::Cell;
 
 use crate::TreeBuilderMut;
@@ -67,7 +67,7 @@ where
         create_import_reference(scoping, symbol_id, node_id)
     } else {
         // Create new import declaration node
-        let node_id = NodeId::new(0);
+        let node_id = NodeId::new(program.body.len() as u32);
 
         // Create symbol for the import
         let symbol_id = visitor.scoping_mut().create_symbol(
@@ -120,7 +120,7 @@ where
         let mut scoping = visitor.scoping_mut();
         let reference_id = create_import_reference(&mut scoping, symbol_id, node_id);
         scoping.add_binding(root_scope, &import_lookup_key, symbol_id);
-        
+
         reference_id
     };
 
