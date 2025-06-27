@@ -1,0 +1,10 @@
+---
+source: packages/sapling_shared/tests/template_ssr_test.rs
+expression: result.code
+---
+template;
+template;
+import { ssr as _$ssr } from "sapling";
+_$ssr(template);
+_$ssr(template, "user", "Sapling");
+// Initial empty program

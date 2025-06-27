@@ -62,8 +62,8 @@ fn expression_to_argument<'a>(expr: Expression<'a>) -> Argument<'a> {
 }
 
 pub enum TemplateValue<'a> {
-    Single(String),
-    Multiple(Vec<'a, String>),
+    Single(Atom<'a>),
+    Multiple(Vec<'a, Atom<'a>>),
 }
 
 pub struct CreateTemplateInput<'a> {
@@ -75,7 +75,7 @@ pub struct CreateTemplateInput<'a> {
 
 /// Create SSR template for handling template strings and caching
 pub fn create_template<'a>(
-    visitor: &'a mut impl TreeBuilderMut<'a>,
+    visitor: &mut impl TreeBuilderMut<'a>,
     program: &mut Program<'a>,
     input: &mut CreateTemplateInput<'a>,
     module_name: &str,
@@ -308,7 +308,7 @@ pub fn create_template<'a>(
 
     let arguments: Vec<'_, Argument<'_>> = match &input.template {
         Some(TemplateValue::Multiple(arr)) if arr.len() > 1 => {
-            let mut exprs = Vec::from_array_in(
+            let mut arguments = Vec::from_array_in(
                 [Argument::Identifier(Box::new_in(
                     IdentifierReference {
                         span: Span::default(),
@@ -319,13 +319,13 @@ pub fn create_template<'a>(
                 ))],
                 allocator,
             );
-            exprs.extend(
+            arguments.extend(
                 input
                     .template_values
                     .iter()
                     .map(|expr| expression_to_argument(expr.clone_in(allocator))),
             );
-            exprs
+            arguments
         }
         _ => Vec::from_array_in(
             [Argument::Identifier(Box::new_in(
