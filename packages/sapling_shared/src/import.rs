@@ -35,15 +35,12 @@ pub fn create_import_reference(
     scoping.create_reference(reference)
 }
 
-pub fn register_import_method<'a, V>(
-    visitor: &mut V,
+pub fn register_import_method<'a>(
+    visitor: &mut impl TreeBuilderMut<'a>,
     program: &mut Program<'a>,
     name: &str,
     module_name: &str,
-) -> Expression<'a>
-where
-    V: TreeBuilderMut<'a>,
-{
+) -> Expression<'a> {
     // Create import lookup key using same format as JS version
     let root_scope = if let Some(root_scope) = program.scope_id.get() {
         root_scope
