@@ -270,7 +270,7 @@ fn test_create_template_ssr() {
 
     let mut visitor = TestVisitor {
         arena: Arena::new(),
-        node_stack: vec![],
+        node_stack: &mut vec![],
         allocator: &allocator,
         scoping: &mut scoping,
         templates: vec![],

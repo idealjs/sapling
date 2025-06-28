@@ -88,7 +88,7 @@ fn test_register_import() {
 
     let mut visitor = TestVisitor {
         arena: Arena::new(),
-        node_stack: vec![],
+        node_stack: &mut vec![],
         allocator: &allocator,
         scoping: &mut scoping,
         templates: &mut vec![],

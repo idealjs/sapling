@@ -86,7 +86,7 @@ fn test_config_merging() {
     let (mut scoping, mut program) = create_test_visitor(&allocator, source);
     let mut visitor = TestVisitor {
         arena: Arena::new(),
-        node_stack: vec![],
+        node_stack: &mut vec![],
         allocator: &allocator,
         scoping: &mut scoping,
         templates: vec![],
@@ -108,7 +108,7 @@ fn test_jsx_import_source() {
     let (mut scoping, mut program) = create_test_visitor(&allocator, source);
     let mut visitor = TestVisitor {
         arena: Arena::new(),
-        node_stack: vec![],
+        node_stack: &mut vec![],
         allocator: &allocator,
         scoping: &mut scoping,
         templates: vec![],
@@ -126,7 +126,7 @@ fn test_jsx_import_source() {
     let (mut scoping, mut program) = create_test_visitor(&allocator, source);
     let mut visitor = TestVisitor {
         arena: Arena::new(),
-        node_stack: vec![],
+        node_stack: &mut vec![],
         allocator: &allocator,
         scoping: &mut scoping,
         templates: vec![],
@@ -151,7 +151,7 @@ fn test_valid_jsx_nesting() {
     let (mut scoping, mut program) = create_test_visitor(&allocator, source);
     let mut visitor = TestVisitor {
         arena: Arena::new(),
-        node_stack: vec![],
+        node_stack: &mut vec![],
         allocator: &allocator,
         scoping: &mut scoping,
         templates: vec![],
@@ -176,7 +176,7 @@ fn test_invalid_jsx_nesting() {
     let (mut scoping, mut program) = create_test_visitor(&allocator, source);
     let mut visitor = TestVisitor {
         arena: Arena::new(),
-        node_stack: vec![],
+        node_stack: &mut vec![],
         allocator: &allocator,
         scoping: &mut scoping,
         templates: vec![],
@@ -202,7 +202,7 @@ fn test_component_nesting() {
     let (mut scoping, mut program) = create_test_visitor(&allocator, source);
     let mut visitor = TestVisitor {
         arena: Arena::new(),
-        node_stack: vec![],
+        node_stack: &mut vec![],
         allocator: &allocator,
         scoping: &mut scoping,
         templates: vec![],
@@ -229,7 +229,7 @@ fn test_mixed_jsx_nesting() {
     let (mut scoping, mut program) = create_test_visitor(&allocator, source);
     let mut visitor = TestVisitor {
         arena: Arena::new(),
-        node_stack: vec![],
+        node_stack: &mut vec![],
         allocator: &allocator,
         scoping: &mut scoping,
         templates: vec![],
