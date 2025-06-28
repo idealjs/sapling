@@ -15,48 +15,10 @@ use sapling_shared::TreeBuilderMut;
 
 use sapling_shared::import::register_import_method;
 
-#[tree_builder_mut]
+#[tree_builder_mut(sapling_shared::TreeBuilderMut<'a>)]
 struct TestVisitor<'a> {
     templates: &'a mut Vec<Template<'a>>,
     config: Config<'a>,
-}
-
-impl<'a> TreeBuilderMut<'a> for TestVisitor<'a> {
-    fn arena(&self) -> &Arena<oxc_ast::AstType> {
-        &self.arena
-    }
-
-    fn arena_mut(&mut self) -> &mut Arena<oxc_ast::AstType> {
-        &mut self.arena
-    }
-
-    fn node_stack(&self) -> &Vec<NodeId> {
-        &self.node_stack
-    }
-
-    fn node_stack_mut(&mut self) -> &mut Vec<NodeId> {
-        &mut self.node_stack
-    }
-
-    fn scoping_mut(&mut self) -> &mut Scoping {
-        &mut self.scoping
-    }
-
-    fn allocator_mut(&mut self) -> &'a Allocator {
-        self.allocator
-    }
-    fn templates_mut(&mut self) -> &mut Vec<crate::Template<'a>> {
-        self.templates
-    }
-    fn templates_take(&mut self) -> Vec<Template<'a>> {
-        std::mem::take(self.templates)
-    }
-    fn config(&self) -> &Config {
-        &self.config
-    }
-    fn config_mut(&mut self) -> &mut Config<'a> {
-        &mut self.config
-    }
 }
 
 impl<'a> VisitMut<'a> for TestVisitor<'a> {

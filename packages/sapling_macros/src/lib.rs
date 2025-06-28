@@ -1,7 +1,19 @@
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::{ToTokens, quote};
-use syn::{Data, DeriveInput, Fields, FieldsNamed, parse_macro_input};
+use syn::{Data, DeriveInput, Fields, FieldsNamed, parse_macro_input, parse::Parse, parse::ParseStream, Token, Path};
+
+struct AttributeArgs {
+    trait_path: Path,
+}
+
+impl Parse for AttributeArgs {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        Ok(AttributeArgs {
+            trait_path: input.parse()?,
+        })
+    }
+}
 
 #[proc_macro_attribute]
 pub fn tree_builder(_attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -59,13 +71,15 @@ pub fn tree_builder(_attr: TokenStream, item: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_attribute]
-pub fn tree_builder_mut(_attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn tree_builder_mut(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let args = parse_macro_input!(attr as AttributeArgs);
+    let trait_path = args.trait_path;
     let input = parse_macro_input!(item as DeriveInput);
     let name = &input.ident;
     let vis = &input.vis;
     let attrs = &input.attrs;
 
-    let expanded = match &input.data {
+    let struct_def = match &input.data {
         syn::Data::Struct(s) => match &s.fields {
             Fields::Named(FieldsNamed { named, .. }) => {
                 let fields = named.iter();
@@ -110,10 +124,58 @@ pub fn tree_builder_mut(_attr: TokenStream, item: TokenStream) -> TokenStream {
             .to_compile_error(),
     };
 
+    let impl_block = quote! {
+        impl<'a> #trait_path for #name<'a> {
+            fn arena(&self) -> &::indextree::Arena<::oxc_ast::AstType> {
+                &self.arena
+            }
+
+            fn arena_mut(&mut self) -> &mut ::indextree::Arena<::oxc_ast::AstType> {
+                &mut self.arena
+            }
+
+            fn node_stack(&self) -> &::std::vec::Vec<::indextree::NodeId> {
+                &self.node_stack
+            }
+
+            fn node_stack_mut(&mut self) -> &mut ::std::vec::Vec<::indextree::NodeId> {
+                &mut self.node_stack
+            }
+
+            fn scoping_mut(&mut self) -> &mut ::oxc_semantic::Scoping {
+                &mut self.scoping
+            }
+
+            fn allocator_mut(&mut self) -> &'a ::oxc_allocator::Allocator {
+                self.allocator
+            }
+
+            fn templates_mut(&mut self) -> &mut ::std::vec::Vec<crate::Template<'a>> {
+                self.templates
+            }
+
+            fn templates_take(&mut self) -> ::std::vec::Vec<crate::Template<'a>> {
+                ::std::mem::take(self.templates)
+            }
+
+            fn config(&self) -> &crate::Config {
+                &self.config
+            }
+
+            fn config_mut(&mut self) -> &mut crate::Config<'a> {
+                &mut self.config
+            }
+        }
+    };
+
+    let expanded = quote! {
+        #struct_def
+
+        #impl_block
+    };
+
     TokenStream::from(expanded)
 }
-
-
 
 #[proc_macro_derive(TreeBuilder)]
 pub fn derive_tree_builder(input: TokenStream) -> TokenStream {

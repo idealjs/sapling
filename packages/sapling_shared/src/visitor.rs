@@ -5,44 +5,11 @@ use oxc_ast_visit::{Visit, VisitMut, walk, walk_mut};
 use crate::{Config, Template, TreeBuilder, TreeBuilderMut, processor::pre_process_ast};
 use sapling_macros::{tree_builder, tree_builder_mut};
 
-#[tree_builder_mut]
+#[tree_builder_mut(crate::TreeBuilderMut<'a>)]
 pub struct SaplingVisitorMut<'a> {
     pub phanton_data: std::marker::PhantomData<&'a ()>,
     pub templates: &'a mut Vec<Template<'a>>,
     pub config: Config<'a>,
-}
-
-impl<'a> TreeBuilderMut<'a> for SaplingVisitorMut<'a> {
-    fn arena(&self) -> &Arena<AstType> {
-        &self.arena
-    }
-    fn arena_mut(&mut self) -> &mut Arena<AstType> {
-        &mut self.arena
-    }
-    fn node_stack(&self) -> &Vec<NodeId> {
-        &self.node_stack
-    }
-    fn node_stack_mut(&mut self) -> &mut Vec<NodeId> {
-        &mut self.node_stack
-    }
-    fn scoping_mut(&mut self) -> &mut oxc_semantic::Scoping {
-        self.scoping
-    }
-    fn allocator_mut(&mut self) -> &'a oxc_allocator::Allocator {
-        self.allocator
-    }
-    fn templates_mut(&mut self) -> &mut Vec<crate::Template<'a>> {
-        self.templates
-    }
-    fn templates_take(&mut self) -> Vec<crate::Template<'a>> {
-        std::mem::take(self.templates)
-    }
-    fn config(&self) -> &Config {
-        &self.config
-    }
-    fn config_mut(&mut self) -> &mut Config<'a> {
-        &mut self.config
-    }
 }
 
 

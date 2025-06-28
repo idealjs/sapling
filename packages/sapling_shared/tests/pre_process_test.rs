@@ -10,52 +10,10 @@ use sapling_shared::{
     Template, TreeBuilderMut, config::Config, processor::pre_process_ast, visitor,
 };
 
-#[tree_builder_mut]
+#[tree_builder_mut(sapling_shared::TreeBuilderMut<'a>)]
 struct TestVisitor<'a> {
-    config: Config<'a>,
-    templates: Vec<Template<'a>>,
-}
-
-impl<'a> TreeBuilderMut<'a> for TestVisitor<'a> {
-    fn arena(&self) -> &Arena<oxc_ast::AstType> {
-        &self.arena
-    }
-
-    fn arena_mut(&mut self) -> &mut Arena<oxc_ast::AstType> {
-        &mut self.arena
-    }
-
-    fn node_stack(&self) -> &Vec<NodeId> {
-        &self.node_stack
-    }
-
-    fn node_stack_mut(&mut self) -> &mut Vec<NodeId> {
-        &mut self.node_stack
-    }
-
-    fn scoping_mut(&mut self) -> &mut Scoping {
-        &mut self.scoping
-    }
-
-    fn allocator_mut(&mut self) -> &'a Allocator {
-        self.allocator
-    }
-
-    fn templates_mut(&mut self) -> &mut Vec<Template<'a>> {
-        &mut self.templates
-    }
-
-    fn templates_take(&mut self) -> Vec<Template<'a>> {
-        std::mem::take(&mut self.templates)
-    }
-
-    fn config(&self) -> &Config {
-        &self.config
-    }
-
-    fn config_mut(&mut self) -> &mut Config<'a> {
-        &mut self.config
-    }
+    pub config: Config<'a>,
+    pub templates: &'a mut Vec<Template<'a>>,
 }
 
 impl<'a> VisitMut<'a> for TestVisitor<'a> {
@@ -89,7 +47,7 @@ fn test_config_merging() {
         node_stack: &mut vec![],
         allocator: &allocator,
         scoping: &mut scoping,
-        templates: vec![],
+        templates: &mut vec![],
         config: Config::default(),
     };
     visitor.visit_program(&mut program);
@@ -111,7 +69,7 @@ fn test_jsx_import_source() {
         node_stack: &mut vec![],
         allocator: &allocator,
         scoping: &mut scoping,
-        templates: vec![],
+        templates: &mut vec![],
         config: Config::default(),
     };
     visitor.visit_program(&mut program);
@@ -129,7 +87,7 @@ fn test_jsx_import_source() {
         node_stack: &mut vec![],
         allocator: &allocator,
         scoping: &mut scoping,
-        templates: vec![],
+        templates: &mut vec![],
         config: Config::default(),
     };
     visitor.visit_program(&mut program);
@@ -154,7 +112,7 @@ fn test_valid_jsx_nesting() {
         node_stack: &mut vec![],
         allocator: &allocator,
         scoping: &mut scoping,
-        templates: vec![],
+        templates: &mut vec![],
         config: Config::default(),
     };
     visitor.visit_program(&mut program);
@@ -179,7 +137,7 @@ fn test_invalid_jsx_nesting() {
         node_stack: &mut vec![],
         allocator: &allocator,
         scoping: &mut scoping,
-        templates: vec![],
+        templates: &mut vec![],
         config: Config::default(),
     };
     visitor.visit_program(&mut program);
@@ -205,7 +163,7 @@ fn test_component_nesting() {
         node_stack: &mut vec![],
         allocator: &allocator,
         scoping: &mut scoping,
-        templates: vec![],
+        templates: &mut vec![],
         config: Config::default(),
     };
     visitor.visit_program(&mut program);
@@ -232,7 +190,7 @@ fn test_mixed_jsx_nesting() {
         node_stack: &mut vec![],
         allocator: &allocator,
         scoping: &mut scoping,
-        templates: vec![],
+        templates: &mut vec![],
         config: Config::default(),
     };
     visitor.visit_program(&mut program);
