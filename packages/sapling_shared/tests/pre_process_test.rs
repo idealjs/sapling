@@ -1,4 +1,4 @@
-use indextree::{Arena, NodeId};
+use indextree::Arena;
 use oxc_allocator::Allocator;
 use oxc_ast::ast::Program;
 use oxc_ast_visit::VisitMut;
@@ -7,7 +7,7 @@ use oxc_semantic::{Scoping, SemanticBuilder};
 use oxc_span::SourceType;
 use sapling_macros::tree_builder_mut;
 use sapling_shared::{
-    Template, TreeBuilderMut, config::Config, processor::pre_process_ast, visitor,
+    Template, TreeBuilderMut, config::Config, processor::pre_process_ast,
 };
 
 #[tree_builder_mut(sapling_shared::TreeBuilderMut<'a>)]

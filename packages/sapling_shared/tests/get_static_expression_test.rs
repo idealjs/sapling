@@ -6,8 +6,7 @@ use oxc_ast::{
     AstKind,
     ast::{JSXExpression, JSXExpressionContainer},
 };
-use oxc_ast_visit::{Visit, walk};
-use oxc_codegen::Codegen;
+use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;

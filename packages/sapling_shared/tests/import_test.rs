@@ -1,12 +1,11 @@
 use indextree::Arena;
-use indextree::NodeId;
 use oxc_allocator::Allocator;
 use oxc_ast::ast::Program;
 use oxc_ast_visit::VisitMut;
 use oxc_ast_visit::walk_mut;
 use oxc_codegen::Codegen;
 use oxc_parser::Parser;
-use oxc_semantic::{Scoping, SemanticBuilder};
+use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use sapling_macros::tree_builder_mut;
 use sapling_shared::Config;

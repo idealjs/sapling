@@ -1,7 +1,7 @@
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
-use quote::{ToTokens, quote};
-use syn::{Data, DeriveInput, Fields, FieldsNamed, parse_macro_input, parse::Parse, parse::ParseStream, Token, Path};
+use quote::quote;
+use syn::{DeriveInput, Fields, FieldsNamed, parse_macro_input, parse::Parse, parse::ParseStream, Path};
 
 struct AttributeArgs {
     trait_path: Path,

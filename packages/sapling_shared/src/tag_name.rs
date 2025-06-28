@@ -1,6 +1,6 @@
 use oxc_ast::ast::{
-    Expression, JSXElement, JSXElementName, JSXIdentifier, JSXMemberExpression,
-    JSXMemberExpressionObject, JSXNamespacedName, ThisExpression,
+    JSXElement, JSXElementName,
+    JSXMemberExpressionObject,
 };
 
 fn jsx_member_expression_object_to_string(obj: &JSXMemberExpressionObject) -> String {

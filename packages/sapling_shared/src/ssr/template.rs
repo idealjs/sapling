@@ -1,14 +1,13 @@
 use crate::{Template, TreeBuilderMut, create_import_reference, register_import_method};
-use oxc_allocator::{Allocator, Box, CloneIn, FromIn, IntoIn, Vec};
-use oxc_ast::AstKind;
+use oxc_allocator::{Box, CloneIn, FromIn, Vec};
 use oxc_ast::ast::{
     Argument, ArrayExpression, ArrayExpressionElement, BinaryExpression, BinaryOperator,
     BindingIdentifier, BindingPattern, BindingPatternKind, CallExpression,
-    ComputedMemberExpression, Expression, IdentifierReference, MemberExpression, NumberBase,
-    NumericLiteral, Program, ReturnStatement, Statement, StringLiteral, VariableDeclarationKind,
+    ComputedMemberExpression, Expression, IdentifierReference, NumberBase,
+    NumericLiteral, Program, Statement, StringLiteral, VariableDeclarationKind,
     VariableDeclarator,
 };
-use oxc_semantic::{NodeId, Scoping, SymbolFlags};
+use oxc_semantic::{NodeId, SymbolFlags};
 use oxc_span::{Atom, Span};
 
 fn expression_to_argument<'a>(expr: Expression<'a>) -> Argument<'a> {

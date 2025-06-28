@@ -1,4 +1,4 @@
-use indextree::{Arena, NodeId};
+use indextree::Arena;
 use oxc_allocator::Allocator;
 use oxc_ast::AstKind;
 use oxc_ast_visit::Visit;

@@ -1,9 +1,8 @@
-use indextree::{Arena, NodeId};
-use oxc_ast::{AstKind, AstType};
-use oxc_ast_visit::{Visit, VisitMut, walk, walk_mut};
+use oxc_ast::AstType;
+use oxc_ast_visit::{VisitMut, walk_mut};
 
-use crate::{Config, Template, TreeBuilder, TreeBuilderMut, processor::pre_process_ast};
-use sapling_macros::{tree_builder, tree_builder_mut};
+use crate::{Config, Template, TreeBuilderMut, processor::pre_process_ast};
+use sapling_macros::tree_builder_mut;
 
 #[tree_builder_mut(crate::TreeBuilderMut<'a>)]
 pub struct SaplingVisitorMut<'a> {
@@ -11,7 +10,6 @@ pub struct SaplingVisitorMut<'a> {
     pub templates: &'a mut Vec<Template<'a>>,
     pub config: Config<'a>,
 }
-
 
 impl<'a> VisitMut<'a> for SaplingVisitorMut<'a> {
     fn enter_node(&mut self, kind: AstType) {

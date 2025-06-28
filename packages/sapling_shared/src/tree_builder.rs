@@ -1,5 +1,5 @@
 use indextree::{Arena, NodeId};
-use oxc_ast::{AstKind, AstType, ast::IdentifierName};
+use oxc_ast::{AstKind, AstType};
 use oxc_ast_visit::{Visit, VisitMut};
 use oxc_semantic::ReferenceId;
 

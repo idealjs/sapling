@@ -5,23 +5,16 @@ use crate::TreeBuilder;
 use crate::TreeBuilderMut;
 use crate::component::is_component;
 use crate::config::Config;
-use crate::config_utils::get_renderer_config;
-use crate::dom;
 use crate::html_nesting::is_valid_html_nesting;
-use crate::register_import_method;
-use crate::ssr;
 use indextree::Node;
 use oxc_allocator::Allocator;
-use oxc_allocator::Box;
 use oxc_allocator::Vec;
 use oxc_ast::AstKind;
-use oxc_ast::ast::ArrayExpressionElement;
 use oxc_ast::ast::{
-    Argument, ArrayExpression, CallExpression, Expression, ExpressionStatement, JSXElement,
-    JSXElementName, Program, StringLiteral,
+    JSXElement,
+    JSXElementName, Program,
 };
 use oxc_ast_visit::Visit;
-use oxc_span::{Atom, Span};
 use sapling_macros::tree_builder;
 
 // Mock structure for HTML validation results
