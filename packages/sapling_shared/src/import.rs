@@ -14,6 +14,7 @@ use oxc_syntax::reference::{Reference, ReferenceFlags, ReferenceId};
 use oxc_syntax::symbol::{SymbolFlags, SymbolId};
 use std::cell::Cell;
 
+use crate::SaplingVisitorMut;
 use crate::TreeBuilderMut;
 
 /// Generate a unique identifier name for imported variables.
@@ -33,6 +34,17 @@ pub fn create_import_reference(
 ) -> ReferenceId {
     let reference = Reference::new_with_symbol_id(node_id, symbol_id, ReferenceFlags::read());
     scoping.create_reference(reference)
+}
+
+impl<'a> SaplingVisitorMut<'a> {
+    pub fn register_import_method(
+        mut self,
+        program: &mut Program<'a>,
+        name: &str,
+        module_name: &str,
+    ) -> Expression<'a> {
+        register_import_method(&mut self, program, name, module_name)
+    }
 }
 
 pub fn register_import_method<'a>(

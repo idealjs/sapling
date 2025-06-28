@@ -7,9 +7,9 @@ use sapling_macros::{tree_builder, tree_builder_mut};
 
 #[tree_builder_mut]
 pub struct SaplingVisitorMut<'a> {
-    phanton_data: std::marker::PhantomData<&'a ()>,
-    templates: &'a mut Vec<Template<'a>>,
-    config: Config<'a>,
+    pub phanton_data: std::marker::PhantomData<&'a ()>,
+    pub templates: &'a mut Vec<Template<'a>>,
+    pub config: Config<'a>,
 }
 
 impl<'a> TreeBuilderMut<'a> for SaplingVisitorMut<'a> {
@@ -44,6 +44,7 @@ impl<'a> TreeBuilderMut<'a> for SaplingVisitorMut<'a> {
         &mut self.config
     }
 }
+
 
 impl<'a> VisitMut<'a> for SaplingVisitorMut<'a> {
     fn enter_node(&mut self, kind: AstType) {
