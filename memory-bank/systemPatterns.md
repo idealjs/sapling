@@ -141,4 +141,19 @@ graph LR
    - Mapping preservation
    - Source content handling
 
+5. **Babel to Oxc Translation Patterns**
+   - **Identifier Generation**:
+     - Babel's `generateUidIdentifier` -> oxc's symbol creation chain:
+       1. Create symbol via `scoping.create_symbol()`
+       2. Get reference_id via `create_import_reference()`
+       3. Wrap in `IdentifierReference` with:
+         ```rust
+         IdentifierReference {
+             span: Span::default(),
+             name: Atom::from_in("name", allocator),
+             reference_id: std::cell::Cell::new(Some(id))
+         }
+         ```
+     - This pattern maintains the variable reference system when translating from Babel to Oxc
+
 These patterns form the foundation of oxc's architecture, providing a robust and maintainable codebase that achieves its performance and reliability goals.

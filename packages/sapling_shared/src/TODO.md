@@ -20,7 +20,7 @@
 
 | 函数/常量名称                | 行数 | 描述                                       | 迁移目标               | 目标函数                      | 状态 | 是否独立 |
 | ---------------------------- | ---- | ------------------------------------------ | ---------------------- | ----------------------------- | ---- | -------- |
-| nextChild                    | 3    | 获取下一个子元素节点                       | element_utils.rs       | next_child                    | TODO | ✅ 是 |
+| nextChild                    | 3    | 获取下一个子元素节点                       | element_utils.rs       | next_child                    | DONE | ✅ 是 |
 | contextToCustomElement       | 15   | 为自定义元素添加上下文支持                 | custom_element.rs      | add_context_to_custom_element | TODO | ✅ 是 |
 | detectResolvableEventHandler | 15   | 检测事件处理器是否可解析                   | event_handler.rs       | detect_resolvable_handler     | TODO | ✅ 是 |
 | findLastElement              | 18   | 在子元素列表中查找最后一个元素             | element_utils.rs       | find_last_element             | TODO | ✅ 是 |
