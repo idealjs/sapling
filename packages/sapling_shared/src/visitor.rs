@@ -59,44 +59,8 @@ impl<'a> VisitMut<'a> for SaplingVisitorMut<'a> {
         walk_mut::walk_jsx_fragment(self, it);
     }
     fn visit_program(&mut self, it: &mut oxc_ast::ast::Program<'a>) {
-        pre_process_ast(it, &Config::default());
+        pre_process_ast(self, it, &Config::default());
+
         walk_mut::walk_program(self, it);
-    }
-}
-
-#[tree_builder]
-pub struct SaplingVisitor<'a> {}
-
-impl<'a> TreeBuilder<'a> for SaplingVisitor<'a> {
-    fn arena(&self) -> &Arena<AstKind<'a>> {
-        &self.arena
-    }
-    fn arena_mut(&mut self) -> &mut Arena<AstKind<'a>> {
-        &mut self.arena
-    }
-    fn node_stack(&self) -> &Vec<NodeId> {
-        &self.node_stack
-    }
-    fn node_stack_mut(&mut self) -> &mut Vec<NodeId> {
-        &mut self.node_stack
-    }
-}
-
-impl<'a> Visit<'a> for SaplingVisitor<'a> {
-    fn enter_node(&mut self, kind: AstKind<'a>) {
-        <Self as TreeBuilder>::enter_node(self, kind);
-    }
-    fn leave_node(&mut self, kind: AstKind<'a>) {
-        <Self as TreeBuilder>::leave_node(self, kind);
-    }
-    fn visit_jsx_element(&mut self, it: &oxc_ast::ast::JSXElement<'a>) {
-        walk::walk_jsx_element(self, it);
-    }
-    fn visit_jsx_fragment(&mut self, it: &oxc_ast::ast::JSXFragment<'a>) {
-        walk::walk_jsx_fragment(self, it);
-    }
-    fn visit_program(&mut self, it: &oxc_ast::ast::Program<'a>) {
-        pre_process_ast(it, &Config::default());
-        walk::walk_program(self, it);
     }
 }

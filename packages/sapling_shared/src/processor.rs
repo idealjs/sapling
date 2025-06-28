@@ -1,6 +1,8 @@
 use std::collections::HashSet;
 
+use crate::Template;
 use crate::TreeBuilder;
+use crate::TreeBuilderMut;
 use crate::component::is_component;
 use crate::config::Config;
 use crate::config_utils::get_renderer_config;
@@ -34,12 +36,6 @@ fn is_invalid_markup(html: &str) -> Option<MarkupValidationResult> {
     // TODO: Implement actual HTML validation
     // For now just return None to indicate valid markup
     None
-}
-
-#[derive(Debug)]
-struct Template<'a> {
-    renderer: &'a str,
-    template_with_closing_tags: Option<String>,
 }
 
 #[tree_builder]
@@ -136,7 +132,12 @@ impl<'a> Visit<'a> for JSXValidator<'a> {
     }
 }
 
-pub fn pre_process_ast<'a>(program: &'a Program<'a>, opts: &'a Config<'a>) -> Config<'a> {
+pub fn pre_process_ast<'a>(
+    visitor: &mut impl TreeBuilderMut<'a>,
+    program: &mut Program<'a>,
+    opts: &Config,
+) {
+    let config = visitor.config();
     let merged = Config {
         module_name: opts.module_name.clone(),
         generate: opts.generate.clone(),
@@ -177,7 +178,7 @@ pub fn pre_process_ast<'a>(program: &'a Program<'a>, opts: &'a Config<'a>) -> Co
         }
 
         if !should_process {
-            return merged;
+            return ();
         }
     }
 
@@ -191,8 +192,7 @@ pub fn pre_process_ast<'a>(program: &'a Program<'a>, opts: &'a Config<'a>) -> Co
         };
         validator.visit_program(program);
     }
-
-    merged
+    ()
 }
 
 pub fn post_process_ast<'a>(
