@@ -137,28 +137,13 @@ pub fn pre_process_ast<'a>(
     program: &mut Program<'a>,
     opts: &Config,
 ) {
-    let config = visitor.config();
-    let merged = Config {
-        module_name: opts.module_name.clone(),
-        generate: opts.generate.clone(),
-        hydratable: opts.hydratable,
-        delegate_events: opts.delegate_events,
-        delegated_events: opts.delegated_events.clone(),
-        built_ins: opts.built_ins.clone(),
-        require_import_source: opts.require_import_source,
-        wrap_conditionals: opts.wrap_conditionals,
-        omit_nested_closing_tags: opts.omit_nested_closing_tags,
-        omit_last_closing_tag: opts.omit_last_closing_tag,
-        omit_quotes: opts.omit_quotes,
-        context_to_custom_elements: opts.context_to_custom_elements,
-        static_marker: opts.static_marker,
-        effect_wrapper: opts.effect_wrapper,
-        memo_wrapper: opts.memo_wrapper,
-        validate: opts.validate,
-        ..Default::default() // Merge with default values
-    };
-    let lib = merged.require_import_source;
-    if lib.is_some() {
+    let require_import_source = opts
+        .require_import_source
+        .or(visitor.config().require_import_source);
+
+    let validate = opts.validate || visitor.config().validate;
+
+    if require_import_source.is_some() {
         let comments = &program.comments;
 
         let mut should_process = false;
@@ -168,7 +153,7 @@ pub fn pre_process_ast<'a>(
 
             if let Some(idx) = content.find("@jsxImportSource") {
                 // 使用 as_ref() 来获取 Option<&String>
-                if let Some(module_name) = merged.require_import_source {
+                if let Some(module_name) = require_import_source {
                     if content[idx..].contains(module_name) {
                         should_process = true;
                         break;
@@ -183,7 +168,7 @@ pub fn pre_process_ast<'a>(
     }
 
     // Validate JSX if needed
-    if merged.validate {
+    if validate {
         let mut validator = JSXValidator {
             arena: indextree::Arena::new(),
             node_stack: std::vec::Vec::new(),

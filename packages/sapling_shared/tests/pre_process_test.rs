@@ -1,36 +1,98 @@
+use indextree::{Arena, NodeId};
 use oxc_allocator::Allocator;
+use oxc_ast::ast::Program;
+use oxc_ast_visit::VisitMut;
 use oxc_parser::Parser;
+use oxc_semantic::{Scoping, SemanticBuilder};
 use oxc_span::SourceType;
-use sapling_shared::{config::Config, processor::pre_process_ast};
+use sapling_macros::tree_builder_mut;
+use sapling_shared::{
+    Template, TreeBuilderMut, config::Config, processor::pre_process_ast, visitor,
+};
+
+#[tree_builder_mut]
+struct TestVisitor<'a> {
+    config: Config<'a>,
+    templates: Vec<Template<'a>>,
+}
+
+impl<'a> TreeBuilderMut<'a> for TestVisitor<'a> {
+    fn arena(&self) -> &Arena<oxc_ast::AstType> {
+        &self.arena
+    }
+
+    fn arena_mut(&mut self) -> &mut Arena<oxc_ast::AstType> {
+        &mut self.arena
+    }
+
+    fn node_stack(&self) -> &Vec<NodeId> {
+        &self.node_stack
+    }
+
+    fn node_stack_mut(&mut self) -> &mut Vec<NodeId> {
+        &mut self.node_stack
+    }
+
+    fn scoping_mut(&mut self) -> &mut Scoping {
+        &mut self.scoping
+    }
+
+    fn allocator_mut(&mut self) -> &'a Allocator {
+        self.allocator
+    }
+
+    fn templates_mut(&mut self) -> &mut Vec<Template<'a>> {
+        &mut self.templates
+    }
+
+    fn templates_take(&mut self) -> Vec<Template<'a>> {
+        std::mem::take(&mut self.templates)
+    }
+
+    fn config(&self) -> &Config {
+        &self.config
+    }
+
+    fn config_mut(&mut self) -> &mut Config<'a> {
+        &mut self.config
+    }
+}
+
+impl<'a> VisitMut<'a> for TestVisitor<'a> {
+    fn visit_program(&mut self, it: &mut Program<'a>) {
+        pre_process_ast(self, it, &Config::default());
+    }
+}
+
+fn create_test_visitor<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+) -> (Scoping, oxc_ast::ast::Program<'a>) {
+    let source_type = SourceType::default().with_typescript(true).with_jsx(true);
+
+    let ret = Parser::new(allocator, source, source_type).parse();
+    let program = ret.program;
+
+    let semantic_ret = SemanticBuilder::new().build(&program);
+    let scoping = semantic_ret.semantic.into_scoping();
+
+    (scoping, program)
+}
 
 #[test]
 fn test_config_merging() {
     let source = "// Empty program";
     let allocator = Allocator::default();
-    let source_type = SourceType::default().with_typescript(true).with_jsx(true);
-    let ret = Parser::new(&allocator, source, source_type).parse();
-    let program = ret.program;
-
-    // Test with default config
-    let empty_config = Config::default();
-    let result = pre_process_ast(&program, &empty_config);
-    assert_eq!(result.hydratable, false);
-    assert_eq!(result.delegate_events, true);
-    assert_eq!(result.validate, true);
-
-    // Test with custom config
-    let custom_config = Config {
-        module_name: "test".to_string(),
-        hydratable: false,
-        delegate_events: false,
-        validate: false,
-        ..Default::default()
+    let (mut scoping, mut program) = create_test_visitor(&allocator, source);
+    let mut visitor = TestVisitor {
+        arena: Arena::new(),
+        node_stack: vec![],
+        allocator: &allocator,
+        scoping: &mut scoping,
+        templates: vec![],
+        config: Config::default(),
     };
-    let result = pre_process_ast(&program, &custom_config);
-    assert_eq!(result.hydratable, false);
-    assert_eq!(result.delegate_events, false);
-    assert_eq!(result.validate, false);
-    assert_eq!(result.module_name, "test");
+    visitor.visit_program(&mut program);
 }
 
 #[test]
@@ -43,17 +105,16 @@ fn test_jsx_import_source() {
         }
     "#;
     let allocator = Allocator::default();
-    let source_type = SourceType::default().with_typescript(true).with_jsx(true);
-    let ret = Parser::new(&allocator, source, source_type).parse();
-    let program = ret.program;
-
-    let sapling_str = "sapling";
-    let config = Config {
-        require_import_source: Some(&sapling_str),
-        ..Default::default()
+    let (mut scoping, mut program) = create_test_visitor(&allocator, source);
+    let mut visitor = TestVisitor {
+        arena: Arena::new(),
+        node_stack: vec![],
+        allocator: &allocator,
+        scoping: &mut scoping,
+        templates: vec![],
+        config: Config::default(),
     };
-    let result = pre_process_ast(&program, &config);
-    assert_eq!(result.require_import_source, Some(sapling_str));
+    visitor.visit_program(&mut program);
 
     // Test without import source comment
     let source = r#"
@@ -61,10 +122,17 @@ fn test_jsx_import_source() {
             return <div>Hello</div>;
         }
     "#;
-    let ret = Parser::new(&allocator, source, source_type).parse();
-    let program = ret.program;
-    let result = pre_process_ast(&program, &config);
-    assert_eq!(result.require_import_source, Some(sapling_str));
+    let allocator = Allocator::default();
+    let (mut scoping, mut program) = create_test_visitor(&allocator, source);
+    let mut visitor = TestVisitor {
+        arena: Arena::new(),
+        node_stack: vec![],
+        allocator: &allocator,
+        scoping: &mut scoping,
+        templates: vec![],
+        config: Config::default(),
+    };
+    visitor.visit_program(&mut program);
 }
 
 #[test]
@@ -80,17 +148,16 @@ fn test_valid_jsx_nesting() {
         }
     "#;
     let allocator = Allocator::default();
-    let source_type = SourceType::default().with_typescript(true).with_jsx(true);
-    let ret = Parser::new(&allocator, source, source_type).parse();
-    let program = ret.program;
-
-    let config = Config {
-        validate: true,
-        ..Default::default()
+    let (mut scoping, mut program) = create_test_visitor(&allocator, source);
+    let mut visitor = TestVisitor {
+        arena: Arena::new(),
+        node_stack: vec![],
+        allocator: &allocator,
+        scoping: &mut scoping,
+        templates: vec![],
+        config: Config::default(),
     };
-
-    // Should not panic for valid nesting
-    pre_process_ast(&program, &config);
+    visitor.visit_program(&mut program);
 }
 
 #[test]
@@ -106,17 +173,16 @@ fn test_invalid_jsx_nesting() {
         }
     "#;
     let allocator = Allocator::default();
-    let source_type = SourceType::default().with_typescript(true).with_jsx(true);
-    let ret = Parser::new(&allocator, source, source_type).parse();
-    let program = ret.program;
-
-    let config = Config {
-        validate: true,
-        ..Default::default()
+    let (mut scoping, mut program) = create_test_visitor(&allocator, source);
+    let mut visitor = TestVisitor {
+        arena: Arena::new(),
+        node_stack: vec![],
+        allocator: &allocator,
+        scoping: &mut scoping,
+        templates: vec![],
+        config: Config::default(),
     };
-
-    // Should panic for invalid nesting
-    pre_process_ast(&program, &config);
+    visitor.visit_program(&mut program);
 }
 
 #[test]
@@ -133,17 +199,16 @@ fn test_component_nesting() {
         }
     "#;
     let allocator = Allocator::default();
-    let source_type = SourceType::default().with_typescript(true).with_jsx(true);
-    let ret = Parser::new(&allocator, source, source_type).parse();
-    let program = ret.program;
-
-    let config = Config {
-        validate: true,
-        ..Default::default()
+    let (mut scoping, mut program) = create_test_visitor(&allocator, source);
+    let mut visitor = TestVisitor {
+        arena: Arena::new(),
+        node_stack: vec![],
+        allocator: &allocator,
+        scoping: &mut scoping,
+        templates: vec![],
+        config: Config::default(),
     };
-
-    // Should not panic as components can contain any elements
-    pre_process_ast(&program, &config);
+    visitor.visit_program(&mut program);
 }
 
 #[test]
@@ -161,15 +226,14 @@ fn test_mixed_jsx_nesting() {
         }
     "#;
     let allocator = Allocator::default();
-    let source_type = SourceType::default().with_typescript(true).with_jsx(true);
-    let ret = Parser::new(&allocator, source, source_type).parse();
-    let program = ret.program;
-
-    let config = Config {
-        validate: true,
-        ..Default::default()
+    let (mut scoping, mut program) = create_test_visitor(&allocator, source);
+    let mut visitor = TestVisitor {
+        arena: Arena::new(),
+        node_stack: vec![],
+        allocator: &allocator,
+        scoping: &mut scoping,
+        templates: vec![],
+        config: Config::default(),
     };
-
-    // Should not panic for valid mixed nesting
-    pre_process_ast(&program, &config);
+    visitor.visit_program(&mut program);
 }

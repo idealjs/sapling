@@ -20,7 +20,7 @@ use sapling_shared::{
 
 #[tree_builder_mut]
 struct TestVisitor<'a> {
-    templates: &'a mut Vec<Template<'a>>,
+    templates: Vec<Template<'a>>,
     config: Config<'a>,
 }
 
@@ -49,10 +49,10 @@ impl<'a> TreeBuilderMut<'a> for TestVisitor<'a> {
         self.allocator
     }
     fn templates_mut(&mut self) -> &mut Vec<crate::Template<'a>> {
-        self.templates
+        &mut self.templates
     }
     fn templates_take(&mut self) -> Vec<sapling_shared::Template<'a>> {
-        std::mem::take(self.templates)
+        std::mem::take(&mut self.templates)
     }
     fn config(&self) -> &Config {
         &self.config
@@ -273,7 +273,7 @@ fn test_create_template_ssr() {
         node_stack: vec![],
         allocator: &allocator,
         scoping: &mut scoping,
-        templates: &mut vec![],
+        templates: vec![],
         config: Config::default(),
     };
     visitor.visit_program(&mut program);
