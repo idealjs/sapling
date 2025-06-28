@@ -9,6 +9,7 @@ use oxc_parser::Parser;
 use oxc_semantic::{Scoping, SemanticBuilder};
 use oxc_span::SourceType;
 use sapling_macros::tree_builder_mut;
+use sapling_shared::Config;
 use sapling_shared::Template;
 use sapling_shared::TreeBuilderMut;
 
@@ -17,6 +18,7 @@ use sapling_shared::import::register_import_method;
 #[tree_builder_mut]
 struct TestVisitor<'a> {
     templates: &'a mut Vec<Template<'a>>,
+    config: Config<'a>,
 }
 
 impl<'a> TreeBuilderMut<'a> for TestVisitor<'a> {
@@ -48,6 +50,12 @@ impl<'a> TreeBuilderMut<'a> for TestVisitor<'a> {
     }
     fn templates_take(&mut self) -> Vec<Template<'a>> {
         std::mem::take(self.templates)
+    }
+    fn config(&self) -> &Config {
+        &self.config
+    }
+    fn config_mut(&mut self) -> &mut Config<'a> {
+        &mut self.config
     }
 }
 
@@ -84,6 +92,7 @@ fn test_register_import() {
         allocator: &allocator,
         scoping: &mut scoping,
         templates: &mut vec![],
+        config: Config::default(),
     };
     visitor.visit_program(&mut program);
 

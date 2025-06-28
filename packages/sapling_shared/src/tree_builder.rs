@@ -3,6 +3,8 @@ use oxc_ast::{AstKind, AstType, ast::IdentifierName};
 use oxc_ast_visit::{Visit, VisitMut};
 use oxc_semantic::ReferenceId;
 
+use crate::Config;
+
 pub struct Template<'a> {
     pub id: ReferenceId,
     pub template_with_closing_tags: oxc_ast::ast::Expression<'a>,
@@ -62,6 +64,8 @@ pub trait TreeBuilderMut<'a>: VisitMut<'a> {
     fn leave_node(&mut self, _: AstType) {
         self.pop_parent();
     }
-    fn templates_mut(&mut self) -> & mut Vec<crate::Template<'a>>;
+    fn templates_mut(&mut self) -> &mut Vec<crate::Template<'a>>;
     fn templates_take(&mut self) -> Vec<crate::Template<'a>>;
+    fn config_mut(&mut self) -> &mut Config<'a>;
+    fn config(&self) -> &Config;
 }
