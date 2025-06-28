@@ -87,7 +87,7 @@ fn test_register_import() {
     let mut scoping = semantic_ret.semantic.into_scoping();
 
     let mut visitor = TestVisitor {
-        arena: Arena::new(),
+        arena: &mut Arena::new(),
         node_stack: &mut vec![],
         allocator: &allocator,
         scoping: &mut scoping,
