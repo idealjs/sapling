@@ -141,7 +141,7 @@
 | 函数/常量名称   | 行数 | 描述                              | 迁移目标        | 目标函数         | 状态 |
 | --------------- | ---- | --------------------------------- | --------------- | ---------------- | ---- |
 | createTemplate  | 65   | 创建SSR模板，处理模板字符串和缓存 | ssr/template.rs | create_template  | DONE |
-| appendTemplates | 5    | 添加模板声明到程序体中            | ssr/template.rs | append_templates | TODO |
+| appendTemplates | 5    | 添加模板声明到程序体中            | ssr/template.rs | append_templates | DONE |
 
 ### universal/element.js
 
