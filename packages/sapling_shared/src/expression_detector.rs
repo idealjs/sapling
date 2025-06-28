@@ -9,8 +9,3 @@ pub fn detect_expressions() -> Result<(), &'static str> {
 pub fn is_dynamic() -> Result<(), &'static str> {
     todo!("Implement checking if an expression is dynamic")
 }
-
-/// Get static expression value
-pub fn get_static_expression() -> Result<(), &'static str> {
-    todo!("Implement retrieving static expression value")
-}

@@ -9,8 +9,3 @@ pub fn wrap_dynamics() -> Result<(), &'static str> {
 pub fn is_dynamic() -> Result<bool, &'static str> {
     todo!("Implement checking if expression is dynamic")
 }
-
-/// Get static expression value from dynamic content
-pub fn get_static_expression() -> Result<(), &'static str> {
-    todo!("Implement retrieving static expression value from dynamic content")
-}
