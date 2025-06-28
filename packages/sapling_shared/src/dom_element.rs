@@ -19,8 +19,3 @@ pub fn find_last_element() -> Result<(), &'static str> {
 pub fn detect_resolvable_event_handler() -> Result<(), &'static str> {
     todo!("Implement detection of resolvable event handlers")
 }
-
-/// Add context support to custom element
-pub fn context_to_custom_element() -> Result<(), &'static str> {
-    todo!("Implement adding context support to custom elements")
-}
