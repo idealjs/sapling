@@ -12,6 +12,7 @@ use oxc_parser::Parser;
 use oxc_semantic::{Scoping, Semantic, SemanticBuilder};
 use oxc_span::{Atom, SourceType, Span};
 use sapling_macros::tree_builder_mut;
+use sapling_shared::append_templates_ssr;
 use sapling_shared::{
     Template, TreeBuilderMut, create_template_ssr, ssr::template::CreateTemplateInput,
 };
@@ -48,6 +49,9 @@ impl<'a> TreeBuilderMut<'a> for TestVisitor<'a> {
     fn templates_mut(&mut self) -> &mut Vec<crate::Template<'a>> {
         self.templates
     }
+    fn templates_take(&mut self) -> Vec<sapling_shared::Template<'a>> {
+        std::mem::take(self.templates)
+    }
 }
 
 impl<'a> VisitMut<'a> for TestVisitor<'a> {
@@ -73,14 +77,7 @@ impl<'a> VisitMut<'a> for TestVisitor<'a> {
             },
             "sapling",
         );
-        it.body
-            .push(Statement::ExpressionStatement(oxc_allocator::Box::new_in(
-                oxc_ast::ast::ExpressionStatement {
-                    span: oxc_span::Span::default(),
-                    expression: expr,
-                },
-                self.allocator,
-            )));
+        append_templates_ssr(self, it);
 
         let expr = create_template_ssr(
             self,
@@ -247,6 +244,7 @@ impl<'a> VisitMut<'a> for TestVisitor<'a> {
                 },
                 self.allocator,
             )));
+        append_templates_ssr(self, it);
     }
 }
 

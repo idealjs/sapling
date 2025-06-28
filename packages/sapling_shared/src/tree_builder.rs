@@ -1,8 +1,7 @@
 use indextree::{Arena, NodeId};
-use oxc_ast::{ast::IdentifierName, AstKind, AstType};
+use oxc_ast::{AstKind, AstType, ast::IdentifierName};
 use oxc_ast_visit::{Visit, VisitMut};
 use oxc_semantic::ReferenceId;
-
 
 pub struct Template<'a> {
     pub id: ReferenceId,
@@ -64,4 +63,5 @@ pub trait TreeBuilderMut<'a>: VisitMut<'a> {
         self.pop_parent();
     }
     fn templates_mut(&mut self) -> & mut Vec<crate::Template<'a>>;
+    fn templates_take(&mut self) -> Vec<crate::Template<'a>>;
 }

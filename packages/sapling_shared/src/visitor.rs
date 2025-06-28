@@ -30,9 +30,15 @@ impl<'a> TreeBuilderMut<'a> for SaplingVisitorMut<'a> {
     fn allocator_mut(&mut self) -> &'a oxc_allocator::Allocator {
         self.allocator
     }
-    fn templates_mut(&mut self) -> & mut Vec<crate::Template<'a>> {
+    fn templates_mut(&mut self) -> &mut Vec<crate::Template<'a>> {
         self.templates
     }
+    fn templates_take(&mut self) -> Vec<crate::Template<'a>> {
+        std::mem::take(self.templates)
+    }
+    // fn take_templates(&self) -> Vec<Template<'a>> {
+    //     std::mem::take(self.templates_mut())
+    // }
 }
 
 impl<'a> VisitMut<'a> for SaplingVisitorMut<'a> {

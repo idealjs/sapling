@@ -143,9 +143,7 @@
 | createTemplate  | 65   | 创建SSR模板，处理模板字符串和缓存 | ssr/template.rs | create_template  | DONE |
 | appendTemplates | 5    | 添加模板声明到程序体中            | ssr/template.rs | append_templates | TODO |
 
-## universal/
-
-### element.js
+### universal/element.js
 
 | 函数/常量名称       | 行数 | 描述                        | 迁移目标                | 目标函数             | 状态 |
 | ------------------- | ---- | --------------------------- | ----------------------- | -------------------- | ---- |
@@ -156,14 +154,14 @@
 | setAttr             | 10   | 设置通用属性                | universal_attributes.rs | set_attr             | TODO |
 | nextChild           | 3    | 获取下一个子元素节点        | universal_utils.rs      | next_child           | TODO |
 
-### template.js
+### universal/template.js
 
 | 函数/常量名称  | 行数 | 描述                                   | 迁移目标              | 目标函数        | 状态 |
 | -------------- | ---- | -------------------------------------- | --------------------- | --------------- | ---- |
 | wrapDynamics   | 65   | 封装动态属性更新逻辑                   | universal_dynamics.rs | wrap_dynamics   | TODO |
 | createTemplate | 35   | 创建通用模板，处理组件声明和动态表达式 | universal_template.rs | create_template | TODO |
 
-### volidElements.ts
+### universal/volidElements.ts
 
 | 函数/常量名称  | 行数 | 描述                       | 迁移目标          | 目标函数      | 状态 |
 | -------------- | ---- | -------------------------- | ----------------- | ------------- | ---- |

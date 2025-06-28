@@ -46,6 +46,9 @@ impl<'a> TreeBuilderMut<'a> for TestVisitor<'a> {
     fn templates_mut(&mut self) -> &mut Vec<crate::Template<'a>> {
         self.templates
     }
+    fn templates_take(&mut self) -> Vec<Template<'a>> {
+        std::mem::take(self.templates)
+    }
 }
 
 impl<'a> VisitMut<'a> for TestVisitor<'a> {

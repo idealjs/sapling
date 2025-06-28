@@ -3,8 +3,10 @@ use oxc_allocator::{Allocator, Box, CloneIn, FromIn, IntoIn, Vec};
 use oxc_ast::AstKind;
 use oxc_ast::ast::{
     Argument, ArrayExpression, ArrayExpressionElement, BinaryExpression, BinaryOperator,
-    CallExpression, ComputedMemberExpression, Expression, IdentifierReference, MemberExpression,
-    NumberBase, NumericLiteral, Program, ReturnStatement, Statement, StringLiteral,
+    BindingIdentifier, BindingPattern, BindingPatternKind, CallExpression,
+    ComputedMemberExpression, Expression, IdentifierReference, MemberExpression, NumberBase,
+    NumericLiteral, Program, ReturnStatement, Statement, StringLiteral, VariableDeclarationKind,
+    VariableDeclarator,
 };
 use oxc_semantic::{NodeId, Scoping, SymbolFlags};
 use oxc_span::{Atom, Span};
@@ -354,6 +356,56 @@ pub fn create_template<'a>(
 }
 
 /// Append template declarations to the program body
-pub fn append_templates() {
-    todo!("Implement append_templates");
+pub fn append_templates<'a>(visitor: &mut impl TreeBuilderMut<'a>, program: &mut Program<'a>) {
+    let templates = visitor.templates_take();
+    let root_scope = if let Some(root_scope) = program.scope_id.get() {
+        root_scope
+    } else {
+        panic!("Root scope not found in program");
+    };
+
+    // Create new import declaration node
+    let node_id = NodeId::new(program.body.len() as u32);
+
+    let symbol_id = visitor.scoping_mut().create_symbol(
+        Span::default(),
+        "",
+        SymbolFlags::None,
+        root_scope,
+        node_id,
+    );
+    let allocator = visitor.allocator_mut();
+    // Create declarators for each template
+    let declarators = templates.into_iter().map(|template| VariableDeclarator {
+        span: Span::default(),
+        id: BindingPattern {
+            kind: BindingPatternKind::BindingIdentifier(Box::new_in(
+                BindingIdentifier {
+                    span: Span::default(),
+                    name: Atom::from_in("template", allocator),
+                    symbol_id: std::cell::Cell::new(Some(symbol_id)),
+                },
+                allocator,
+            )),
+            type_annotation: None,
+            optional: false,
+        },
+        init: Some(template.template),
+        kind: VariableDeclarationKind::Var,
+        definite: false,
+    });
+
+    // Create variable declaration
+    let declaration = Statement::VariableDeclaration(Box::new_in(
+        oxc_ast::ast::VariableDeclaration {
+            span: Span::default(),
+            kind: oxc_ast::ast::VariableDeclarationKind::Var,
+            declarations: Vec::from_iter_in(declarators, allocator),
+            declare: false,
+        },
+        allocator,
+    ));
+
+    // Insert at start of program body
+    program.body.insert(0, declaration);
 }
