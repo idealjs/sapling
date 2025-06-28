@@ -165,6 +165,14 @@ pub fn tree_builder_mut(attr: TokenStream, item: TokenStream) -> TokenStream {
             fn config_mut(&mut self) -> &mut crate::Config<'a> {
                 &mut self.config
             }
+
+            fn semantic(&self) -> &oxc_semantic::Semantic<'a> {
+                &self.scoping.semantic
+            }
+
+            fn semantic_mut(&mut self) -> &mut oxc_semantic::Semantic<'a> {
+                &mut self.scoping.semantic
+            }
         }
     };
 
