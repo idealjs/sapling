@@ -3,7 +3,7 @@ resolver = "2"
 members = [
     "packages/sapling_macros",
     "packages/sapling_shared",
-    "packages/sapling_visitor",
+    "packages/sapling_transformer",
 ]
 
 [workspace.package]
