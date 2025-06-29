@@ -7,15 +7,3 @@ publish = false
 [dependencies]
 sapling_macros = { path = "../sapling_macros" }
 sapling_shared = { path = "../sapling_shared" }
-oxc_allocator.workspace = true
-oxc_ast = { workspace = true }
-oxc_span = { workspace = true }
-oxc_syntax = { workspace = true }
-oxc_codegen = { workspace = true }
-oxc_parser = { workspace = true }
-oxc_transformer = { workspace = true }
-oxc_semantic = { workspace = true }
-oxc_traverse = { workspace = true }
-insta.workspace = true
-indextree.workspace = true
-oxc_ast_visit.workspace = true
