@@ -11,36 +11,37 @@ pub fn detect_resolvable_event_handler<'a>(
     visitor: &mut impl TreeBuilderMut<'a>,
     handler: &Expression<'a>,
 ) -> bool {
-    let scoping = visitor.scoping_mut();
+    false
+    // let scoping = visitor.scoping_mut();
 
-    match handler {
-        Expression::Identifier(ident) => {
-            let reference_id = ident.reference_id();
-            let reference = scoping.get_reference(reference_id);
-            let node_id = reference.node_id();
-            let node = visitor.semantic_mut().nodes().get_node(node_id);
-            match node.kind() {
-                AstKind::VariableDeclarator(declarator) => {
-                    match &declarator.init {
-                        Some(init) => {
-                            // Check if the initializer is a function expression or arrow function
-                            match init {
-                                Expression::FunctionExpression(_) => true,
-                                Expression::ArrowFunctionExpression(_) => true,
-                                _ => false,
-                            }
-                        }
-                        None => false, // No initializer means it's not resolvable
-                    }
-                }
-                AstKind::Function(_) => true,
-                AstKind::ArrowFunctionExpression(_) => true,
-                _ => false,
-            }
-        }
-        Expression::FunctionExpression(_) | Expression::ArrowFunctionExpression(_) => true,
-        _ => false,
-    }
+    // match handler {
+    //     Expression::Identifier(ident) => {
+    //         let reference_id = ident.reference_id();
+    //         let reference = scoping.get_reference(reference_id);
+    //         let node_id = reference.node_id();
+    //         let node = visitor.semantic_mut().nodes().get_node(node_id);
+    //         match node.kind() {
+    //             AstKind::VariableDeclarator(declarator) => {
+    //                 match &declarator.init {
+    //                     Some(init) => {
+    //                         // Check if the initializer is a function expression or arrow function
+    //                         match init {
+    //                             Expression::FunctionExpression(_) => true,
+    //                             Expression::ArrowFunctionExpression(_) => true,
+    //                             _ => false,
+    //                         }
+    //                     }
+    //                     None => false, // No initializer means it's not resolvable
+    //                 }
+    //             }
+    //             AstKind::Function(_) => true,
+    //             AstKind::ArrowFunctionExpression(_) => true,
+    //             _ => false,
+    //         }
+    //     }
+    //     Expression::FunctionExpression(_) | Expression::ArrowFunctionExpression(_) => true,
+    //     _ => false,
+    // }
 }
 
 /// Convert event name to proper format

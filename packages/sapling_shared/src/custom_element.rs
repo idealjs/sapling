@@ -57,7 +57,7 @@ pub fn context_to_custom_element<'a>(
     let id = IdentifierReference {
         span: Span::default(),
         name: Atom::from("el$"),
-        reference_id: Cell::new(Some((scoping.create_reference(reference)))),
+        reference_id: Cell::new(Some(scoping.create_reference(reference))),
     };
 
     let member = MemberExpression::StaticMemberExpression(Box::new_in(

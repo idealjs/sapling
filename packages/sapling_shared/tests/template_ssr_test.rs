@@ -1,6 +1,7 @@
 use indextree::Arena;
 use oxc_allocator::Allocator;
 use oxc_allocator::FromIn;
+use oxc_ast::AstKind;
 use oxc_ast::ast::Statement;
 use oxc_ast::ast::{Expression, IdentifierReference, Program, StringLiteral};
 use oxc_ast_visit::VisitMut;
@@ -225,7 +226,8 @@ fn test_create_template_ssr() {
     let mut program = ret.program;
 
     let semantic_ret = SemanticBuilder::new().build(&program);
-    let mut scoping = semantic_ret.semantic.into_scoping();
+
+    let (mut scoping, mut nodes) = semantic_ret.semantic.into_scoping_and_nodes();
 
     let mut visitor = TestVisitor {
         arena: &mut Arena::new(),
@@ -235,7 +237,15 @@ fn test_create_template_ssr() {
         templates: &mut vec![],
         config: Config::default(),
     };
-    visitor.visit_program(&mut program);
+
+    let root_node = nodes.root_node_mut().expect("Root node should be mutable");
+
+    match root_node.kind() {
+        AstKind::Program(program_node) => {
+            visitor.visit_program(&mut program);
+        }
+        _ => panic!("Expected root node to be a Program"),
+    }
 
     // Generate and verify the output code
     let result = Codegen::new().build(&program);

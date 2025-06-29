@@ -41,8 +41,6 @@ pub trait TreeBuilder<'a>: Visit<'a> {
 pub trait TreeBuilderMut<'a>: VisitMut<'a> {
     fn arena(&self) -> &Arena<AstType>;
     fn arena_mut(&mut self) -> &mut Arena<AstType>;
-    fn semantic(&self) -> &oxc_semantic::Semantic<'a>;
-    fn semantic_mut(&mut self) -> &mut oxc_semantic::Semantic<'a>;
     fn node_stack(&self) -> &Vec<NodeId>;
     fn node_stack_mut(&mut self) -> &mut Vec<NodeId>;
     fn current_parent(&self) -> Option<&NodeId> {
