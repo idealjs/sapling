@@ -1,0 +1,11 @@
+[package]
+name = "sapling_transformation"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+biome_analyze.workspace = true
+biome_js_factory.workspace = true
+biome_js_syntax.workspace = true
+biome_rowan.workspace = true

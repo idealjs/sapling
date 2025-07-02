@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "packages/sapling_macros",
     "packages/sapling_shared",
+    "packages/sapling_transformation",
     "packages/sapling_transformer",
 ]
 
@@ -13,3 +14,14 @@ license = "MIT"
 
 [workspace.dependencies]
 insta = "1.34.0"
+biome_js_syntax = { git = "https://github.com/biomejs/biome.git", package = "biome_js_syntax", tag = "@biomejs/biome@2.0.6" }
+biome_js_parser = { git = "https://github.com/biomejs/biome.git", package = "biome_js_parser", tag = "@biomejs/biome@2.0.6" }
+biome_rowan = { git = "https://github.com/biomejs/biome.git", package = "biome_rowan", tag = "@biomejs/biome@2.0.6" }
+biome_analyze = { git = "https://github.com/biomejs/biome.git", package = "biome_analyze", tag = "@biomejs/biome@2.0.6" }
+biome_js_transform = { git = "https://github.com/biomejs/biome.git", package = "biome_js_transform", tag = "@biomejs/biome@2.0.6" }
+biome_diagnostics = { git = "https://github.com/biomejs/biome.git", package = "biome_diagnostics", tag = "@biomejs/biome@2.0.6" }
+tests_macros = { git = "https://github.com/biomejs/biome.git", package = "tests_macros", tag = "@biomejs/biome@2.0.6" }
+biome_js_formatter = { git = "https://github.com/biomejs/biome.git", package = "biome_js_formatter", tag = "@biomejs/biome@2.0.6" }
+biome_test_utils = { git = "https://github.com/biomejs/biome.git", package = "biome_test_utils", tag = "@biomejs/biome@2.0.6" }
+biome_js_factory = { git = "https://github.com/biomejs/biome.git", package = "biome_js_factory", tag = "@biomejs/biome@2.0.6" }
+camino = "1.1.10"
