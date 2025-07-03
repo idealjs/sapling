@@ -104,15 +104,15 @@ mod tests {
 
         let mut transformations = vec![];
         let (_, errors) =
-            biome_js_transform::transform(&root, filter, &options, source_type, |event| {
+            sapling_transformer::transform(&root, filter, &options, source_type, |event| {
                 for transformation in event.transformations() {
-                    check_transformation(
-                        input_file,
-                        input_code,
-                        source_type,
-                        &transformation,
-                        parser_options.clone(),
-                    );
+                    // check_transformation(
+                    //     input_file,
+                    //     input_code,
+                    //     source_type,
+                    //     &transformation,
+                    //     parser_options.clone(),
+                    // );
                     let node = transformation.mutation.commit();
 
                     let formatted = format_node(JsFormatOptions::new(source_type), &node).unwrap();

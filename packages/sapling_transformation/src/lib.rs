@@ -7,6 +7,7 @@ use biome_rowan::BatchMutation;
 pub mod declare_transformation;
 pub mod registry;
 pub mod transformations;
+pub mod helpers;
 
 pub use registry::*;
 pub use transformations::*;

@@ -16,10 +16,12 @@ use biome_js_syntax::{
     AnyJsExpression, AnyJsFormalParameter, AnyJsLiteralExpression, AnyJsModuleItem, AnyJsParameter,
     AnyJsStatement, JsAssignmentExpression, JsComputedMemberAssignment, JsExpressionStatement,
     JsFunctionExpression, JsInitializerClause, JsLogicalExpression, JsModuleItemList,
-    JsStatementList, JsVariableStatement, JsxElement, T, TsEnumDeclaration,
+    JsReturnStatement, JsStatementList, JsSyntaxKind, JsVariableStatement, JsxElement,
+    JsxTagExpression, T, TsEnumDeclaration,
 };
 use biome_rowan::{AstNode, BatchMutationExt, TriviaPieceKind};
 
+use crate::helpers::jsx_template::{make_js_call_expr, make_js_return_statement};
 use crate::{JsBatchMutation, declare_transformation};
 
 declare_transformation! {
@@ -34,20 +36,50 @@ declare_transformation! {
 #[derive(Debug)]
 pub struct JsxTemplateMembers {
     name: String,
-    member_names: Vec<(String, Option<JsInitializerClause>)>,
+    attr_names: Vec<(String, Option<JsInitializerClause>)>,
 }
 
 impl Rule for JsxTemplate {
-    type Query = Ast<JsxElement>;
-    type State = JsxTemplateMembers;
+    type Query = Ast<JsxTagExpression>;
+    type State = ();
     type Signals = Option<Self::State>;
     type Options = ();
 
     fn run(ctx: &RuleContext<Self>) -> Self::Signals {
-        None
+        let node = ctx.query();
+        // let child_list = node.children();
+        // let attrs = node
+        //     .opening_element()
+        //     .expect("JsxElement should have an opening element")
+        //     .attributes();
+
+        println!("node run : {:?}", node);
+
+        // let mut member_names = vec![];
+        // let id = node.id().ok()?;
+        Some(())
     }
 
     fn transform(ctx: &RuleContext<Self>, state: &Self::State) -> Option<JsBatchMutation> {
-        None
+        let node = ctx.query();
+        let mut mutation = node.clone().begin();
+        let parent = node.syntax().parent();
+        println!("node transform : {:?}", node);
+
+        if let Some(parent) = parent {
+            match parent.kind() {
+                JsSyntaxKind::JS_RETURN_STATEMENT => {
+                    if let Some(prev_node) = JsReturnStatement::cast(parent) {
+                        let next_node = make_js_return_statement(
+                            AnyJsExpression::JsCallExpression(make_js_call_expr()),
+                        );
+                        mutation.replace_node(prev_node, next_node);
+                    }
+                }
+                _ => {}
+            }
+        }
+        // None
+        Some(mutation)
     }
 }
