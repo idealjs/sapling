@@ -70,12 +70,10 @@ impl Rule for JsxTemplate {
         println!("node transform : {:?}", node);
 
         let mutation = replace(
-            &AnyJsModuleItem::AnyJsStatement(AnyJsStatement::JsExpressionStatement(
-                js_expression_statement(AnyJsExpression::JsxTagExpression(node.clone())).build(),
-            )),
+            node,
             |node| {
-                let parent = node.syntax().parent().expect("");
-                JsReturnStatement::cast(parent).expect("")
+                let parent = node.syntax().parent().expect("Expected parent node");
+                JsReturnStatement::cast(parent).expect("Expected parent to be a JsReturnStatement")
             },
             |parent| {
                 make_js_return_statement(AnyJsExpression::JsCallExpression(

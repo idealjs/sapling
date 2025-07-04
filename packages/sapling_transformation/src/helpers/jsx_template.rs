@@ -230,12 +230,13 @@ pub fn make_js_assignment_expression(
     )
 }
 
-pub fn replace<T>(
-    target: &AnyJsModuleItem,
-    get_parent: impl Fn(&AnyJsModuleItem) -> T,
+pub fn replace<P, T>(
+    target: &P,
+    get_parent: impl Fn(&P) -> T,
     get_new_parent: impl Fn(&T) -> T,
 ) -> BatchMutation<JsLanguage>
 where
+    P: AstNode<Language = JsLanguage>,
     T: AstNode<Language = JsLanguage>,
 {
     let mut mutation = target.clone().begin();
