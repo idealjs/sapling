@@ -1,5 +1,9 @@
-import React from "react";
-
-const Demo = () => {
-  return <div>Demo</div>;
+let some = () => {
+  return 1;
 };
+
+function Counter() {
+  const value = some();
+
+  return <button type="button">{value}</button>;
+}
