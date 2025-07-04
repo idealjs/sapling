@@ -1,18 +1,19 @@
 use biome_js_syntax::{
-    AnyJsAssignmentPattern, AnyJsBinding, AnyJsBindingPattern, AnyJsCallArgument,
-    JsIdentifierBinding,
+    AnyJsAssignment, AnyJsAssignmentPattern, AnyJsBinding, AnyJsBindingPattern, AnyJsCallArgument,
+    JsAssignmentExpression, JsCallArguments, JsIdentifierBinding, JsIdentifierExpression,
 };
 use biome_rowan::AstNode;
-use std::any::Any;
+use std::{any::Any, vec};
 
 use biome_js_factory::make::{
     js_arrow_function_expression, js_assignment_expression, js_call_argument_list,
     js_call_arguments, js_call_expression, js_computed_member_assignment, js_directive_list,
     js_expression_statement, js_function_body, js_function_expression, js_identifier_assignment,
-    js_identifier_binding, js_identifier_expression, js_name, js_parameter_list, js_parameters,
-    js_parenthesized_expression, js_reference_identifier, js_return_statement, js_statement_list,
-    js_static_member_assignment, js_static_member_expression, js_variable_declaration,
-    js_variable_declarator, js_variable_declarator_list, js_variable_statement, token,
+    js_identifier_binding, js_identifier_expression, js_initializer_clause, js_name,
+    js_parameter_list, js_parameters, js_parenthesized_expression, js_reference_identifier,
+    js_return_statement, js_statement_list, js_static_member_assignment,
+    js_static_member_expression, js_variable_declaration, js_variable_declarator,
+    js_variable_declarator_list, js_variable_statement, token,
 };
 use biome_js_syntax::{
     AnyJsExpression, AnyJsParameter, AnyJsStatement, AnyJsxChild, JsArrowFunctionExpression,
@@ -32,11 +33,7 @@ pub fn make_js_call_expression(
         token(T![')']),
     );
 
-    let arguments = js_call_arguments(
-        token(T!['(']),
-        js_call_argument_list([], []),
-        token(T![')']),
-    );
+    let arguments = make_js_call_arguments(vec![], vec![]);
 
     let expression = js_call_expression(
         AnyJsExpression::JsParenthesizedExpression(callee),
@@ -45,6 +42,17 @@ pub fn make_js_call_expression(
     .build();
 
     expression
+}
+
+pub fn make_js_call_arguments(
+    arguments: Vec<AnyJsCallArgument>,
+    separators: Vec<JsSyntaxToken>,
+) -> JsCallArguments {
+    js_call_arguments(
+        token(T!['(']),
+        js_call_argument_list(arguments, separators),
+        token(T![')']),
+    )
 }
 
 pub fn make_js_arrow_function_expression(
@@ -132,26 +140,18 @@ pub fn make_statement_items(config: &StatementItemConfig) -> Vec<AnyJsStatement>
     let declarator = js_variable_declarator(AnyJsBindingPattern::AnyJsBinding(
         AnyJsBinding::JsIdentifierBinding(js_identifier_binding(el_var_token.clone())),
     ))
-    .with_initializer(biome_js_syntax::JsInitializerClause::unwrap_cast(
-        biome_js_factory::make::js_initializer_clause(
+    .with_initializer(
+        js_initializer_clause(
             token(T![=]),
-            biome_js_syntax::AnyJsExpression::JsCallExpression(
-                js_call_expression(
-                    biome_js_syntax::AnyJsExpression::JsIdentifierExpression(
-                        js_identifier_expression(tmpl_fn.clone()),
-                    ),
-                    js_call_arguments(
-                        token(T!['(']),
-                        js_call_argument_list(vec![], vec![]),
-                        token(T![')']),
-                    ),
-                )
-                .build(),
-            ),
+            js_call_expression(
+                js_identifier_expression(tmpl_fn.clone()).into(),
+                make_js_call_arguments(vec![], vec![]),
+            )
+            .build()
+            .into(),
         )
-        .syntax()
-        .clone(),
-    ))
+        .into(),
+    )
     .build();
     let var_decl = js_variable_statement(
         js_variable_declaration(
@@ -161,38 +161,28 @@ pub fn make_statement_items(config: &StatementItemConfig) -> Vec<AnyJsStatement>
         .build(),
     )
     .build();
-    stmts.push(biome_js_syntax::AnyJsStatement::JsVariableStatement(
-        var_decl,
-    ));
+    stmts.push(var_decl.into());
 
     // 2. 事件绑定: _el$.$$click = increment;
     for (event, handler) in &config.event_bindings {
         let event_token = SyntaxToken::new_detached(T![ident], event, Vec::new(), Vec::new());
         let handler_token = SyntaxToken::new_detached(T![ident], handler, Vec::new(), Vec::new());
         let member = js_static_member_assignment(
-            biome_js_syntax::AnyJsExpression::JsIdentifierExpression(js_identifier_expression(
-                el_var.clone(),
-            )),
+            js_identifier_expression(el_var.clone()).into(),
             token(T![.]),
-            biome_js_syntax::AnyJsName::JsName(js_name(event_token)),
+            js_name(event_token).into(),
         );
         let assign = js_expression_statement(
-            biome_js_syntax::AnyJsExpression::JsAssignmentExpression(js_assignment_expression(
-                AnyJsAssignmentPattern::AnyJsAssignment(
-                    biome_js_syntax::AnyJsAssignment::JsStaticMemberAssignment(member),
-                ),
-                token(T![=]),
-                biome_js_syntax::AnyJsExpression::JsIdentifierExpression(js_identifier_expression(
-                    js_reference_identifier(handler_token),
-                )),
-            )),
+            make_js_assignment_expression(
+                member.into(),
+                js_identifier_expression(js_reference_identifier(handler_token)).into(),
+            )
+            .into(),
         )
         .build();
-        stmts.push(biome_js_syntax::AnyJsStatement::JsExpressionStatement(
-            assign,
-        ));
+        stmts.push(assign.into());
     }
- 
+
     // 3. 插入操作: _$insert(_el$, count);
     for (el, value) in &config.inserts {
         let el_token = SyntaxToken::new_detached(T![ident], el, Vec::new(), Vec::new());
@@ -200,33 +190,25 @@ pub fn make_statement_items(config: &StatementItemConfig) -> Vec<AnyJsStatement>
         let insert_token = SyntaxToken::new_detached(T![ident], "_$insert", Vec::new(), Vec::new());
         let call = js_expression_statement(AnyJsExpression::JsCallExpression(
             js_call_expression(
-                AnyJsExpression::JsIdentifierExpression(js_identifier_expression(
-                    js_reference_identifier(insert_token),
-                )),
-                js_call_arguments(
-                    token(T!['(']),
-                    js_call_argument_list(
-                        vec![
-                            AnyJsCallArgument::AnyJsExpression(
-                                AnyJsExpression::JsIdentifierExpression(js_identifier_expression(
-                                    js_reference_identifier(el_token.clone()),
-                                )),
-                            ),
-                            AnyJsCallArgument::AnyJsExpression(
-                                AnyJsExpression::JsIdentifierExpression(js_identifier_expression(
-                                    js_reference_identifier(value_token.clone()),
-                                )),
-                            ),
-                        ],
-                        vec![],
-                    ),
-                    token(T![')']),
+                js_identifier_expression(js_reference_identifier(insert_token)).into(),
+                make_js_call_arguments(
+                    vec![
+                        AnyJsCallArgument::AnyJsExpression(
+                            js_identifier_expression(js_reference_identifier(el_token.clone()))
+                                .into(),
+                        ),
+                        AnyJsCallArgument::AnyJsExpression(
+                            js_identifier_expression(js_reference_identifier(value_token.clone()))
+                                .into(),
+                        ),
+                    ],
+                    vec![],
                 ),
             )
             .build(),
         ))
         .build();
-        stmts.push(AnyJsStatement::JsExpressionStatement(call));
+        stmts.push(call.into());
     }
 
     // 4. return _el$;
@@ -234,4 +216,15 @@ pub fn make_statement_items(config: &StatementItemConfig) -> Vec<AnyJsStatement>
     stmts.push(ret);
 
     stmts
+}
+
+pub fn make_js_assignment_expression(
+    left: AnyJsAssignment,
+    right: AnyJsExpression,
+) -> JsAssignmentExpression {
+    js_assignment_expression(
+        AnyJsAssignmentPattern::AnyJsAssignment(left),
+        token(T![=]),
+        right,
+    )
 }
