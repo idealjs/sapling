@@ -24,7 +24,7 @@ use biome_rowan::{AstNode, BatchMutationExt, TriviaPieceKind};
 use crate::helpers::jsx_template::{
     StatementItemConfig, collect_jsx_tag_expression, make_js_arrow_function_expression,
     make_js_call_expression, make_js_function_body, make_js_parameters, make_js_return_statement,
-    make_statement_items,
+    make_statement_items, replace,
 };
 use crate::{JsBatchMutation, declare_transformation};
 
@@ -66,45 +66,39 @@ impl Rule for JsxTemplate {
 
     fn transform(ctx: &RuleContext<Self>, state: &Self::State) -> Option<JsBatchMutation> {
         let node = ctx.query();
-        let mut mutation = node.clone().begin();
-        let parent = node.syntax().parent();
+
         println!("node transform : {:?}", node);
 
-        if let Some(parent) = parent {
-            match parent.kind() {
-                JsSyntaxKind::JS_RETURN_STATEMENT => {
-                    if let Some(prev_node) = JsReturnStatement::cast(parent) {
-                        let next_node =
-                            make_js_return_statement(AnyJsExpression::JsCallExpression(
-                                make_js_call_expression(make_js_arrow_function_expression(
-                                    make_js_parameters(js_parameter_list(vec![], vec![])),
-                                    make_js_function_body(
-                                        js_directive_list(vec![]),
-                                        js_statement_list(make_statement_items(
-                                            &StatementItemConfig {
-                                                el_var: "_el$".to_string(),
-                                                tmpl_fn: "_tmpl$".to_string(),
-                                                event_bindings: vec![(
-                                                    "$$click".to_string(),
-                                                    "increment".to_string(),
-                                                )],
-                                                inserts: vec![(
-                                                    "_el$".to_string(),
-                                                    "count".to_string(),
-                                                )],
-                                                return_var: "_el$".to_string(),
-                                            },
-                                        )),
-                                    ),
-                                )),
-                            ));
+        let mutation = replace(
+            &AnyJsModuleItem::AnyJsStatement(AnyJsStatement::JsExpressionStatement(
+                js_expression_statement(AnyJsExpression::JsxTagExpression(node.clone())).build(),
+            )),
+            |node| {
+                let parent = node.syntax().parent().expect("");
+                JsReturnStatement::cast(parent).expect("")
+            },
+            |parent| {
+                make_js_return_statement(AnyJsExpression::JsCallExpression(
+                    make_js_call_expression(make_js_arrow_function_expression(
+                        make_js_parameters(js_parameter_list(vec![], vec![])),
+                        make_js_function_body(
+                            js_directive_list(vec![]),
+                            js_statement_list(make_statement_items(&StatementItemConfig {
+                                el_var: "_el$".to_string(),
+                                tmpl_fn: "_tmpl$".to_string(),
+                                event_bindings: vec![(
+                                    "$$click".to_string(),
+                                    "increment".to_string(),
+                                )],
+                                inserts: vec![("_el$".to_string(), "count".to_string())],
+                                return_var: "_el$".to_string(),
+                            })),
+                        ),
+                    )),
+                ))
+            },
+        );
 
-                        mutation.replace_node(prev_node, next_node);
-                    }
-                }
-                _ => {}
-            }
-        }
         // None
         Some(mutation)
     }

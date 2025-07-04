@@ -1,8 +1,9 @@
 use biome_js_syntax::{
     AnyJsAssignment, AnyJsAssignmentPattern, AnyJsBinding, AnyJsBindingPattern, AnyJsCallArgument,
-    JsAssignmentExpression, JsCallArguments, JsIdentifierBinding, JsIdentifierExpression,
+    AnyJsModuleItem, JsAssignmentExpression, JsCallArguments, JsDirective, JsIdentifierBinding,
+    JsIdentifierExpression,
 };
-use biome_rowan::AstNode;
+use biome_rowan::{AstNode, BatchMutation, BatchMutationExt, SyntaxNode};
 use std::{any::Any, vec};
 
 use biome_js_factory::make::{
@@ -227,4 +228,21 @@ pub fn make_js_assignment_expression(
         token(T![=]),
         right,
     )
+}
+
+pub fn replace<T>(
+    target: &AnyJsModuleItem,
+    get_parent: impl Fn(&AnyJsModuleItem) -> T,
+    get_new_parent: impl Fn(&T) -> T,
+) -> BatchMutation<JsLanguage>
+where
+    T: AstNode<Language = JsLanguage>,
+{
+    let mut mutation = target.clone().begin();
+    let parent = get_parent(&target);
+    let new_node = get_new_parent(&parent);
+
+    mutation.replace_node(parent, new_node);
+
+    mutation
 }
