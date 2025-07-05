@@ -142,8 +142,17 @@ mod tests {
 
         insta::with_settings!({
             prepend_module_to_snapshot => false,
-            snapshot_path => input_file.parent().unwrap(),
-        }, {
+            snapshot_path => {
+                let path = input_file.parent().unwrap();
+                let path_str = path.as_str();
+                if let Some(idx) = path_str.find("specs/") {
+                    Utf8Path::new(&path_str[idx..])
+                } else {
+                    path
+                }
+            },
+        }, 
+        {
             insta::assert_snapshot!(file_name, snapshot, file_name);
         });
     }
