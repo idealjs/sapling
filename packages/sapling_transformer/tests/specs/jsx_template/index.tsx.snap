@@ -10,8 +10,19 @@ const Demo = () => {
   return <div>Demo</div>;
 };
 
-const App = () => {
-  return <Demo></Demo>;
-};
+```
 
+# Transformations
+```tsx
+import { createTextNode as _$createTextNode } from "solid-universal-module";
+import { insertNode as _$insertNode } from "solid-universal-module";
+import { createElement as _$createElement } from "solid-universal-module";
+import React from "react";
+const Demo = () => {
+  return (() => {
+    var _el$ = _$createElement("div");
+    _$insertNode(_el$, _$createTextNode(`Demo`));
+    return _el$;
+  })();
+};
 ```
