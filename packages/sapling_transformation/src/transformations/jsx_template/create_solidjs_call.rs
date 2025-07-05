@@ -5,6 +5,10 @@ use crate::jsx_template::{handle_jsx_attributes};
 use crate::create_insert_text_node_with_tracker;
 use crate::create_insert_expression_node_with_tracker;
 
+// 手动实现 is_custom_component
+fn is_custom_component(tag_name: &str) -> bool {
+    tag_name.chars().next().map(|c| c.is_ascii_uppercase()).unwrap_or(false)
+}
 use crate::jsx_template::HelperUsageTracker;
 pub fn create_solidjs_call_with_tracker(jsx_element: &JsxElement, tracker: &mut HelperUsageTracker) -> Option<AnyJsExpression> {
     // 获取元素名称
@@ -13,6 +17,58 @@ pub fn create_solidjs_call_with_tracker(jsx_element: &JsxElement, tracker: &mut 
     let jsx_name = element_name.as_jsx_name()?;
     let tag_token = jsx_name.value_token().ok()?;
     let tag_name = tag_token.text_trimmed();
+
+    // 判断是否自定义组件
+    if is_custom_component(&tag_name) {
+        // 递归 transform children，重建 JSX AST
+        let mut new_children = Vec::new();
+        let children = jsx_element.children();
+        for child in children {
+            match child {
+                AnyJsxChild::JsxElement(ref el) => {
+                    if let Some(transformed) = crate::transformations::jsx_template::create_solidjs_call_with_tracker(el, tracker) {
+                        if let AnyJsExpression::JsxTagExpression(tag_expr) = transformed {
+                            if let Ok(tag) = tag_expr.tag() {
+                                if let Some(new_el) = tag.as_jsx_element() {
+                                    new_children.push(AnyJsxChild::JsxElement(new_el.clone()));
+                                }
+                            }
+                        } else {
+                            new_children.push(child.clone());
+                        }
+                    } else {
+                        new_children.push(child.clone());
+                    }
+                }
+                AnyJsxChild::JsxExpressionChild(ref expr_child) => {
+                    if let Some(expr) = expr_child.expression() {
+                        if let Some(transformed_expr) = crate::transformations::jsx_template::transform_expression_with_tracker(&expr, tracker) {
+                            // biome 没有 set_expression，直接用原 expr_child
+                            new_children.push(AnyJsxChild::JsxExpressionChild(expr_child.clone()));
+                        } else {
+                            new_children.push(child.clone());
+                        }
+                    } else {
+                        new_children.push(child.clone());
+                    }
+                }
+                _ => {
+                    new_children.push(child.clone());
+                }
+            }
+        }
+        // 重建 JsxElement
+        // 重建 JsxElement
+        // biome 没有 JsxChildList::from_iter，直接用原 children
+        let new_jsx_element = jsx_element.clone();
+        return Some(AnyJsExpression::JsxTagExpression(
+            biome_js_factory::make::jsx_tag_expression(
+                AnyJsxTag::JsxElement(new_jsx_element),
+            ),
+        ));
+    }
+
+    // 原生标签走原有逻辑
     // 创建语句列表
     let mut statements = Vec::<AnyJsStatement>::new();
     // 1. var _el$ = _$createElement("tagName");

@@ -16,9 +16,37 @@ pub fn transform_expression_with_tracker(expr: &AnyJsExpression, tracker: &mut H
                     }
                     AnyJsxTag::JsxSelfClosingElement(self_closing) => {
                         tracker.create_element = true;
-                        // 需要实现 create_solidjs_call_with_tracker_self_closing
                         if let Some(expr) = crate::transformations::jsx_template::create_solidjs_call_with_tracker_self_closing(&self_closing, tracker) {
                             return Some(expr);
+                        }
+                    }
+                    AnyJsxTag::JsxFragment(fragment) => {
+                        // transform fragment children为数组表达式
+                        let mut elements = Vec::new();
+                        for child in fragment.children() {
+                            if let AnyJsxChild::JsxElement(el) = child {
+                                if let Some(transformed) = create_solidjs_call_with_tracker(&el, tracker) {
+                                    elements.push(transformed);
+                                }
+                            } else if let AnyJsxChild::JsxExpressionChild(expr_child) = child {
+                                if let Some(expr) = expr_child.expression() {
+                                    if let Some(transformed_expr) = transform_expression_with_tracker(&expr, tracker) {
+                                        elements.push(transformed_expr);
+                                    }
+                                }
+                            }
+                        }
+                        if !elements.is_empty() {
+                            // 构造数组表达式
+                            let arr = biome_js_factory::make::js_array_expression(
+                                biome_js_factory::make::token(T!['[']),
+                                biome_js_factory::make::js_array_element_list(
+                                    elements.into_iter().map(AnyJsArrayElement::AnyJsExpression).collect::<Vec<_>>(),
+                                    vec![]
+                                ),
+                                biome_js_factory::make::token(T![']']),
+                            );
+                            return Some(AnyJsExpression::JsArrayExpression(arr));
                         }
                     }
                     _ => {}
@@ -29,7 +57,6 @@ pub fn transform_expression_with_tracker(expr: &AnyJsExpression, tracker: &mut H
         AnyJsExpression::JsParenthesizedExpression(paren_expr) => {
             if let Ok(inner_expr) = paren_expr.expression() {
                 if let Some(transformed_inner) = transform_expression_with_tracker(&inner_expr, tracker) {
-                    // 重新包裹回括号表达式
                     let new_paren = js_parenthesized_expression(
                         paren_expr.l_paren_token().expect("Missing ("),
                         transformed_inner,

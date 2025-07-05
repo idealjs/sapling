@@ -1,4 +1,7 @@
 use biome_js_syntax::*;
+use biome_js_syntax::JsSyntaxToken;
+use biome_js_syntax::AnyJsBindingPattern;
+use biome_js_syntax::AnyJsFormalParameter;
 use biome_js_factory::make::*;
 use super::transform_expression_with_tracker;
 
@@ -62,7 +65,11 @@ pub fn transform_statement_with_tracker(stmt: &AnyJsStatement, tracker: &mut Hel
                                 if crate::transformations::jsx_template::contains_jsx_in_expression(&expr) {
                                     // 包裹为 IIFE
                                     use crate::helpers::jsx_template::*;
-                                    let params = make_js_parameters(js_parameter_list(vec![], vec![]));
+                                    let props_token = JsSyntaxToken::new_detached(T![ident], "props", Vec::new(), Vec::new());
+                                    let binding = js_identifier_binding(props_token);
+                                    let binding_pattern = AnyJsBindingPattern::AnyJsBinding(AnyJsBinding::JsIdentifierBinding(binding));
+                                    let param = js_formal_parameter(js_decorator_list(vec![]), binding_pattern).build();
+                                    let params = make_js_parameters(js_parameter_list(vec![AnyJsParameter::AnyJsFormalParameter(AnyJsFormalParameter::JsFormalParameter(param))], vec![]));
                                     let body = make_js_function_body(
                                         js_directive_list(vec![]),
                                         js_statement_list(vec![
@@ -81,6 +88,16 @@ pub fn transform_statement_with_tracker(stmt: &AnyJsStatement, tracker: &mut Hel
                                     new_declarators.push(new_decl);
                                     changed = true;
                                     continue;
+                                }
+                                // 新增：递归 transform 箭头函数表达式
+                                if let AnyJsExpression::JsArrowFunctionExpression(arrow_fn) = &expr {
+                                    if let Some(transformed_arrow) = crate::transformations::jsx_template::transform_arrow_function(arrow_fn) {
+                                        let new_init = js_initializer_clause(token(T![=]), transformed_arrow);
+                                        let new_decl = decl.clone().with_initializer(Some(new_init));
+                                        new_declarators.push(new_decl);
+                                        changed = true;
+                                        continue;
+                                    }
                                 }
                             }
                         }
