@@ -14,11 +14,72 @@ mod tests {
     use camino::Utf8Path;
     use std::ops::Deref;
     use std::{fs::read_to_string, slice};
-    use tests_macros::gen_tests;
 
-    gen_tests! {"tests/specs/**/*.{cjs,js,jsx,tsx,ts,json,jsonc}", crate::tests::run_test, "module"}
+    mod attribute_expressions {
+        #[test]
+        pub fn index_tsx() {
+            let test_file = "tests/specs/attribute_expressions/index.tsx";
+            crate::tests::run_test(test_file);
+        }
+    }
 
-    fn run_test(input: &'static str, _: &str, _: &str, _: &str) {
+    mod components {
+        #[test]
+        pub fn index_tsx() {
+            let test_file = "tests/specs/components/index.tsx";
+            crate::tests::run_test(test_file);
+        }
+    }
+
+    mod conditional_expressions {
+        #[test]
+        pub fn index_tsx() {
+            let test_file = "tests/specs/conditional_expressions/index.tsx";
+            crate::tests::run_test(test_file);
+        }
+    }
+
+    mod fragments {
+        #[test]
+        pub fn index_tsx() {
+            let test_file = "tests/specs/fragments/index.tsx";
+            crate::tests::run_test(test_file);
+        }
+    }
+
+    mod insert_children {
+        #[test]
+        pub fn index_tsx() {
+            let test_file = "tests/specs/insert_children/index.tsx";
+            crate::tests::run_test(test_file);
+        }
+    }
+
+    mod jsx_template {
+        #[test]
+        pub fn index_tsx() {
+            let test_file = "tests/specs/jsx_template/index.tsx";
+            crate::tests::run_test(test_file);
+        }
+    }
+
+    mod simple_elements {
+        #[test]
+        pub fn index_tsx() {
+            let test_file = "tests/specs/simple_elements/index.tsx";
+            crate::tests::run_test(test_file);
+        }
+    }
+
+    mod text_interpolation {
+        #[test]
+        pub fn index_tsx() {
+            let test_file = "tests/specs/text_interpolation/index.tsx";
+            crate::tests::run_test(test_file);
+        }
+    }
+
+    fn run_test(input: &'static str) {
         register_leak_checker();
 
         let input_file = Utf8Path::new(input);
