@@ -120,13 +120,12 @@ pub fn collect_jsx_tag_expression(node: &JsxTagExpression) {
     collect_jsx_element_tags(jsx_element);
 }
 
-// 用于还原 solidjs 构建语句的参数结构体
 pub struct StatementItemConfig {
-    pub el_var: String,                        // 变量名，如 "_el$"
-    pub tmpl_fn: String,                       // 模板工厂函数名，如 "_tmpl$"
-    pub event_bindings: Vec<(String, String)>, // 事件绑定，如 [("$$click", "increment")]
-    pub inserts: Vec<(String, String)>,        // 插入操作，如 [("_el$", "count")]
-    pub return_var: String,                    // 返回变量名，如 "_el$"
+    pub el_var: String,                        // "_el$"
+    pub tmpl_fn: String,                       // "_tmpl$"
+    pub event_bindings: Vec<(String, String)>, // [("$$click", "increment")]
+    pub inserts: Vec<(String, String)>,        // [("_el$", "count")]
+    pub return_var: String,                    // "_el$"
 }
 
 pub fn make_statement_items(config: &StatementItemConfig) -> Vec<AnyJsStatement> {
@@ -164,7 +163,7 @@ pub fn make_statement_items(config: &StatementItemConfig) -> Vec<AnyJsStatement>
     .build();
     stmts.push(var_decl.into());
 
-    // 2. 事件绑定: _el$.$$click = increment;
+    // 2. _el$.$$click = increment;
     for (event, handler) in &config.event_bindings {
         let event_token = SyntaxToken::new_detached(T![ident], event, Vec::new(), Vec::new());
         let handler_token = SyntaxToken::new_detached(T![ident], handler, Vec::new(), Vec::new());
@@ -184,7 +183,7 @@ pub fn make_statement_items(config: &StatementItemConfig) -> Vec<AnyJsStatement>
         stmts.push(assign.into());
     }
 
-    // 3. 插入操作: _$insert(_el$, count);
+    // 3. _$insert(_el$, count);
     for (el, value) in &config.inserts {
         let el_token = SyntaxToken::new_detached(T![ident], el, Vec::new(), Vec::new());
         let value_token = SyntaxToken::new_detached(T![ident], value, Vec::new(), Vec::new());
