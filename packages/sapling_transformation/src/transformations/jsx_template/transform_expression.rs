@@ -22,7 +22,7 @@ pub fn transform_expression_with_tracker(expr: &AnyJsExpression, tracker: &mut H
                         }
                     }
                     AnyJsxTag::JsxFragment(fragment) => {
-                        // transform fragment children为数组表达式
+                        // Fragment 需要转换为包含多个 IIFE 的数组表达式
                         let mut elements = Vec::new();
                         for child in fragment.children() {
                             match child {
@@ -59,12 +59,18 @@ pub fn transform_expression_with_tracker(expr: &AnyJsExpression, tracker: &mut H
                             }
                         }
                         if !elements.is_empty() {
-                            // 构造数组表达式
+                            // 构造包含逗号分隔符的数组表达式，每个元素之间用逗号分隔
+                            let separators = if elements.len() > 1 {
+                                (0..elements.len()-1).map(|_| biome_js_factory::make::token(T![,])).collect()
+                            } else {
+                                vec![]
+                            };
+                            
                             let arr = biome_js_factory::make::js_array_expression(
                                 biome_js_factory::make::token(T!['[']),
                                 biome_js_factory::make::js_array_element_list(
                                     elements.into_iter().map(AnyJsArrayElement::AnyJsExpression).collect::<Vec<_>>(),
-                                    vec![]
+                                    separators
                                 ),
                                 biome_js_factory::make::token(T![']']),
                             );
