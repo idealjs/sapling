@@ -9,6 +9,12 @@ pub fn generate_solid_imports(
     need_create_text_node: bool,
     need_insert_node: bool,
     need_create_element: bool,
+    need_insert: bool,
+    need_use: bool,
+    need_create_component: bool,
+    need_merge_props: bool,
+    need_memo: bool,
+    need_for: bool,
 ) -> Vec<biome_js_syntax::JsImport> {
     use biome_js_factory::make::token;
 
@@ -54,6 +60,24 @@ pub fn generate_solid_imports(
     }
     if need_create_element {
         add_import("createElement", "_$createElement");
+    }
+    if need_insert {
+        add_import("insert", "_$insert");
+    }
+    if need_use {
+        add_import("use", "_$use");
+    }
+    if need_create_component {
+        add_import("createComponent", "_$createComponent");
+    }
+    if need_merge_props {
+        add_import("mergeProps", "_$mergeProps");
+    }
+    if need_memo {
+        add_import("memo", "_$memo");
+    }
+    if need_for {
+        add_import("For", "_$For");
     }
     imports
 }

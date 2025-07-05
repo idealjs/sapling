@@ -8,10 +8,22 @@ pub fn transform_arrow_function(arrow_fn: &JsArrowFunctionExpression) -> Option<
             // 递归 transform 箭头函数体
             let mut tracker = crate::jsx_template::HelperUsageTracker::default();
             if let Some(transformed_expr) = transform_expression_with_tracker(&expr, &mut tracker) {
-                // 修复：如果 transform 后是数组表达式（Fragment），直接返回数组表达式
+                // 检查是否是 Fragment (JSX 表达式被转换为数组)
                 if let biome_js_syntax::AnyJsExpression::JsArrayExpression(_) = &transformed_expr {
+                    // Fragment 情况：直接返回数组表达式，不包装在箭头函数中
                     return Some(transformed_expr);
                 }
+                
+                // 检查是否是括号表达式包含的 Fragment
+                if let biome_js_syntax::AnyJsExpression::JsParenthesizedExpression(paren) = &expr {
+                    if let Ok(inner_expr) = paren.expression() {
+                        // biome_js_syntax::AnyJsExpression::JsxFragment 已不存在，跳过此分支
+                        // Fragment 被括号包围的情况，直接返回转换后的表达式
+                        return Some(transformed_expr);
+                    }
+                }
+                
+                // 普通表达式：保持箭头函数结构
                 if let Ok(params) = arrow_fn.parameters() {
                     let new_arrow_fn = js_arrow_function_expression(
                         params,

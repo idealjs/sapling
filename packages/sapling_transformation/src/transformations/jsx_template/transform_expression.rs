@@ -1,3 +1,4 @@
+use crate::jsx_template::create_solidjs_call_with_tracker::create_solidjs_call_with_tracker;
 use biome_js_syntax::*;
 use biome_js_factory::make::js_parenthesized_expression;
 use crate::transform_arrow_function;
@@ -24,16 +25,37 @@ pub fn transform_expression_with_tracker(expr: &AnyJsExpression, tracker: &mut H
                         // transform fragment children为数组表达式
                         let mut elements = Vec::new();
                         for child in fragment.children() {
-                            if let AnyJsxChild::JsxElement(el) = child {
-                                if let Some(transformed) = create_solidjs_call_with_tracker(&el, tracker) {
-                                    elements.push(transformed);
-                                }
-                            } else if let AnyJsxChild::JsxExpressionChild(expr_child) = child {
-                                if let Some(expr) = expr_child.expression() {
-                                    if let Some(transformed_expr) = transform_expression_with_tracker(&expr, tracker) {
-                                        elements.push(transformed_expr);
+                            match child {
+                                AnyJsxChild::JsxElement(el) => {
+                                    if let Some(transformed) = create_solidjs_call_with_tracker(&el, tracker) {
+                                        elements.push(transformed);
                                     }
                                 }
+                                AnyJsxChild::JsxExpressionChild(expr_child) => {
+                                    if let Some(expr) = expr_child.expression() {
+                                        if let Some(transformed_expr) = transform_expression_with_tracker(&expr, tracker) {
+                                            elements.push(transformed_expr);
+                                        } else {
+                                            elements.push(expr);
+                                        }
+                                    }
+                                }
+                                AnyJsxChild::JsxText(text_node) => {
+                                    if let Ok(text_token) = text_node.value_token() {
+                                        let text_content = text_token.text_trimmed();
+                                        if !text_content.trim().is_empty() {
+                                            let text_expr = AnyJsExpression::AnyJsLiteralExpression(
+                                                biome_js_syntax::AnyJsLiteralExpression::JsStringLiteralExpression(
+                                                    biome_js_factory::make::js_string_literal_expression(
+                                                        biome_js_factory::make::js_string_literal(text_content)
+                                                    )
+                                                )
+                                            );
+                                            elements.push(text_expr);
+                                        }
+                                    }
+                                }
+                                _ => {}
                             }
                         }
                         if !elements.is_empty() {

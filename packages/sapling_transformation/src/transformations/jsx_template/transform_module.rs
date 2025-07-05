@@ -18,12 +18,17 @@ pub fn transform_module(module: &JsModule, _state: &TransformState) -> Option<Js
         let transformed_item = transform_module_item_with_tracker(&item, &mut tracker);
         new_items.push(transformed_item);
     }
-
     // 1. 添加必要的导入语句（动态）
     let import_statements = generate_solid_imports(
         tracker.create_text_node,
         tracker.insert_node,
         tracker.create_element,
+        tracker.insert,
+        tracker.use_ref,
+        tracker.create_component,
+        tracker.merge_props,
+        tracker.memo,
+        tracker.for_component,
     );
     for import_stmt in import_statements {
         new_items.insert(0, AnyJsModuleItem::JsImport(import_stmt));
