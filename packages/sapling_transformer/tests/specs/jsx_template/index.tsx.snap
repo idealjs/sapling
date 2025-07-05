@@ -4,25 +4,35 @@ expression: index.tsx
 ---
 # Input
 ```tsx
-import React from "react";
-
-const Demo = () => {
-  return <div>Demo</div>;
+let some = () => {
+  return 1;
 };
+
+function Counter() {
+  const value = some();
+
+  return <button type="button">{value}</button>;
+}
 
 ```
 
 # Transformations
 ```tsx
-import { createTextNode as _$createTextNode } from "solid-universal-module";
-import { insertNode as _$insertNode } from "solid-universal-module";
 import { createElement as _$createElement } from "solid-universal-module";
-import React from "react";
-const Demo = () => {
+import { insertNode as _$insertNode } from "solid-universal-module";
+import { createTextNode as _$createTextNode } from "solid-universal-module";
+let some = () => {
+  return 1;
+};
+
+function Counter() {
+  const value = some();
+
   return (() => {
-    var _el$ = _$createElement("div");
-    _$insertNode(_el$, _$createTextNode(`Demo`));
+    var _el$ = _$createElement("button");
+    _$insertNode(_el$, _$createTextNode(value));
     return _el$;
   })();
-};
+}
+
 ```
