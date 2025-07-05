@@ -12,7 +12,7 @@ use biome_js_syntax::{
     AnyJsBinding, AnyJsBindingPattern, AnyJsCallArgument, AnyJsExportClause,
     AnyJsExportDefaultDeclaration, AnyJsExpression, AnyJsModuleItem, AnyJsStatement, AnyJsxChild,
     JsArrowFunctionExpression, JsCallExpression, JsExport, JsExportDefaultDeclarationClause,
-    JsFunctionBody, JsModule, JsParameters, JsReturnStatement, JsStatementList, JsxElement,
+    JsFunctionBody, JsImport, JsModule, JsParameters, JsReturnStatement, JsStatementList, JsxElement,
     JsxExpressionChild, JsxTagExpression, T,
 };
 use biome_rowan::{AstNode, BatchMutationExt, SyntaxToken};
@@ -42,17 +42,24 @@ pub use collect_jsx_from_statement::collect_jsx_from_statement;
 pub use contains_jsx::contains_jsx;
 pub use contains_jsx_in_expression::contains_jsx_in_expression;
 pub use contains_jsx_in_statement::contains_jsx_in_statement;
-pub use create_insert_expression_node::create_insert_expression_node;
-pub use create_insert_text_node::create_insert_text_node;
-pub use create_solidjs_call::create_solidjs_call;
-pub use generate_solid_imports::generate_solid_imports;
-pub use handle_jsx_attributes::handle_jsx_attributes;
-pub use transform_arrow_function::transform_arrow_function;
-pub use transform_export::transform_export;
-pub use transform_expression::transform_expression;
-pub use transform_module::transform_module;
-pub use transform_module_item::transform_module_item;
-pub use transform_statement::transform_statement;
+pub use crate::jsx_template::create_insert_expression_node::create_insert_expression_node_with_tracker;
+pub use crate::jsx_template::create_insert_text_node::create_insert_text_node_with_tracker;
+pub use crate::jsx_template::create_solidjs_call::create_solidjs_call_with_tracker;
+use crate::jsx_template::generate_solid_imports::generate_solid_imports;
+pub use crate::jsx_template::handle_jsx_attributes::handle_jsx_attributes;
+pub use crate::jsx_template::transform_arrow_function::transform_arrow_function;
+pub use crate::jsx_template::transform_export::transform_export;
+pub use crate::jsx_template::transform_expression::transform_expression_with_tracker;
+pub use crate::jsx_template::transform_module::transform_module;
+pub use crate::jsx_template::transform_module_item::transform_module_item_with_tracker;
+pub use crate::jsx_template::transform_statement::transform_statement_with_tracker;
+// 用于统计 runtime helper 使用情况
+#[derive(Default, Debug)]
+pub struct HelperUsageTracker {
+    pub create_text_node: bool,
+    pub insert_node: bool,
+    pub create_element: bool,
+}
 
 declare_transformation! {
     /// Transform JSX elements to SolidJS-style runtime calls

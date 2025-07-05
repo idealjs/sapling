@@ -1,12 +1,16 @@
 use biome_js_syntax::*;
 use biome_js_factory::make::*;
 
-pub fn create_insert_text_node(text: &str) -> Option<AnyJsStatement> {
+use crate::jsx_template::HelperUsageTracker;
+pub fn create_insert_text_node_with_tracker(text: &str, tracker: &mut HelperUsageTracker) -> Option<AnyJsStatement> {
     let el_var_token = JsSyntaxToken::new_detached(T![ident], "_el$", Vec::new(), Vec::new());
     let insert_node_token =
         JsSyntaxToken::new_detached(T![ident], "_$insertNode", Vec::new(), Vec::new());
     let create_text_token =
         JsSyntaxToken::new_detached(T![ident], "_$createTextNode", Vec::new(), Vec::new());
+
+    tracker.insert_node = true;
+    tracker.create_text_node = true;
 
     // _$insertNode(_el$, _$createTextNode(`text`))
     let create_text_call = js_call_expression(

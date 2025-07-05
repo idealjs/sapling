@@ -1,12 +1,15 @@
 use biome_js_syntax::*;
-use crate::jsx_template::{create_solidjs_call, transform_arrow_function};
+use crate::transform_arrow_function;
+use crate::jsx_template::create_solidjs_call_with_tracker;
 
-pub fn transform_expression(expr: &AnyJsExpression) -> Option<AnyJsExpression> {
+use crate::jsx_template::HelperUsageTracker;
+pub fn transform_expression_with_tracker(expr: &AnyJsExpression, tracker: &mut HelperUsageTracker) -> Option<AnyJsExpression> {
     match expr {
         AnyJsExpression::JsxTagExpression(jsx_tag) => {
             if let Ok(jsx_element_any) = jsx_tag.tag() {
                 if let AnyJsxTag::JsxElement(jsx_element) = jsx_element_any {
-                    return create_solidjs_call(&jsx_element);
+                    tracker.create_element = true;
+                    return create_solidjs_call_with_tracker(&jsx_element, tracker);
                 }
             }
             None

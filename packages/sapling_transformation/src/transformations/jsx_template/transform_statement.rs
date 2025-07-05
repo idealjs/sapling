@@ -1,12 +1,13 @@
 use biome_js_syntax::*;
 use biome_js_factory::make::*;
-use crate::jsx_template::transform_expression;
+use super::transform_expression_with_tracker;
 
-pub fn transform_statement(stmt: &AnyJsStatement) -> AnyJsStatement {
+use crate::jsx_template::HelperUsageTracker;
+pub fn transform_statement_with_tracker(stmt: &AnyJsStatement, tracker: &mut HelperUsageTracker) -> AnyJsStatement {
     match stmt {
         AnyJsStatement::JsExpressionStatement(expr_stmt) => {
             if let Ok(expr) = expr_stmt.expression() {
-                if let Some(transformed_expr) = transform_expression(&expr) {
+                if let Some(transformed_expr) = transform_expression_with_tracker(&expr, tracker) {
                     let new_expr_stmt = js_expression_statement(transformed_expr)
                         .with_semicolon_token(expr_stmt.semicolon_token().expect("Missing semicolon"))
                         .build();
@@ -17,7 +18,7 @@ pub fn transform_statement(stmt: &AnyJsStatement) -> AnyJsStatement {
         },
         AnyJsStatement::JsReturnStatement(return_stmt) => {
             if let Some(expr) = return_stmt.argument() {
-                if let Some(transformed_expr) = transform_expression(&expr) {
+                if let Some(transformed_expr) = transform_expression_with_tracker(&expr, tracker) {
                     let new_return_stmt = js_return_statement(return_stmt.return_token().expect("Missing return token"))
                         .with_argument(transformed_expr)
                         .with_semicolon_token(return_stmt.semicolon_token().expect("Missing semicolon"))
@@ -33,7 +34,7 @@ pub fn transform_statement(stmt: &AnyJsStatement) -> AnyJsStatement {
                 use biome_rowan::AstNodeList;
                 use crate::helpers::jsx_template::make_js_function_body;
                 let stmts = body.statements();
-                let new_stmts: Vec<AnyJsStatement> = stmts.iter().map(|s| transform_statement(&s)).collect();
+                let new_stmts: Vec<AnyJsStatement> = stmts.iter().map(|s| transform_statement_with_tracker(&s, tracker)).collect();
                 let new_body = make_js_function_body(
                     js_directive_list(vec![]),
                     js_statement_list(new_stmts),
@@ -47,7 +48,7 @@ pub fn transform_statement(stmt: &AnyJsStatement) -> AnyJsStatement {
                 return AnyJsStatement::JsFunctionDeclaration(new_func);
             }
             stmt.clone()
-    },
-    _ => stmt.clone(),
-}
+        },
+        _ => stmt.clone(),
+    }
 }

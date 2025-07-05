@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests {
     use biome_analyze::{AnalysisFilter, AnalyzerTransformation, ControlFlow, Never, RuleFilter};
+    use biome_formatter::{IndentStyle, IndentWidth};
     use biome_js_formatter::context::JsFormatOptions;
     use biome_js_formatter::format_node;
     use biome_js_parser::{JsParserOptions, parse};
@@ -11,10 +12,10 @@ mod tests {
         diagnostic_to_string, has_bogus_nodes_or_empty_slots, register_leak_checker,
         scripts_from_json, write_transformation_snapshot,
     };
-    use tests_macros::gen_tests;
     use camino::Utf8Path;
     use std::ops::Deref;
     use std::{fs::read_to_string, slice};
+    use tests_macros::gen_tests;
 
     gen_tests! {"tests/specs/**/*.{cjs,js,jsx,tsx,ts,json,jsonc}", crate::tests::run_test, "module"}
 
@@ -114,8 +115,11 @@ mod tests {
                     //     parser_options.clone(),
                     // );
                     let node = transformation.mutation.commit();
-
-                    let formatted = format_node(JsFormatOptions::new(source_type), &node).unwrap();
+                    let formatted = format_node(
+                        JsFormatOptions::new(source_type).with_indent_style(IndentStyle::Space),
+                        &node,
+                    )
+                    .unwrap();
 
                     transformations.push(formatted.print().unwrap().as_code().to_string());
                 }

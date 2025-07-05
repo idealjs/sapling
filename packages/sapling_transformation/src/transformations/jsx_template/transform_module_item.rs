@@ -1,10 +1,12 @@
 use biome_js_syntax::*;
-use crate::jsx_template::{transform_statement, transform_export};
+use crate::jsx_template::transform_export;
+use crate::jsx_template::transform_statement_with_tracker;
 
-pub fn transform_module_item(item: &AnyJsModuleItem) -> AnyJsModuleItem {
+use crate::jsx_template::HelperUsageTracker;
+pub fn transform_module_item_with_tracker(item: &AnyJsModuleItem, tracker: &mut HelperUsageTracker) -> AnyJsModuleItem {
     match item {
         AnyJsModuleItem::AnyJsStatement(stmt) => {
-            AnyJsModuleItem::AnyJsStatement(transform_statement(stmt))
+            AnyJsModuleItem::AnyJsStatement(transform_statement_with_tracker(stmt, tracker))
         },
         AnyJsModuleItem::JsExport(export) => {
             AnyJsModuleItem::JsExport(transform_export(export))
