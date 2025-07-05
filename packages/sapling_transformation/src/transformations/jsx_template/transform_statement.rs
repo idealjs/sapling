@@ -27,6 +27,27 @@ pub fn transform_statement(stmt: &AnyJsStatement) -> AnyJsStatement {
             }
             stmt.clone()
         },
-        _ => stmt.clone(),
-    }
+        AnyJsStatement::JsFunctionDeclaration(func_decl) => {
+            // 递归转换函数体内所有语句
+            if let Ok(body) = func_decl.body() {
+                use biome_rowan::AstNodeList;
+                use crate::helpers::jsx_template::make_js_function_body;
+                let stmts = body.statements();
+                let new_stmts: Vec<AnyJsStatement> = stmts.iter().map(|s| transform_statement(&s)).collect();
+                let new_body = make_js_function_body(
+                    js_directive_list(vec![]),
+                    js_statement_list(new_stmts),
+                );
+                let new_func = js_function_declaration(
+                    func_decl.function_token().expect("Missing function token"),
+                    func_decl.id().expect("Missing id"),
+                    func_decl.parameters().expect("Missing parameters"),
+                    new_body,
+                ).build();
+                return AnyJsStatement::JsFunctionDeclaration(new_func);
+            }
+            stmt.clone()
+    },
+    _ => stmt.clone(),
+}
 }

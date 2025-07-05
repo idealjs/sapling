@@ -7,6 +7,16 @@ pub fn collect_jsx_elements(item: &AnyJsModuleItem, jsx_elements: &mut Vec<JsxEl
     match item {
         AnyJsModuleItem::AnyJsStatement(stmt) => {
             collect_jsx_from_statement(stmt, jsx_elements, false);
+
+            // 递归处理 function 声明体内的语句
+            if let AnyJsStatement::JsFunctionDeclaration(func_decl) = stmt {
+                if let Ok(body) = func_decl.body() {
+                    let stmts = body.statements();
+                    for inner_stmt in stmts.iter() {
+                        collect_jsx_from_statement(&inner_stmt, jsx_elements, true);
+                    }
+                }
+            }
         },
         AnyJsModuleItem::JsExport(export) => {
             // 简化版本：仅处理导出的表达式
@@ -17,18 +27,7 @@ pub fn collect_jsx_elements(item: &AnyJsModuleItem, jsx_elements: &mut Vec<JsxEl
                             if let Ok(body) = expr_decl.body() {
                                 let list = body.statements();
                                 for stmt in list.iter() {
-                                    if let AnyJsStatement::JsExpressionStatement(ref expr_stmt) = stmt {
-                                        if let Ok(expr) = expr_stmt.expression() {
-                                            collect_jsx_from_expression(&expr, jsx_elements, false);
-                                            return;
-                                        }
-                                    }
-                                    if let AnyJsStatement::JsReturnStatement(ref ret_stmt) = stmt {
-                                        if let Some(expr) = ret_stmt.argument() {
-                                            collect_jsx_from_expression(&expr, jsx_elements, false);
-                                            return;
-                                        }
-                                    }
+                                    collect_jsx_from_statement(&stmt, jsx_elements, true);
                                 }
                             }
                         }
