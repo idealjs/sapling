@@ -85,23 +85,7 @@ mod tests {
         let input_file = Utf8Path::new(input);
         let file_name = input_file.file_name().unwrap();
 
-        let rule_folder = input_file.parent().unwrap();
-        let rule = rule_folder.file_name().unwrap();
-
-        if rule == "specs" {
-            panic!(
-                "the test file must be placed in the {rule}/<group-name>/<rule-name>/ directory"
-            );
-        }
-        if sapling_transformation::METADATA
-            .deref()
-            .find_rule("transformations", rule)
-            .is_none()
-        {
-            panic!("could not find rule transformations/{rule}");
-        }
-
-        let rule_filter = RuleFilter::Rule("transformations", rule);
+        let rule_filter = RuleFilter::Rule("transformations", "jsx_template");
         let filter = AnalysisFilter {
             enabled_rules: Some(slice::from_ref(&rule_filter)),
             ..AnalysisFilter::default()

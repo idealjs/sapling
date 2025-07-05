@@ -6,6 +6,23 @@ use biome_js_syntax::*;
 pub fn contains_jsx(item: &AnyJsModuleItem) -> bool {
     match item {
         AnyJsModuleItem::AnyJsStatement(stmt) => {
+            // 检查变量声明中的 JSX
+            if let AnyJsStatement::JsVariableStatement(var_stmt) = stmt {
+                if let Ok(decl_list) = var_stmt.declaration() {
+                    let declarators = decl_list.declarators();
+                    for decl in declarators {
+                        if let Ok(decl) = decl {
+                            if let Some(init) = decl.initializer() {
+                                if let Ok(expr) = init.expression() {
+                                    if crate::transformations::jsx_template::contains_jsx_in_expression(&expr) {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             if contains_jsx_in_statement(stmt) {
                 return true;
             }

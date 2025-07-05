@@ -1,15 +1,41 @@
 use biome_js_syntax::*;
+use biome_js_factory::make::js_parenthesized_expression;
 use crate::transform_arrow_function;
 use crate::jsx_template::create_solidjs_call_with_tracker;
+use crate::jsx_template::create_solidjs_call_with_tracker_self_closing;
 
 use crate::jsx_template::HelperUsageTracker;
 pub fn transform_expression_with_tracker(expr: &AnyJsExpression, tracker: &mut HelperUsageTracker) -> Option<AnyJsExpression> {
     match expr {
         AnyJsExpression::JsxTagExpression(jsx_tag) => {
             if let Ok(jsx_element_any) = jsx_tag.tag() {
-                if let AnyJsxTag::JsxElement(jsx_element) = jsx_element_any {
-                    tracker.create_element = true;
-                    return create_solidjs_call_with_tracker(&jsx_element, tracker);
+                match jsx_element_any {
+                    AnyJsxTag::JsxElement(jsx_element) => {
+                        tracker.create_element = true;
+                        return create_solidjs_call_with_tracker(&jsx_element, tracker);
+                    }
+                    AnyJsxTag::JsxSelfClosingElement(self_closing) => {
+                        tracker.create_element = true;
+                        // 需要实现 create_solidjs_call_with_tracker_self_closing
+                        if let Some(expr) = crate::transformations::jsx_template::create_solidjs_call_with_tracker_self_closing(&self_closing, tracker) {
+                            return Some(expr);
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            None
+        },
+        AnyJsExpression::JsParenthesizedExpression(paren_expr) => {
+            if let Ok(inner_expr) = paren_expr.expression() {
+                if let Some(transformed_inner) = transform_expression_with_tracker(&inner_expr, tracker) {
+                    // 重新包裹回括号表达式
+                    let new_paren = js_parenthesized_expression(
+                        paren_expr.l_paren_token().expect("Missing ("),
+                        transformed_inner,
+                        paren_expr.r_paren_token().expect("Missing )"),
+                    );
+                    return Some(AnyJsExpression::JsParenthesizedExpression(new_paren));
                 }
             }
             None

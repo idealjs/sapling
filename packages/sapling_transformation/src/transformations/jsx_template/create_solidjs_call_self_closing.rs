@@ -1,23 +1,21 @@
 use biome_js_syntax::*;
 use biome_js_factory::make::*;
-use biome_rowan::AstNode;
-use crate::jsx_template::{handle_jsx_attributes};
-use crate::create_insert_text_node_with_tracker;
-use crate::create_insert_expression_node_with_tracker;
-
 use crate::jsx_template::HelperUsageTracker;
-pub fn create_solidjs_call_with_tracker(jsx_element: &JsxElement, tracker: &mut HelperUsageTracker) -> Option<AnyJsExpression> {
+use crate::jsx_template::handle_jsx_self_closing_attributes::handle_jsx_self_closing_attributes;
+
+/// 处理自闭合 JSX 标签的 SolidJS 转换
+pub fn create_solidjs_call_with_tracker_self_closing(
+    jsx_element: &JsxSelfClosingElement,
+    tracker: &mut HelperUsageTracker,
+) -> Option<AnyJsExpression> {
     // 获取元素名称
-    let opening_element = jsx_element.opening_element().ok()?;
-    let element_name = opening_element.name().ok()?;
+    let element_name = jsx_element.name().ok()?;
     let jsx_name = element_name.as_jsx_name()?;
     let tag_token = jsx_name.value_token().ok()?;
     let tag_name = tag_token.text_trimmed();
-    // 创建语句列表
-    let mut statements = Vec::<AnyJsStatement>::new();
+
     // 1. var _el$ = _$createElement("tagName");
     let el_var_token = JsSyntaxToken::new_detached(T![ident], "_el$", Vec::new(), Vec::new());
-    // 用于递归插入子节点时引用父节点
     let el_var_ident = js_identifier_expression(js_reference_identifier(el_var_token.clone()));
     let create_element_token =
         JsSyntaxToken::new_detached(T![ident], "_$createElement", Vec::new(), Vec::new());
@@ -61,71 +59,22 @@ pub fn create_solidjs_call_with_tracker(jsx_element: &JsxElement, tracker: &mut 
         .build(),
     )
     .build();
+
+    let mut statements = Vec::<AnyJsStatement>::new();
     statements.push(var_decl.into());
-    // 2. 处理属性（框架）
-    if let Some(attr_stmts) = handle_jsx_attributes(opening_element) {
+
+    // 2. 处理属性
+    // 2. 处理属性
+    if let Some(attr_stmts) = handle_jsx_self_closing_attributes(jsx_element) {
         statements.extend(attr_stmts);
     }
-    // 3. 处理子元素
-    let children = jsx_element.children();
-    for child in children {
-        match child {
-            AnyJsxChild::JsxText(text_node) => {
-                // 处理文本节点
-                let text_token = text_node.value_token().ok()?;
-                let text_content = text_token.text_trimmed();
-                if !text_content.trim().is_empty() {
-                    if let Some(stmt) = create_insert_text_node_with_tracker(&text_content, tracker) {
-                        statements.push(stmt);
-                    }
-                }
-            }
-            AnyJsxChild::JsxExpressionChild(expr_child) => {
-                // 处理表达式子元素
-                if let Some(stmt) = create_insert_expression_node_with_tracker(&expr_child, tracker) {
-                    statements.push(stmt);
-                }
-            }
-            AnyJsxChild::JsxElement(jsx_element) => {
-                // 递归处理嵌套 JSX 元素
-                if let Some(child_expr) = crate::transformations::jsx_template::create_solidjs_call_with_tracker(
-                    &jsx_element,
-                    tracker
-                ) {
-                    // 生成 _$insertNode(_el$, child) 语句
-                    let insert_token = JsSyntaxToken::new_detached(T![ident], "_$insertNode", Vec::new(), Vec::new());
-                    let call = js_expression_statement(AnyJsExpression::JsCallExpression(
-                        js_call_expression(
-                            js_identifier_expression(js_reference_identifier(insert_token)).into(),
-                            js_call_arguments(
-                                token(T!['(']),
-                                js_call_argument_list(
-                                    vec![
-                                        AnyJsCallArgument::AnyJsExpression(
-                                            el_var_ident.clone().into()
-                                        ),
-                                        AnyJsCallArgument::AnyJsExpression(child_expr),
-                                    ],
-                                    vec![],
-                                ),
-                                token(T![')']),
-                            ),
-                        ).build(),
-                    )).build();
-                    statements.push(call.into());
-                }
-            }
-            _ => {
-                // 暂时跳过其他类型的子元素
-            }
-        }
-    }
-    // 4. return _el$;
+    // 3. return _el$;
     let return_stmt = js_return_statement(token(T![return]))
         .with_argument(js_identifier_expression(js_reference_identifier(el_var_token)).into())
         .with_semicolon_token(token(T![;]))
         .build();
     statements.push(return_stmt.into());
+
     // 创建箭头函数
     let function_body = js_function_body(
         token(T!['{']),
@@ -144,6 +93,7 @@ pub fn create_solidjs_call_with_tracker(jsx_element: &JsxElement, tracker: &mut 
         function_body.into(),
     )
     .build();
+
     // 创建立即执行函数调用
     let iife = js_call_expression(
         js_parenthesized_expression(
@@ -158,5 +108,6 @@ pub fn create_solidjs_call_with_tracker(jsx_element: &JsxElement, tracker: &mut 
             token(T![')']),
         ),
     ).build();
+
     Some(AnyJsExpression::JsCallExpression(iife))
 }

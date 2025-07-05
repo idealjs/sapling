@@ -49,6 +49,57 @@ pub fn transform_statement_with_tracker(stmt: &AnyJsStatement, tracker: &mut Hel
             }
             stmt.clone()
         },
+        AnyJsStatement::JsVariableStatement(var_stmt) => {
+            // 只处理包含 JSX 的变量声明
+            if let Ok(decl_list) = var_stmt.declaration() {
+                let declarators = decl_list.declarators();
+                let mut changed = false;
+                let mut new_declarators = Vec::new();
+                for decl in declarators {
+                    if let Ok(decl) = decl {
+                        if let Some(init) = decl.initializer() {
+                            if let Ok(expr) = init.expression() {
+                                if crate::transformations::jsx_template::contains_jsx_in_expression(&expr) {
+                                    // 包裹为 IIFE
+                                    use crate::helpers::jsx_template::*;
+                                    let params = make_js_parameters(js_parameter_list(vec![], vec![]));
+                                    let body = make_js_function_body(
+                                        js_directive_list(vec![]),
+                                        js_statement_list(vec![
+                                            // 递归转换 initializer 内部的表达式
+                                            if let Some(transformed_expr) = transform_expression_with_tracker(&expr, tracker) {
+                                                make_js_return_statement(transformed_expr).into()
+                                            } else {
+                                                make_js_return_statement(expr.clone().into()).into()
+                                            }
+                                        ]),
+                                    );
+                                    let arrow_fn = make_js_arrow_function_expression(params, body);
+                                    let call_expr = make_js_call_expression(arrow_fn);
+                                    let new_init = js_initializer_clause(token(T![=]), call_expr.into());
+                                    let new_decl = decl.clone().with_initializer(Some(new_init));
+                                    new_declarators.push(new_decl);
+                                    changed = true;
+                                    continue;
+                                }
+                            }
+                        }
+                        new_declarators.push(decl.clone());
+                    }
+                }
+                if changed {
+                    let new_decl_list = js_variable_declarator_list(new_declarators, vec![]);
+                    let new_var_stmt = js_variable_statement(
+                        js_variable_declaration(
+                            token(T![var]),
+                            new_decl_list,
+                        ).build(),
+                    ).build();
+                    return AnyJsStatement::JsVariableStatement(new_var_stmt);
+                }
+            }
+            stmt.clone()
+        },
         _ => stmt.clone(),
     }
 }
