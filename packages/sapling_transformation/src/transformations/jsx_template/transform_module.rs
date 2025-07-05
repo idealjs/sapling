@@ -1,12 +1,11 @@
 use biome_js_syntax::*;
 use biome_js_factory::make::*;
-use crate::JsxElementInfo;
 use crate::TransformState;
-use crate::jsx_template::{generate_solid_imports, transform_module_item};
+use crate::jsx_template::generate_solid_imports;
 
 use super::transform_module_item_with_tracker;
 use crate::jsx_template::HelperUsageTracker;
-pub fn transform_module(module: &JsModule, state: &TransformState) -> Option<JsModule> {
+pub fn transform_module(module: &JsModule, _state: &TransformState) -> Option<JsModule> {
     // 获取原模块的所有项
     let original_items = module.items();
     let mut new_items = Vec::<AnyJsModuleItem>::new();

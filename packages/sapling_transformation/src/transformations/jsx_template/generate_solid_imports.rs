@@ -1,9 +1,9 @@
 use biome_js_factory::make::{
     js_named_import_specifier, js_named_import_specifiers, js_import_named_clause, js_import,
     js_literal_export_name, js_identifier_binding, js_module_source,
-    js_named_import_specifier_list, js_string_literal_expression,
+    js_named_import_specifier_list,
 };
-use biome_js_syntax::{AnyJsStatement, AnyJsBinding, JsSyntaxKind, JsSyntaxToken, T};
+use biome_js_syntax::{AnyJsBinding, JsSyntaxToken, T};
 
 pub fn generate_solid_imports(
     need_create_text_node: bool,

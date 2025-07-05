@@ -1,5 +1,4 @@
 use biome_js_syntax::*;
-use crate::JsxElementInfo;
 
 pub fn contains_jsx_in_expression(expr: &AnyJsExpression) -> bool {
     match expr {

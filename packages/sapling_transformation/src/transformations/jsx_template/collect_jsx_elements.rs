@@ -1,7 +1,7 @@
 use biome_rowan::AstNodeList;
 use biome_js_syntax::*;
 use crate::JsxElementInfo;
-use crate::jsx_template::{collect_jsx_from_statement, collect_jsx_from_expression};
+use crate::jsx_template::collect_jsx_from_statement;
 
 pub fn collect_jsx_elements(item: &AnyJsModuleItem, jsx_elements: &mut Vec<JsxElementInfo>) {
     match item {

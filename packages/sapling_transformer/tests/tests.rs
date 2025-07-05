@@ -1,16 +1,15 @@
 #[cfg(test)]
 mod tests {
-    use biome_analyze::{AnalysisFilter, AnalyzerTransformation, ControlFlow, Never, RuleFilter};
-    use biome_formatter::{IndentStyle, IndentWidth};
+    use biome_analyze::{AnalysisFilter, ControlFlow, Never, RuleFilter};
+    use biome_formatter::IndentStyle;
     use biome_js_formatter::context::JsFormatOptions;
     use biome_js_formatter::format_node;
     use biome_js_parser::{JsParserOptions, parse};
-    use biome_js_syntax::{JsFileSource, JsLanguage};
+    use biome_js_syntax::JsFileSource;
     use biome_rowan::AstNode;
     use biome_test_utils::{
-        assert_diagnostics_expectation_comment, assert_errors_are_absent, create_analyzer_options,
-        diagnostic_to_string, has_bogus_nodes_or_empty_slots, register_leak_checker,
-        scripts_from_json, write_transformation_snapshot,
+        assert_diagnostics_expectation_comment, create_analyzer_options, diagnostic_to_string,
+        register_leak_checker, scripts_from_json, write_transformation_snapshot,
     };
     use camino::Utf8Path;
     use std::ops::Deref;
@@ -107,13 +106,6 @@ mod tests {
         let (_, errors) =
             sapling_transformer::transform(&root, filter, &options, source_type, |event| {
                 for transformation in event.transformations() {
-                    // check_transformation(
-                    //     input_file,
-                    //     input_code,
-                    //     source_type,
-                    //     &transformation,
-                    //     parser_options.clone(),
-                    // );
                     let node = transformation.mutation.commit();
                     let formatted = format_node(
                         JsFormatOptions::new(source_type).with_indent_style(IndentStyle::Space),
@@ -138,41 +130,5 @@ mod tests {
         );
 
         assert_diagnostics_expectation_comment(input_file, root.syntax(), diagnostics.len());
-    }
-
-    fn check_transformation(
-        path: &Utf8Path,
-        source: &str,
-        source_type: JsFileSource,
-        transformation: &AnalyzerTransformation<JsLanguage>,
-        options: JsParserOptions,
-    ) {
-        let (new_tree, text_edit) = match transformation
-            .mutation
-            .clone()
-            .commit_with_text_range_and_edit(true)
-        {
-            (new_tree, Some((_, text_edit))) => (new_tree, text_edit),
-            (new_tree, None) => (new_tree, Default::default()),
-        };
-
-        let output = text_edit.new_string(source);
-
-        // Checks that applying the text edits returned by the BatchMutation
-        // returns the same code as printing the modified syntax tree
-        assert_eq!(new_tree.to_string(), output);
-
-        if has_bogus_nodes_or_empty_slots(&new_tree) {
-            panic!("modified tree has bogus nodes or empty slots:\n{new_tree:#?} \n\n {new_tree}")
-        }
-
-        // Checks the returned tree contains no missing children node
-        if format!("{new_tree:?}").contains("missing (required)") {
-            panic!("modified tree has missing children:\n{new_tree:#?}")
-        }
-
-        // Re-parse the modified code and panic if the resulting tree has syntax errors
-        let re_parse = parse(&output, source_type, options);
-        assert_errors_are_absent(re_parse.tree().syntax(), re_parse.diagnostics(), path);
     }
 }

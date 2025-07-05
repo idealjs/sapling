@@ -1,8 +1,6 @@
 use biome_rowan::AstNodeList;
 use crate::transformations::jsx_template::contains_jsx_in_statement;
-use crate::transformations::jsx_template::contains_jsx_in_expression;
 use biome_js_syntax::*;
-use crate::JsxElementInfo;
 
 /// 检查模块项是否包含 JSX 元素
 pub fn contains_jsx(item: &AnyJsModuleItem) -> bool {

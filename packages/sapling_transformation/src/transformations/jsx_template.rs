@@ -1,21 +1,9 @@
 use biome_analyze::context::RuleContext;
 use biome_analyze::{Ast, Rule};
-use biome_js_factory::make::{
-    js_call_argument_list, js_call_arguments, js_call_expression, js_directive_list,
-    js_expression_statement, js_function_body, js_identifier_binding, js_identifier_expression,
-    js_initializer_clause, js_parameter_list, js_parameters, js_parenthesized_expression,
-    js_reference_identifier, js_return_statement, js_statement_list, js_string_literal,
-    js_string_literal_expression, js_variable_declaration, js_variable_declarator,
-    js_variable_declarator_list, js_variable_statement, token,
-};
 use biome_js_syntax::{
-    AnyJsBinding, AnyJsBindingPattern, AnyJsCallArgument, AnyJsExportClause,
-    AnyJsExportDefaultDeclaration, AnyJsExpression, AnyJsModuleItem, AnyJsStatement, AnyJsxChild,
-    JsArrowFunctionExpression, JsCallExpression, JsExport, JsExportDefaultDeclarationClause,
-    JsFunctionBody, JsImport, JsModule, JsParameters, JsReturnStatement, JsStatementList, JsxElement,
-    JsxExpressionChild, JsxTagExpression, T,
+    JsModule,
 };
-use biome_rowan::{AstNode, BatchMutationExt, SyntaxToken};
+use biome_rowan::BatchMutationExt;
 
 mod collect_jsx_elements;
 mod collect_jsx_from_expression;
@@ -94,8 +82,8 @@ impl Rule for JsxTemplate {
 
         if has_jsx {
             Some(TransformState {
-                jsx_elements,
-                needs_imports: has_jsx,
+                _jsx_elements: jsx_elements,
+                _needs_imports: has_jsx,
             })
         } else {
             None
@@ -117,8 +105,8 @@ impl Rule for JsxTemplate {
 
 #[derive(Debug)]
 pub struct TransformState {
-    jsx_elements: Vec<JsxElementInfo>,
-    needs_imports: bool,
+    _jsx_elements: Vec<JsxElementInfo>,
+    _needs_imports: bool,
 }
 
 #[derive(Debug, Clone)]

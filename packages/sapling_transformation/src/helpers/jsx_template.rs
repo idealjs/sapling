@@ -1,24 +1,33 @@
 use biome_js_syntax::{
     AnyJsAssignment, AnyJsAssignmentPattern, AnyJsBinding, AnyJsBindingPattern, AnyJsCallArgument,
-    AnyJsModuleItem, JsAssignmentExpression, JsCallArguments, JsDirective, JsIdentifierBinding,
-    JsIdentifierExpression,
 };
-use biome_rowan::{AstNode, BatchMutation, BatchMutationExt, SyntaxNode};
-use std::{any::Any, vec};
+use biome_rowan::{AstNode, BatchMutation, BatchMutationExt};
+use biome_js_factory::make::{
+    js_parenthesized_expression,
+    js_parameters,
+    js_function_body,
+    js_reference_identifier,
+    js_identifier_binding,
+    js_initializer_clause,
+    js_identifier_expression,
+    js_variable_declaration,
+    js_expression_statement,
+};
+use biome_js_syntax::{
+    JsCallArguments,
+    JsAssignmentExpression,
+};
+use std::vec;
 
 use biome_js_factory::make::{
     js_arrow_function_expression, js_assignment_expression, js_call_argument_list,
-    js_call_arguments, js_call_expression, js_computed_member_assignment, js_directive_list,
-    js_expression_statement, js_function_body, js_function_expression, js_identifier_assignment,
-    js_identifier_binding, js_identifier_expression, js_initializer_clause, js_name,
-    js_parameter_list, js_parameters, js_parenthesized_expression, js_reference_identifier,
+    js_call_arguments, js_call_expression, js_name,
     js_return_statement, js_statement_list, js_static_member_assignment,
-    js_static_member_expression, js_variable_declaration, js_variable_declarator,
-    js_variable_declarator_list, js_variable_statement, token,
+    js_variable_declarator, js_variable_declarator_list, js_variable_statement, token,
 };
 use biome_js_syntax::{
-    AnyJsExpression, AnyJsParameter, AnyJsStatement, AnyJsxChild, JsArrowFunctionExpression,
-    JsCallExpression, JsDirectiveList, JsExpressionStatement, JsFunctionBody, JsFunctionExpression,
+    AnyJsExpression, AnyJsStatement, AnyJsxChild, JsArrowFunctionExpression,
+    JsCallExpression, JsDirectiveList, JsFunctionBody,
     JsLanguage, JsParameterList, JsParameters, JsReturnStatement, JsStatementList, JsSyntaxToken,
     JsxElement, JsxTagExpression, T,
 };
@@ -99,12 +108,12 @@ pub fn collect_jsx_element_tags(node: &JsxElement) {
     let name = opening_element
         .name()
         .expect("Opening element should have a name");
-    let attr = opening_element.attributes();
+    let _attr = opening_element.attributes();
     let jsx_name = name.as_jsx_name().expect("Name should be a JsxName");
     let value_token = jsx_name
         .value_token()
         .expect("JsxName should have a value token");
-    let name = value_token.text();
+    let _name = value_token.text();
     let child_list = node.children();
     child_list.into_iter().for_each(|child| match child {
         AnyJsxChild::JsxElement(jsx_element) => {
