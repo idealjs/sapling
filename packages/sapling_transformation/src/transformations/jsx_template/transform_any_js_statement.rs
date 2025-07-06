@@ -6,7 +6,7 @@ use biome_js_factory::make::*;
 use super::transform_expression_with_tracker;
 
 use crate::jsx_template::HelperUsageTracker;
-pub fn transform_statement_with_tracker(stmt: &AnyJsStatement, tracker: &mut HelperUsageTracker) -> AnyJsStatement {
+pub fn transform_any_js_statement_with_tracker(stmt: &AnyJsStatement, tracker: &mut HelperUsageTracker) -> AnyJsStatement {
     match stmt {
         AnyJsStatement::JsExpressionStatement(expr_stmt) => {
             if let Ok(expr) = expr_stmt.expression() {
@@ -37,7 +37,7 @@ pub fn transform_statement_with_tracker(stmt: &AnyJsStatement, tracker: &mut Hel
                 use biome_rowan::AstNodeList;
                 use crate::helpers::jsx_template::make_js_function_body;
                 let stmts = body.statements();
-                let new_stmts: Vec<AnyJsStatement> = stmts.iter().map(|s| transform_statement_with_tracker(&s, tracker)).collect();
+                let new_stmts: Vec<AnyJsStatement> = stmts.iter().map(|s| transform_any_js_statement_with_tracker(&s, tracker)).collect();
                 let new_body = make_js_function_body(
                     js_directive_list(vec![]),
                     js_statement_list(new_stmts),
@@ -98,6 +98,14 @@ pub fn transform_statement_with_tracker(stmt: &AnyJsStatement, tracker: &mut Hel
                                         changed = true;
                                         continue;
                                     }
+                                }
+                                // 新增：递归 transform 其它表达式（如 JSX 变量、Fragment 等）
+                                if let Some(transformed_expr) = transform_expression_with_tracker(&expr, tracker) {
+                                    let new_init = js_initializer_clause(token(T![=]), transformed_expr);
+                                    let new_decl = decl.clone().with_initializer(Some(new_init));
+                                    new_declarators.push(new_decl);
+                                    changed = true;
+                                    continue;
                                 }
                             }
                         }

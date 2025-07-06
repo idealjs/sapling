@@ -150,8 +150,17 @@ pub fn create_native_element(jsx_element: &JsxElement, tag_name: &str, tracker: 
                                                     AnyJsAssignment::cast(expr.syntax().clone())
                                                         .or_else(|| biome_js_syntax::JsIdentifierAssignment::cast(expr.syntax().clone()).map(AnyJsAssignment::JsIdentifierAssignment))
                                                 }
-                                                _ => None,
-                                            }?;
+                                                _ => {
+                                                    // fallback: 构造一个 props_ref = _el$ 的赋值
+                                                    let fallback_token = JsSyntaxToken::new_detached(T![ident], "props_ref", Vec::new(), Vec::new());
+                                                    Some(AnyJsAssignment::JsIdentifierAssignment(
+                                                        biome_js_factory::make::js_identifier_assignment(
+                                                            fallback_token
+                                                        )
+                                                    ))
+                                                }
+                                            };
+                                            if let Some(assign) = assign {
                                             let assignment = AnyJsExpression::JsAssignmentExpression(
                                                 js_assignment_expression(
                                                     AnyJsAssignmentPattern::AnyJsAssignment(assign),
@@ -173,6 +182,7 @@ pub fn create_native_element(jsx_element: &JsxElement, tag_name: &str, tracker: 
                                                 conditional
                                             ).with_semicolon_token(token(T![;])).build();
                                             statements.push(conditional_stmt.into());
+                                            }
                                         }
                                     }
                                 }

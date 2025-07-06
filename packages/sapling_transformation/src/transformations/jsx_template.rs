@@ -29,7 +29,7 @@ mod transform_export;
 mod transform_expression;
 mod transform_module;
 mod transform_module_item;
-mod transform_statement;
+mod transform_any_js_statement;
 
 use crate::{JsBatchMutation, declare_transformation};
 
@@ -57,7 +57,7 @@ pub use transform_export::transform_export;
 pub use transform_expression::transform_expression_with_tracker;
 pub use transform_module::transform_module;
 pub use transform_module_item::transform_module_item_with_tracker;
-pub use transform_statement::transform_statement_with_tracker;
+pub use transform_any_js_statement::transform_any_js_statement_with_tracker;
 
 // 用于统计 runtime helper 使用情况
 #[derive(Default, Debug)]
