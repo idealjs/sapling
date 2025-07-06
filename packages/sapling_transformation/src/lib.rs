@@ -4,13 +4,15 @@ use biome_analyze::MetadataRegistry;
 use biome_js_syntax::JsLanguage;
 use biome_rowan::BatchMutation;
 
+pub mod create_template;
 pub mod declare_transformation;
+pub mod helpers;
+pub mod is_valid_html_nesting;
 pub mod registry;
 pub mod transformations;
-pub mod helpers;
 pub mod visitor;
-pub mod is_valid_html_nesting;
 
+pub use create_template::*;
 pub use registry::*;
 pub use transformations::*;
 pub use visitor::*;
