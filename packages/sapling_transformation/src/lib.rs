@@ -8,9 +8,12 @@ pub mod declare_transformation;
 pub mod registry;
 pub mod transformations;
 pub mod helpers;
+pub mod visitor;
+pub mod is_valid_html_nesting;
 
 pub use registry::*;
 pub use transformations::*;
+pub use visitor::*;
 
 pub type JsBatchMutation = BatchMutation<JsLanguage>;
 
