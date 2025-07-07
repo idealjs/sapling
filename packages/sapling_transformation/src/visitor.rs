@@ -1,7 +1,10 @@
-use biome_js_syntax::{JsLanguage, JsModule, JsSyntaxKind, JsxElement};
-use biome_rowan::{AstNode, BatchMutation, BatchMutationExt, SyntaxNodeCast};
+use biome_js_syntax::{AnyJsExpression, JsLanguage, JsModule, JsSyntaxKind, JsxElement};
+use biome_rowan::{AstNode, BatchMutation, BatchMutationExt, SyntaxNode, SyntaxNodeCast};
 
-use crate::is_valid_html_nesting::is_valid_html_nesting;
+use crate::{
+    CreateTemplate, DomTemplate, SsrTemplate, TemplateInput, UniversalTemplate, is_component,
+    is_valid_html_nesting::is_valid_html_nesting,
+};
 
 pub struct SaplingVisitor {
     mutation: BatchMutation<JsLanguage>,
@@ -9,9 +12,32 @@ pub struct SaplingVisitor {
     pre_process_errors: Vec<String>,
 }
 
+pub struct TransformNodePathInfo {
+    pub top_level: Option<bool>,
+    pub last_element: Option<bool>,
+}
+
 impl SaplingVisitor {
     pub fn traverse<L: biome_rowan::Language>(mut self) {
         self.mutation = self.js_module.clone().begin();
+        self.pre_process();
+        let descendants = self.js_module.syntax().descendants();
+        descendants.for_each(|node_path| match node_path.kind() {
+            JsSyntaxKind::JSX_ELEMENT => {
+                self.transform_jsx(node_path);
+            }
+            JsSyntaxKind::JSX_FRAGMENT => {
+                self.transform_jsx(node_path);
+            }
+            _ => {}
+        });
+
+        self.post_process();
+    }
+}
+
+impl SaplingVisitor {
+    pub fn pre_process(&mut self) {
         let descendants = self.js_module.syntax().descendants();
         descendants.for_each(|node| match node.kind() {
             JsSyntaxKind::JSX_ELEMENT => {
@@ -54,14 +80,69 @@ impl SaplingVisitor {
             _ => {}
         });
     }
-}
 
-fn is_component(tag_name: &str) -> bool {
-    if let Some(first) = tag_name.chars().next() {
-        first.to_lowercase().to_string() != first.to_string()
-            || tag_name.contains('.')
-            || !first.is_ascii_alphabetic()
-    } else {
-        false
+    pub fn post_process(&mut self) {}
+    pub fn transform_jsx(&mut self, node_path: SyntaxNode<JsLanguage>) {
+        let info = if node_path.kind() == JsSyntaxKind::JSX_FRAGMENT {
+            TransformNodePathInfo {
+                top_level: None,
+                last_element: None,
+            }
+        } else {
+            TransformNodePathInfo {
+                top_level: Some(true),
+                last_element: Some(true),
+            }
+        };
+        let update_template = self.get_update_template(&node_path);
+        let result = self.transform_node_path(&node_path, info);
+        let mut create_template = self.get_create_template(&result);
+        let template = create_template.create_template(&result, Some(false));
+        let new_node = update_template(template);
+        self.mutation
+            .replace_element(node_path.into(), new_node.into());
+    }
+
+    pub fn get_update_template(
+        &self,
+        node_path: &SyntaxNode<JsLanguage>,
+    ) -> impl Fn(AnyJsExpression) -> AnyJsExpression + 'static {
+        let value: bool;
+
+        let node_path_ref = node_path.clone();
+        let update_template = |node: AnyJsExpression| -> AnyJsExpression {
+            // 这里将来可以安全使用 node_path_ref
+            todo!()
+        };
+        update_template
+    }
+
+    pub fn get_create_template(&self, result: &TemplateInput) -> Box<dyn CreateTemplate> {
+        if result.tag_name.is_some() && result.renderer == "dom" {
+            return Box::new(DomTemplate {});
+        }
+
+        if result.renderer == "ssr" {
+            return Box::new(SsrTemplate {});
+        }
+        Box::new(UniversalTemplate {})
+    }
+
+    pub fn transform_node_path(
+        &self,
+        node_path: &SyntaxNode<JsLanguage>,
+        info: TransformNodePathInfo,
+    ) -> TemplateInput {
+        return TemplateInput {
+            id: todo!(),
+            declarations: todo!(),
+            exprs: todo!(),
+            dynamics: todo!(),
+            post_exprs: todo!(),
+            tag_name: todo!(),
+            template: todo!(),
+            dynamic: todo!(),
+            renderer: todo!(),
+        };
     }
 }
