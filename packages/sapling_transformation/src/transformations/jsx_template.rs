@@ -94,7 +94,7 @@ impl Rule for JsxTemplate {
 
     fn transform(ctx: &RuleContext<Self>, _: &Self::State) -> Option<JsBatchMutation> {
         let module = ctx.query();
-
+        
         let mut visitor = SaplingVisitor {
             mutation: module.clone().begin(),
             js_module: module.clone(),

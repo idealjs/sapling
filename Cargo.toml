@@ -25,5 +25,5 @@ biome_js_formatter = { git = "https://github.com/biomejs/biome.git", package = "
 biome_test_utils = { git = "https://github.com/biomejs/biome.git", package = "biome_test_utils", tag = "@biomejs/biome@2.0.6" }
 biome_js_factory = { git = "https://github.com/biomejs/biome.git", package = "biome_js_factory", tag = "@biomejs/biome@2.0.6" }
 biome_formatter = { git = "https://github.com/biomejs/biome.git", package = "biome_formatter", tag = "@biomejs/biome@2.0.6" }
+biome_js_semantic = { git = "https://github.com/biomejs/biome.git", package = "biome_js_semantic", tag = "@biomejs/biome@2.0.6" }
 camino = "1.1.10"
-

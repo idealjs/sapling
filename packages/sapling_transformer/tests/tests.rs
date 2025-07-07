@@ -5,6 +5,7 @@ mod tests {
     use biome_js_formatter::context::JsFormatOptions;
     use biome_js_formatter::format_node;
     use biome_js_parser::{JsParserOptions, parse};
+    use biome_js_semantic::{SemanticModelOptions, semantic_model};
     use biome_js_syntax::JsFileSource;
     use biome_rowan::AstNode;
     use biome_test_utils::{
@@ -97,6 +98,13 @@ mod tests {
         let input_code = read_to_string(input_file)
             .unwrap_or_else(|err| panic!("failed to read {input_file:?}: {err:?}"));
 
+        let r = parse(
+            input_code.as_str(),
+            JsFileSource::tsx(),
+            JsParserOptions::default(),
+        );
+        let model = semantic_model(&r.tree(), SemanticModelOptions::default());
+
         if let Some(scripts) = scripts_from_json(extension, &input_code) {
             for script in scripts {
                 analyze_and_snap(
@@ -135,7 +143,7 @@ mod tests {
                     path
                 }
             },
-        }, 
+        },
         {
             insta::assert_snapshot!(file_name, snapshot, file_name);
         });

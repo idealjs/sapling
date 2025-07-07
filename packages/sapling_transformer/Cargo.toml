@@ -21,3 +21,4 @@ biome_test_utils = { workspace = true }
 tests_macros = { workspace = true }
 biome_js_factory.workspace = true
 biome_formatter = { workspace = true }
+biome_js_semantic = { workspace = true }
