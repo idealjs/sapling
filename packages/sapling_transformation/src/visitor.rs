@@ -7,9 +7,9 @@ use crate::{
 };
 
 pub struct SaplingVisitor {
-    mutation: BatchMutation<JsLanguage>,
-    js_module: JsModule,
-    pre_process_errors: Vec<String>,
+    pub mutation: BatchMutation<JsLanguage>,
+    pub js_module: JsModule,
+    pub pre_process_errors: Vec<String>,
 }
 
 pub struct TransformNodePathInfo {
@@ -18,7 +18,7 @@ pub struct TransformNodePathInfo {
 }
 
 impl SaplingVisitor {
-    pub fn traverse<L: biome_rowan::Language>(mut self) {
+    pub fn traverse(&mut self) {
         self.mutation = self.js_module.clone().begin();
         self.pre_process();
         let descendants = self.js_module.syntax().descendants();
@@ -134,15 +134,15 @@ impl SaplingVisitor {
         info: TransformNodePathInfo,
     ) -> TemplateInput {
         return TemplateInput {
-            id: todo!(),
-            declarations: todo!(),
-            exprs: todo!(),
-            dynamics: todo!(),
-            post_exprs: todo!(),
-            tag_name: todo!(),
-            template: todo!(),
-            dynamic: todo!(),
-            renderer: todo!(),
+            id: None,
+            declarations: None,
+            exprs: vec![],
+            dynamics: vec![],
+            post_exprs: vec![],
+            tag_name: None,
+            template: None,
+            dynamic: None,
+            renderer: String::new(),
         };
     }
 }

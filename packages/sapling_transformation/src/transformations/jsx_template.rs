@@ -24,14 +24,14 @@ mod handle_component_props;
 mod handle_jsx_attributes;
 mod handle_jsx_self_closing_attributes;
 mod is_custom_component;
+mod transform_any_js_statement;
 mod transform_arrow_function;
 mod transform_export;
 mod transform_expression;
 mod transform_module;
 mod transform_module_item;
-mod transform_any_js_statement;
 
-use crate::{JsBatchMutation, declare_transformation};
+use crate::{JsBatchMutation, SaplingVisitor, declare_transformation};
 
 pub use collect_jsx_elements::collect_jsx_elements;
 pub use collect_jsx_from_expression::collect_jsx_from_expression;
@@ -52,12 +52,12 @@ pub use generate_solid_imports::generate_solid_imports;
 pub use handle_component_props::handle_component_props;
 pub use handle_jsx_attributes::handle_jsx_attributes;
 pub use is_custom_component::is_custom_component;
+pub use transform_any_js_statement::transform_any_js_statement_with_tracker;
 pub use transform_arrow_function::transform_arrow_function;
 pub use transform_export::transform_export;
 pub use transform_expression::transform_expression_with_tracker;
 pub use transform_module::transform_module;
 pub use transform_module_item::transform_module_item_with_tracker;
-pub use transform_any_js_statement::transform_any_js_statement_with_tracker;
 
 // 用于统计 runtime helper 使用情况
 #[derive(Default, Debug)]
@@ -84,53 +84,25 @@ declare_transformation! {
 
 impl Rule for JsxTemplate {
     type Query = Ast<JsModule>;
-    type State = TransformState;
+    type State = ();
     type Signals = Option<Self::State>;
     type Options = ();
 
-    fn run(ctx: &RuleContext<Self>) -> Self::Signals {
-        let module = ctx.query();
-
-        // 检查模块中是否包含 JSX 元素
-        let mut has_jsx = false;
-        let mut jsx_elements = Vec::new();
-
-        // 遍历模块查找 JSX
-        let items = module.items();
-        for item in items {
-            if contains_jsx(&item) {
-                has_jsx = true;
-                collect_jsx_elements(&item, &mut jsx_elements);
-            }
-        }
-
-        if has_jsx {
-            Some(TransformState {
-                _jsx_elements: jsx_elements,
-                _needs_imports: has_jsx,
-            })
-        } else {
-            None
-        }
+    fn run(_: &RuleContext<Self>) -> Self::Signals {
+        Some(())
     }
 
-    fn transform(ctx: &RuleContext<Self>, state: &Self::State) -> Option<JsBatchMutation> {
+    fn transform(ctx: &RuleContext<Self>, _: &Self::State) -> Option<JsBatchMutation> {
         let module = ctx.query();
 
-        // 构建新的模块
-        let new_module = transform_module(module, state)?;
-
-        // 创建批量变更 - 替换整个模块
-        let mut mutation = module.clone().begin();
-        mutation.replace_node(module.clone(), new_module);
-        Some(mutation)
+        let mut visitor = SaplingVisitor {
+            mutation: module.clone().begin(),
+            js_module: module.clone(),
+            pre_process_errors: Vec::new(),
+        };
+        visitor.traverse();
+        Some(visitor.mutation)
     }
-}
-
-#[derive(Debug)]
-pub struct TransformState {
-    _jsx_elements: Vec<JsxElementInfo>,
-    _needs_imports: bool,
 }
 
 #[derive(Debug, Clone)]
