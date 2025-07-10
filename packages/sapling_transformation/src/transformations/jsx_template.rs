@@ -1,8 +1,3 @@
-use biome_analyze::context::RuleContext;
-use biome_analyze::{Ast, Rule};
-use biome_js_syntax::JsModule;
-use biome_rowan::BatchMutationExt;
-
 mod collect_jsx_elements;
 mod collect_jsx_from_expression;
 mod collect_jsx_from_statement;
@@ -30,8 +25,6 @@ mod transform_export;
 mod transform_expression;
 mod transform_module;
 mod transform_module_item;
-
-use crate::{JsBatchMutation, SaplingVisitor, declare_transformation};
 
 pub use collect_jsx_elements::collect_jsx_elements;
 pub use collect_jsx_from_expression::collect_jsx_from_expression;
@@ -71,38 +64,6 @@ pub struct HelperUsageTracker {
     pub merge_props: bool,
     pub memo: bool,
     pub for_component: bool,
-}
-
-declare_transformation! {
-    /// Transform JSX elements to SolidJS-style runtime calls
-    pub(crate) JsxTemplate {
-        version: "0.1.0",
-        name: "jsx_template",
-        language: "js",
-    }
-}
-
-impl Rule for JsxTemplate {
-    type Query = Ast<JsModule>;
-    type State = ();
-    type Signals = Option<Self::State>;
-    type Options = ();
-
-    fn run(_: &RuleContext<Self>) -> Self::Signals {
-        Some(())
-    }
-
-    fn transform(ctx: &RuleContext<Self>, _: &Self::State) -> Option<JsBatchMutation> {
-        let module = ctx.query();
-        
-        let mut visitor = SaplingVisitor {
-            mutation: module.clone().begin(),
-            js_module: module.clone(),
-            pre_process_errors: Vec::new(),
-        };
-        visitor.traverse();
-        Some(visitor.mutation)
-    }
 }
 
 #[derive(Debug, Clone)]

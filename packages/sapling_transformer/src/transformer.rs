@@ -9,16 +9,11 @@ use biome_rowan::{
 };
 
 use crate::{
-    CreateTemplate, DomTemplate, SsrTemplate, TemplateInput, UniversalTemplate,
-    helpers::jsx_template::{
-        make_js_arrow_function_expression, make_js_call_expression, make_js_function_body,
-        make_js_parameters,
-    },
-    is_component,
+    CreateTemplate, DomTemplate, SsrTemplate, TemplateInput, UniversalTemplate, is_component,
     is_valid_html_nesting::is_valid_html_nesting,
 };
 
-pub struct SaplingVisitor {
+pub struct SaplingTransformer {
     pub mutation: BatchMutation<JsLanguage>,
     pub js_module: JsModule,
     pub pre_process_errors: Vec<String>,
@@ -29,8 +24,8 @@ pub struct TransformNodePathInfo {
     pub last_element: Option<bool>,
 }
 
-impl SaplingVisitor {
-    pub fn traverse(&mut self) {
+impl SaplingTransformer {
+    pub fn transform(&mut self) {
         self.mutation = self.js_module.clone().begin();
         self.pre_process();
         let descendants = self.js_module.syntax().descendants();
@@ -55,7 +50,7 @@ impl SaplingVisitor {
     }
 }
 
-impl SaplingVisitor {
+impl SaplingTransformer {
     pub fn pre_process(&mut self) {
         let descendants = self.js_module.syntax().descendants();
         descendants.for_each(|node| match node.kind() {

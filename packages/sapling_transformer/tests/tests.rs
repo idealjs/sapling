@@ -11,8 +11,7 @@ mod tests {
     use biome_rowan::{BatchMutation, BatchMutationExt};
     use biome_test_utils::register_leak_checker;
     use camino::Utf8Path;
-    use sapling_transformation::SaplingVisitor;
-    use sapling_transformer::write_transformation_snapshot;
+    use sapling_transformer::{SaplingTransformer, write_transformation_snapshot};
     use std::ops::Deref;
     use std::{fs::read_to_string, slice};
 
@@ -101,15 +100,15 @@ mod tests {
         let js_tree = parsed_root.try_tree()?;
         let js_module = js_tree.as_js_module()?;
 
-        let mut visitor = SaplingVisitor {
+        let mut transformer = SaplingTransformer {
             mutation: js_module.clone().begin(),
             js_module: js_module.clone(),
             pre_process_errors: Vec::new(),
         };
 
-        visitor.traverse();
+        transformer.transform();
 
-        let node = visitor.mutation.commit();
+        let node = transformer.mutation.commit();
 
         let source_type = input_file.try_into().ok()?;
         let formatted = format_node(
