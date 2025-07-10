@@ -1,19 +1,16 @@
 #[cfg(test)]
 mod tests {
-    use biome_analyze::{AnalysisFilter, ControlFlow, Never, RuleFilter};
-
-    use biome_formatter::{FormatError, IndentStyle, PrintError, Printed};
+    use biome_formatter::IndentStyle;
     use biome_js_formatter::context::JsFormatOptions;
     use biome_js_formatter::format_node;
     use biome_js_parser::{JsParserOptions, parse};
     use biome_js_semantic::{SemanticModelOptions, semantic_model};
-    use biome_js_syntax::{JsFileSource, JsModule};
-    use biome_rowan::{BatchMutation, BatchMutationExt};
+    use biome_js_syntax::JsFileSource;
+    use biome_rowan::BatchMutationExt;
     use biome_test_utils::register_leak_checker;
     use camino::Utf8Path;
     use sapling_transformer::{SaplingTransformer, write_transformation_snapshot};
-    use std::ops::Deref;
-    use std::{fs::read_to_string, slice};
+    use std::fs::read_to_string;
 
     mod attribute_expressions {
         #[test]
@@ -95,15 +92,18 @@ mod tests {
             JsFileSource::tsx(),
             JsParserOptions::default(),
         );
-        let model = semantic_model(&parsed_root.tree(), SemanticModelOptions::default());
 
         let js_tree = parsed_root.try_tree()?;
-        let js_module = js_tree.as_js_module()?;
+
+        let semantic_model = semantic_model(&js_tree, SemanticModelOptions::default());
+
+        let js_module = js_tree.as_js_module()?.clone();
 
         let mut transformer = SaplingTransformer {
             mutation: js_module.clone().begin(),
-            js_module: js_module.clone(),
+            js_module,
             pre_process_errors: Vec::new(),
+            semantic_model,
         };
 
         transformer.transform();

@@ -1,8 +1,5 @@
-use biome_js_factory::make::{js_function_body, js_parameter_list, js_parameters};
-use biome_js_syntax::{
-    AnyJsExpression, AnyJsxTag, JsLanguage, JsModule, JsParenthesizedExpression, JsSyntaxKind,
-    JsxElement,
-};
+use biome_js_semantic::SemanticModel;
+use biome_js_syntax::{AnyJsExpression, AnyJsxTag, JsLanguage, JsModule, JsSyntaxKind, JsxElement};
 use biome_rowan::{
     AstNode, BatchMutation, BatchMutationExt, SyntaxNode, SyntaxNodeCast, SyntaxNodeChildren,
     SyntaxNodeOptionExt,
@@ -17,6 +14,7 @@ pub struct SaplingTransformer {
     pub mutation: BatchMutation<JsLanguage>,
     pub js_module: JsModule,
     pub pre_process_errors: Vec<String>,
+    pub semantic_model: SemanticModel,
 }
 
 pub struct TransformNodePathInfo {
