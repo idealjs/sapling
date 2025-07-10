@@ -1,6 +1,6 @@
 use crate::{
-    CreateTemplate, DomTemplate, SsrTemplate, TemplateInput, UniversalTemplate, is_component,
-    is_valid_html_nesting::is_valid_html_nesting, jsx_element_name_to_string,
+    CreateTemplate, DomTemplate, SsrTemplate, TemplateInput, UniversalTemplate, get_tag_name,
+    is_component, is_valid_html_nesting::is_valid_html_nesting, jsx_element_name_to_string,
 };
 use biome_js_factory::make::{
     js_arrow_function_expression, js_call_arguments, js_call_expression, js_decorator_list,
@@ -179,6 +179,7 @@ impl SaplingTransformer {
     }
 
     pub fn post_process(&mut self) {}
+
     pub fn transform_jsx(&mut self, node_path: SyntaxNode<JsLanguage>) {
         // AnyJsxTag
         let info = if node_path.kind() == JsSyntaxKind::JSX_FRAGMENT {
@@ -432,17 +433,12 @@ impl SaplingTransformer {
         node_path: &SyntaxNode<JsLanguage>,
         info: &TransformNodePathInfo,
     ) -> Option<TemplateInput> {
-        // 1. 获取 tagName
-        let tag_name = self.get_tag_name(node_path)?;
+        let tag_name = get_tag_name(node_path)?;
 
-        // 2. 判断是否组件
         if is_component(&tag_name) {
-            // 组件节点，调用 transform_component
-            // 这里假设有 transform_component 方法
             return self.transform_component(node_path);
         }
 
-        // 3. 判断 generate/dom/ssr
         let generate = self.config.generate.as_str();
         if generate == "dom" {
             return self.transform_element_dom(node_path, info);
@@ -451,23 +447,48 @@ impl SaplingTransformer {
             return self.transform_element_ssr(node_path, info);
         }
 
-        // 4. 其它情况 universal
         self.transform_element_universal(node_path, info)
     }
 
-    pub fn get_tag_name(&self, node_path: &SyntaxNode<JsLanguage>) -> Option<String> {
-        if node_path.kind() != JsSyntaxKind::JSX_ELEMENT {
-            return None;
-        }
-        let jsx_element = node_path.clone().cast::<JsxElement>()?;
-        let opening = jsx_element.opening_element().ok()?;
-        let name = opening.name().ok()?;
-        let tag = jsx_element_name_to_string(&name)?;
-        Some(tag)
-    }
-
     pub fn transform_component(&self, node_path: &SyntaxNode<JsLanguage>) -> Option<TemplateInput> {
-        None
+        // 变量初始化
+        let mut exprs = vec![];
+        let config = &self.config;
+        let tag_name = get_tag_name(node_path)?;
+        // TODO: convertComponentIdentifier 逻辑
+        // 基础遍历 openingElement.attributes
+        // if let Some(opening_element) = node_path.children().find_map(|c| c.try_to::<JsxElement>()) {
+        //     if let Some(attributes) = opening_element.opening_element().and_then(|oe| oe.attributes()) {
+        //         for attr in attributes {
+        //             // 这里只做类型识别，后续细化
+        //             let kind = attr.kind();
+        //             println!("Found attribute kind: {:?}", kind);
+        //         }
+        //     }
+        // }
+        // 基础 children 处理
+        // 这里只做 children 节点遍历，后续细化
+        for child in node_path.children() {
+            println!("Found child kind: {:?}", child.kind());
+        }
+        // 基础 props 合并与 dynamicSpread 逻辑
+        // 这里只做 props 向量和 dynamic_spread 标志初始化，后续细化
+        // let mut props = vec![];
+        // let mut dynamic_spread = false;
+        // 基础组件表达式生成与条件提升
+        // 这里只做 createComponent 调用表达式的占位，后续细化
+        // 假设 create_component_expr 为最终表达式
+        // exprs.push(create_component_expr);
+
+        // TODO: 返回结构体
+
+        // 返回结构体，确保与 JS 逻辑一致
+        Some(TemplateInput {
+            exprs,
+            tag_name: Some(tag_name),
+            // 其它字段后续细化
+            ..Default::default()
+        })
     }
 
     pub fn transform_element_dom(
@@ -508,6 +529,7 @@ impl SaplingTransformer {
     }
 
     pub fn transform_component_children(&self, children: SyntaxNodeChildren<JsLanguage>) {}
+
     pub fn is_dynamic(
         &self,
         node_path: &SyntaxNode<JsLanguage>,

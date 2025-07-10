@@ -9,8 +9,8 @@ mod tests {
     use biome_rowan::BatchMutationExt;
     use biome_test_utils::register_leak_checker;
     use camino::Utf8Path;
-    use sapling_transformer::{SaplingTransformer, write_transformation_snapshot};
-    use std::fs::read_to_string;
+    use sapling_transformer::{Config, SaplingTransformer, write_transformation_snapshot};
+    use std::{collections::HashMap, fs::read_to_string};
 
     mod attribute_expressions {
         #[test]
@@ -104,7 +104,10 @@ mod tests {
             js_module,
             pre_process_errors: Vec::new(),
             semantic_model,
-            scope_generated_identifiers: std::collections::HashMap::new(),
+            scope_generated_identifiers: HashMap::new(),
+            config: Config {
+                ..Default::default()
+            },
         };
 
         transformer.transform();
