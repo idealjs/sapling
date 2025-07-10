@@ -19,7 +19,6 @@ const template = props => {
         <div>From Parent</div>
       </Child>
       <Child name="Jason" {...dynamicSpread()} ref={props.ref}>
-        {/* Comment Node */}
         <div>{content}</div>
       </Child>
       <Context.Consumer ref={props.consumerRef()}>{context => context}</Context.Consumer>
@@ -31,7 +30,7 @@ const template2 = (
   <Child
     name="Jake"
     dynamic={state.data}
-    stale={/*@once*/ state.data}
+    stale={state.data}
     handleClick={clickHandler}
     hyphen-ated={state.data}
     ref={el => (e = el)}
@@ -51,7 +50,6 @@ const template4 = <Child>{<div />}</Child>;
 
 const template5 = <Child dynamic={state.dynamic}>{state.dynamic}</Child>;
 
-// builtIns
 const template6 = (
   <For each={state.list} fallback={<Loading />}>
     {item => <Show when={state.condition}>{item}</Show>}

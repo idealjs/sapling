@@ -22,12 +22,10 @@ const template11 = <div>{state.a ? a() : state.b ? b() : state.c ? "c" : "fallba
 
 const template12 = <Comp render={state.dynamic ? good() : bad} />;
 
-// no dynamic predicate
 const template13 = <Comp render={state.dynamic ? good : bad} />;
 
 const template14 = <Comp render={state.dynamic && good()} />;
 
-// no dynamic predicate
 const template15 = <Comp render={state.dynamic && good} />;
 
 const template16 = <Comp render={state.dynamic || good()} />;
