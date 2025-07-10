@@ -1,25 +1,110 @@
-use biome_js_semantic::SemanticModel;
-use biome_js_syntax::{AnyJsExpression, AnyJsxTag, JsLanguage, JsModule, JsSyntaxKind, JsxElement};
-use biome_rowan::{
-    AstNode, BatchMutation, BatchMutationExt, SyntaxNode, SyntaxNodeCast, SyntaxNodeChildren,
-    SyntaxNodeOptionExt,
-};
-
 use crate::{
     CreateTemplate, DomTemplate, SsrTemplate, TemplateInput, UniversalTemplate, is_component,
-    is_valid_html_nesting::is_valid_html_nesting,
+    is_valid_html_nesting::is_valid_html_nesting, jsx_element_name_to_string,
 };
+use biome_js_factory::make::{
+    js_arrow_function_expression, js_call_arguments, js_call_expression, js_decorator_list,
+    js_directive_list, js_formal_parameter, js_parameter_list, js_parameters, js_return_statement,
+    js_statement_list, js_variable_statement, token,
+};
+use biome_js_semantic::{Scope, SemanticModel};
+use biome_js_syntax::{
+    AnyJsArrowFunctionParameters, AnyJsDeclaration, AnyJsDecorator, AnyJsExpression,
+    AnyJsFormalParameter, AnyJsFunctionBody, AnyJsParameter, AnyJsStatement, AnyJsxTag,
+    JsArrowFunctionExpression, JsLanguage, JsModule, JsSyntaxKind, JsVariableDeclaration,
+    JsxElement, JsxExpressionChild, JsxSpreadChild, T,
+};
+use biome_rowan::{
+    AstNode, BatchMutation, BatchMutationExt, SyntaxNode, SyntaxNodeCast, SyntaxNodeChildren,
+    SyntaxNodeOptionExt, TriviaPieceKind,
+};
+
+use biome_js_syntax::TextRange;
+use sapling_transformation::helpers::jsx_template::{
+    make_js_arrow_function_expression, make_js_call_arguments, make_js_function_body,
+    make_js_parameters, make_js_return_statement,
+};
+use std::collections::{HashMap, HashSet};
+
+impl SaplingTransformer {
+    /// 基于 biome scope 和 scope_generated_identifiers，生成唯一 identifier 名称
+    pub fn generate_unique_identifier(&mut self, scope: &Scope, base: &str) -> String {
+        let mut name = base.to_string();
+        let mut counter = 0;
+        let range = scope.range();
+        // 获取当前作用域下已生成的 identifiers
+        let used = self
+            .scope_generated_identifiers
+            .entry(range)
+            .or_insert_with(HashSet::new);
+        while scope.get_binding(&name).is_some() || used.contains(&name) {
+            counter += 1;
+            name = format!("{}{}", base, counter);
+        }
+        used.insert(name.clone());
+        name
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Config {
+    pub module_name: String,
+    pub generate: String,
+    pub hydratable: bool,
+    pub delegate_events: bool,
+    pub delegated_events: Vec<String>,
+    pub built_ins: Vec<String>,
+    pub require_import_source: bool,
+    pub wrap_conditionals: bool,
+    pub omit_nested_closing_tags: bool,
+    pub omit_last_closing_tag: bool,
+    pub omit_quotes: bool,
+    pub context_to_custom_elements: bool,
+    pub static_marker: String,
+    pub effect_wrapper: String,
+    pub memo_wrapper: String,
+    pub validate: bool,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            module_name: "dom".to_string(),
+            generate: "dom".to_string(),
+            hydratable: false,
+            delegate_events: true,
+            delegated_events: vec![],
+            built_ins: vec![],
+            require_import_source: false,
+            wrap_conditionals: true,
+            omit_nested_closing_tags: false,
+            omit_last_closing_tag: true,
+            omit_quotes: true,
+            context_to_custom_elements: false,
+            static_marker: "@once".to_string(),
+            effect_wrapper: "effect".to_string(),
+            memo_wrapper: "memo".to_string(),
+            validate: true,
+        }
+    }
+}
 
 pub struct SaplingTransformer {
     pub mutation: BatchMutation<JsLanguage>,
     pub js_module: JsModule,
     pub pre_process_errors: Vec<String>,
     pub semantic_model: SemanticModel,
+    pub scope_generated_identifiers: HashMap<TextRange, HashSet<String>>,
+    pub config: Config,
 }
 
 pub struct TransformNodePathInfo {
-    pub top_level: Option<bool>,
-    pub last_element: Option<bool>,
+    pub top_level: bool,
+    pub last_element: bool,
+    pub do_not_escape: bool,
+    pub skip_id: bool,
+    pub component_child: bool,
+    pub fragment_child: bool,
 }
 
 impl SaplingTransformer {
@@ -98,13 +183,21 @@ impl SaplingTransformer {
         // AnyJsxTag
         let info = if node_path.kind() == JsSyntaxKind::JSX_FRAGMENT {
             TransformNodePathInfo {
-                top_level: None,
-                last_element: None,
+                top_level: false,
+                last_element: false,
+                do_not_escape: false,
+                skip_id: false,
+                component_child: false,
+                fragment_child: false,
             }
         } else {
             TransformNodePathInfo {
-                top_level: Some(true),
-                last_element: Some(true),
+                top_level: true,
+                last_element: true,
+                do_not_escape: false,
+                skip_id: false,
+                component_child: false,
+                fragment_child: false,
             }
         };
         let update_template = self.get_update_template(&node_path);
@@ -146,7 +239,7 @@ impl SaplingTransformer {
     }
 
     pub fn transform_node_path(
-        &self,
+        &mut self,
         node_path: &SyntaxNode<JsLanguage>,
         info: TransformNodePathInfo,
     ) -> Option<TemplateInput> {
@@ -161,7 +254,7 @@ impl SaplingTransformer {
                     post_exprs: vec![],
                     tag_name: None,
                     template: None,
-                    dynamic: None,
+                    dynamic: false,
                     renderer: None,
                     text: false,
                 };
@@ -169,13 +262,6 @@ impl SaplingTransformer {
                 Some(result)
             }
             JsSyntaxKind::JSX_TEXT => {
-                //              const text =
-                //   staticValue !== undefined
-                //     ? info.doNotEscape
-                //       ? staticValue.toString()
-                //       : escapeHTML(staticValue.toString())
-                //     : trimWhitespace(node.extra.raw);
-                // if (!text.length) return null;
                 let mut result = TemplateInput {
                     declarations: vec![],
                     exprs: vec![],
@@ -185,24 +271,147 @@ impl SaplingTransformer {
                     id: None,
                     tag_name: None,
                     template: None,
-                    dynamic: None,
+                    dynamic: false,
                     renderer: None,
                 };
-                // const results = {
-                //   template: text,
-                //   declarations: [],
-                //   exprs: [],
-                //   dynamics: [],
-                //   postExprs: [],
-                //   text: true
-                // };
-                // if (!info.skipId && config.generate !== "ssr")
-                //   results.id = path.scope.generateUidIdentifier("el$");
-                // return results;
-                None
+                let scope = self.semantic_model.scope(node_path);
+                let id = self.generate_unique_identifier(&scope, "el$");
+                result.id = Some(id);
+                Some(result)
             }
-            JsSyntaxKind::JSX_EXPRESSION_CHILD => None,
-            JsSyntaxKind::JSX_SPREAD_CHILD => None,
+            JsSyntaxKind::JSX_EXPRESSION_CHILD => {
+                let node = node_path.clone().cast::<JsxExpressionChild>()?;
+                if node.expression().is_none() {
+                    return None;
+                }
+
+                let exprs = node.expression()?;
+                if self.is_dynamic(
+                    exprs.syntax(),
+                    CheckDynamicOptions {
+                        check_member: true,
+                        check_tags: info.component_child,
+                        check_call_expressions: true,
+                        native: !info.component_child,
+                    },
+                ) {
+                    return Some(TemplateInput {
+                        exprs: vec![exprs],
+                        template: Some(String::new()),
+                        ..Default::default()
+                    });
+                }
+
+                // 优化后的表达式分支，提升可读性
+                let is_logic_or_conditional = matches!(
+                    exprs,
+                    AnyJsExpression::JsLogicalExpression(_)
+                        | AnyJsExpression::JsConditionalExpression(_)
+                );
+
+                let is_fragment_call = !info.component_child
+                    && info.fragment_child
+                    && matches!(exprs, AnyJsExpression::JsCallExpression(_))
+                    && !matches!(
+                        exprs.as_js_call_expression()?.callee().ok()?,
+                        AnyJsExpression::JsCallExpression(_)
+                    )
+                    && !matches!(
+                        exprs.as_js_call_expression()?.callee().ok()?,
+                        AnyJsExpression::JsStaticMemberExpression(_)
+                    );
+
+                let expr = if is_logic_or_conditional {
+                    self.transform_condition(
+                        exprs.syntax(),
+                        info.component_child || info.fragment_child,
+                        false,
+                    )
+                } else if is_fragment_call {
+                    (Some(exprs.as_js_call_expression()?.callee().ok()?), None)
+                } else {
+                    (
+                        Some(
+                            js_arrow_function_expression(
+                                make_js_parameters(js_parameter_list(vec![], vec![])).into(),
+                                token(T![=>])
+                                    .with_trailing_trivia([(TriviaPieceKind::Whitespace, " ")]),
+                                AnyJsFunctionBody::AnyJsExpression(exprs.into()),
+                            )
+                            .build()
+                            .into(),
+                        ),
+                        None,
+                    )
+                };
+
+                let exprs = match expr {
+                    (Some(val), None) => Some(vec![val]),
+                    (None, Some((declaration, expression))) => {
+                        Some(vec![AnyJsExpression::JsCallExpression(
+                            js_call_expression(
+                                make_js_arrow_function_expression(
+                                    make_js_parameters(js_parameter_list(vec![], vec![])),
+                                    make_js_function_body(
+                                        js_directive_list(vec![]),
+                                        js_statement_list(vec![
+                                            AnyJsStatement::JsVariableStatement(
+                                                js_variable_statement(declaration).build(),
+                                            ),
+                                            AnyJsStatement::JsReturnStatement(
+                                                make_js_return_statement(expression.into()),
+                                            ),
+                                        ]),
+                                    ),
+                                )
+                                .into(),
+                                make_js_call_arguments(vec![], vec![]),
+                            )
+                            .build(),
+                        )])
+                    }
+                    _ => None,
+                }?;
+
+                Some(TemplateInput {
+                    exprs,
+                    dynamic: true,
+                    template: Some("".to_string()),
+                    ..Default::default()
+                })
+            }
+            JsSyntaxKind::JSX_SPREAD_CHILD => {
+                let node = node_path.clone().cast::<JsxSpreadChild>()?;
+                let expr = node.expression().ok()?;
+                if !self.is_dynamic(
+                    expr.syntax(),
+                    CheckDynamicOptions {
+                        check_member: true,
+                        check_tags: false,
+                        check_call_expressions: false,
+                        native: !info.component_child,
+                    },
+                ) {
+                    return Some(TemplateInput {
+                        exprs: vec![expr],
+                        template: Some(String::new()),
+                        ..Default::default()
+                    });
+                }
+                let arrow = js_arrow_function_expression(
+                    make_js_parameters(js_parameter_list(vec![], vec![])).into(),
+                    token(T![=>]).with_trailing_trivia([(TriviaPieceKind::Whitespace, " ")]),
+                    AnyJsFunctionBody::AnyJsExpression(expr.into()),
+                )
+                .build()
+                .into();
+                Some(TemplateInput {
+                    exprs: vec![arrow],
+                    template: Some(String::new()),
+                    dynamic: true,
+                    ..Default::default()
+                })
+            }
             _ => {
                 return None;
             }
@@ -223,33 +432,94 @@ impl SaplingTransformer {
         node_path: &SyntaxNode<JsLanguage>,
         info: &TransformNodePathInfo,
     ) -> Option<TemplateInput> {
+        // 1. 获取 tagName
+        let tag_name = self.get_tag_name(node_path)?;
+
+        // 2. 判断是否组件
+        if is_component(&tag_name) {
+            // 组件节点，调用 transform_component
+            // 这里假设有 transform_component 方法
+            return self.transform_component(node_path);
+        }
+
+        // 3. 判断 generate/dom/ssr
+        let generate = self.config.generate.as_str();
+        if generate == "dom" {
+            return self.transform_element_dom(node_path, info);
+        }
+        if generate == "ssr" {
+            return self.transform_element_ssr(node_path, info);
+        }
+
+        // 4. 其它情况 universal
+        self.transform_element_universal(node_path, info)
+    }
+
+    pub fn get_tag_name(&self, node_path: &SyntaxNode<JsLanguage>) -> Option<String> {
+        if node_path.kind() != JsSyntaxKind::JSX_ELEMENT {
+            return None;
+        }
+        let jsx_element = node_path.clone().cast::<JsxElement>()?;
+        let opening = jsx_element.opening_element().ok()?;
+        let name = opening.name().ok()?;
+        let tag = jsx_element_name_to_string(&name)?;
+        Some(tag)
+    }
+
+    pub fn transform_component(&self, node_path: &SyntaxNode<JsLanguage>) -> Option<TemplateInput> {
         None
     }
+
     pub fn transform_element_dom(
         &self,
         node_path: &SyntaxNode<JsLanguage>,
         info: &TransformNodePathInfo,
-    ) {
+    ) -> Option<TemplateInput> {
+        None
     }
+
     pub fn transform_element_ssr(
         &self,
         node_path: &SyntaxNode<JsLanguage>,
         info: &TransformNodePathInfo,
-    ) {
+    ) -> Option<TemplateInput> {
+        None
     }
+
     pub fn transform_element_universal(
         &self,
         node_path: &SyntaxNode<JsLanguage>,
         info: &TransformNodePathInfo,
-    ) {
+    ) -> Option<TemplateInput> {
+        None
     }
+
     pub fn transform_condition(
         &self,
         node_path: &SyntaxNode<JsLanguage>,
         inline: bool,
         deep: bool,
+    ) -> (
+        Option<AnyJsExpression>,
+        Option<(JsVariableDeclaration, JsArrowFunctionExpression)>,
     ) {
-        node_path.children().for_each(|node| {});
+        todo!()
+        // node_path.children().for_each(|node| {});
     }
+
     pub fn transform_component_children(&self, children: SyntaxNodeChildren<JsLanguage>) {}
+    pub fn is_dynamic(
+        &self,
+        node_path: &SyntaxNode<JsLanguage>,
+        options: CheckDynamicOptions,
+    ) -> bool {
+        false
+    }
+}
+
+pub struct CheckDynamicOptions {
+    pub check_member: bool,
+    pub check_tags: bool,
+    pub check_call_expressions: bool,
+    pub native: bool,
 }

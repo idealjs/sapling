@@ -104,6 +104,7 @@ mod tests {
             js_module,
             pre_process_errors: Vec::new(),
             semantic_model,
+            scope_generated_identifiers: std::collections::HashMap::new(),
         };
 
         transformer.transform();

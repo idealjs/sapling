@@ -15,18 +15,18 @@ pub struct TemplateDynamic {
     pub value: AnyJsExpression,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct TemplateInput {
-    pub id: Option<JsSyntaxToken>,
+    pub id: Option<String>,
     pub declarations: Vec<JsVariableDeclarator>,
     pub exprs: Vec<AnyJsExpression>,
     pub dynamics: Vec<TemplateDynamic>,
     pub post_exprs: Vec<AnyJsExpression>,
     pub tag_name: Option<String>,
     pub template: Option<String>,
-    pub dynamic: Option<bool>,
+    pub dynamic: bool,
     pub renderer: Option<String>,
-    pub text:bool,
+    pub text: bool,
 }
 
 pub struct UniversalTemplate;
