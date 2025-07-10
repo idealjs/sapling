@@ -1,18 +1,18 @@
 #[cfg(test)]
 mod tests {
     use biome_analyze::{AnalysisFilter, ControlFlow, Never, RuleFilter};
-    use biome_formatter::IndentStyle;
+
+    use biome_formatter::{FormatError, IndentStyle, PrintError, Printed};
     use biome_js_formatter::context::JsFormatOptions;
     use biome_js_formatter::format_node;
     use biome_js_parser::{JsParserOptions, parse};
     use biome_js_semantic::{SemanticModelOptions, semantic_model};
-    use biome_js_syntax::JsFileSource;
-    use biome_rowan::AstNode;
-    use biome_test_utils::{
-        assert_diagnostics_expectation_comment, create_analyzer_options, diagnostic_to_string,
-        register_leak_checker, scripts_from_json, write_transformation_snapshot,
-    };
+    use biome_js_syntax::{JsFileSource, JsModule};
+    use biome_rowan::{BatchMutation, BatchMutationExt};
+    use biome_test_utils::register_leak_checker;
     use camino::Utf8Path;
+    use sapling_transformation::SaplingVisitor;
+    use sapling_transformer::write_transformation_snapshot;
     use std::ops::Deref;
     use std::{fs::read_to_string, slice};
 
@@ -80,57 +80,54 @@ mod tests {
         }
     }
 
-    fn run_test(input: &'static str) {
+    fn run_test(input: &'static str) -> Option<()> {
         register_leak_checker();
 
         let input_file = Utf8Path::new(input);
         let file_name = input_file.file_name().unwrap();
 
-        let rule_filter = RuleFilter::Rule("transformations", "jsx_template");
-        let filter = AnalysisFilter {
-            enabled_rules: Some(slice::from_ref(&rule_filter)),
-            ..AnalysisFilter::default()
-        };
-
         let mut snapshot = String::new();
-        let extension = input_file.extension().unwrap_or_default();
 
         let input_code = read_to_string(input_file)
             .unwrap_or_else(|err| panic!("failed to read {input_file:?}: {err:?}"));
 
-        let r = parse(
+        let parsed_root = parse(
             input_code.as_str(),
             JsFileSource::tsx(),
             JsParserOptions::default(),
         );
-        let model = semantic_model(&r.tree(), SemanticModelOptions::default());
+        let model = semantic_model(&parsed_root.tree(), SemanticModelOptions::default());
 
-        if let Some(scripts) = scripts_from_json(extension, &input_code) {
-            for script in scripts {
-                analyze_and_snap(
-                    &mut snapshot,
-                    &script,
-                    JsFileSource::js_script(),
-                    filter,
-                    file_name,
-                    input_file,
-                    JsParserOptions::default(),
-                );
-            }
-        } else {
-            let Ok(source_type) = input_file.try_into() else {
-                return;
-            };
-            analyze_and_snap(
-                &mut snapshot,
-                &input_code,
-                source_type,
-                filter,
-                file_name,
-                input_file,
-                JsParserOptions::default(),
-            );
+        let js_tree = parsed_root.try_tree()?;
+        let js_module = js_tree.as_js_module()?;
+
+        let mut visitor = SaplingVisitor {
+            mutation: js_module.clone().begin(),
+            js_module: js_module.clone(),
+            pre_process_errors: Vec::new(),
         };
+
+        visitor.traverse();
+
+        let node = visitor.mutation.commit();
+
+        let source_type = input_file.try_into().ok()?;
+        let formatted = format_node(
+            JsFormatOptions::new(source_type).with_indent_style(IndentStyle::Space),
+            &node,
+        )
+        .ok()?
+        .print()
+        .ok()?
+        .as_code()
+        .to_string();
+
+        write_transformation_snapshot(
+            &mut snapshot,
+            input_code.as_str(),
+            formatted.as_str(),
+            source_type.file_extension(),
+        );
 
         insta::with_settings!({
             prepend_module_to_snapshot => false,
@@ -147,50 +144,7 @@ mod tests {
         {
             insta::assert_snapshot!(file_name, snapshot, file_name);
         });
-    }
 
-    pub(crate) fn analyze_and_snap(
-        snapshot: &mut String,
-        input_code: &str,
-        source_type: JsFileSource,
-        filter: AnalysisFilter,
-        file_name: &str,
-        input_file: &Utf8Path,
-        parser_options: JsParserOptions,
-    ) {
-        let parsed = parse(input_code, source_type, parser_options.clone());
-        let root = parsed.tree();
-
-        let mut diagnostics = Vec::new();
-        let options = create_analyzer_options(input_file, &mut diagnostics);
-
-        let mut transformations = vec![];
-        let (_, errors) =
-            sapling_transformer::transform(&root, filter, &options, source_type, |event| {
-                for transformation in event.transformations() {
-                    let node = transformation.mutation.commit();
-                    let formatted = format_node(
-                        JsFormatOptions::new(source_type).with_indent_style(IndentStyle::Space),
-                        &node,
-                    )
-                    .unwrap();
-
-                    transformations.push(formatted.print().unwrap().as_code().to_string());
-                }
-                ControlFlow::<Never>::Continue(())
-            });
-
-        for error in errors {
-            diagnostics.push(diagnostic_to_string(file_name, input_code, error));
-        }
-
-        write_transformation_snapshot(
-            snapshot,
-            input_code,
-            transformations.as_slice(),
-            source_type.file_extension(),
-        );
-
-        assert_diagnostics_expectation_comment(input_file, root.syntax(), diagnostics.len());
+        None
     }
 }

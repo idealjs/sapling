@@ -11,6 +11,10 @@ use std::convert::Infallible;
 use std::ops::Deref;
 use std::sync::LazyLock;
 
+pub mod write_transformation_snapshot;
+
+pub use write_transformation_snapshot::*;
+
 pub static METADATA: LazyLock<MetadataRegistry> = LazyLock::new(|| {
     let mut metadata = MetadataRegistry::default();
     visit_transformation_registry(&mut metadata);
