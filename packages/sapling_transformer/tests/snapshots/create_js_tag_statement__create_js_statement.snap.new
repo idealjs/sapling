@@ -1,0 +1,7 @@
+---
+source: packages/sapling_transformer/tests/create_js_tag_statement.rs
+assertion_line: 33
+expression: "format!(\"{}\\n{}\", stmt1.to_string(), stmt2.to_string())"
+---
+let _el$ = _$createElement("div");
+let _el$1 = _$createElement("div");

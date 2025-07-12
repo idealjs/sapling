@@ -1,22 +1,37 @@
 use crate::{
-    CreateTemplate, DomTemplate, SsrTemplate, TemplateInput, UniversalTemplate, get_tag_name,
-    is_component, is_valid_html_nesting::is_valid_html_nesting, jsx_element_name_to_string,
+    CreateTemplate, DomTemplate, SsrTemplate, TemplateInput, UniversalTemplate,
+    convert_component_identifier, get_name_from_any_js_expression, get_tag_name, is_component,
+    is_valid_html_nesting::is_valid_html_nesting, jsx_element_name_to_string,
 };
 use biome_js_factory::make::{
-    js_arrow_function_expression, js_call_arguments, js_call_expression, js_decorator_list,
-    js_directive_list, js_formal_parameter, js_parameter_list, js_parameters, js_return_statement,
-    js_statement_list, js_variable_statement, token,
+    ident, js_arrow_function_expression, js_call_arguments, js_call_expression, js_decorator_list,
+    js_directive_list, js_formal_parameter, js_identifier_binding, js_identifier_expression,
+    js_initializer_clause, js_parameter_list, js_parameters, js_reference_identifier,
+    js_return_statement, js_statement_list, js_string_literal, js_string_literal_expression,
+    js_variable_declaration, js_variable_declarator, js_variable_declarator_list,
+    js_variable_statement, token,
 };
 use biome_js_semantic::{Scope, SemanticModel};
 use biome_js_syntax::{
-    AnyJsArrowFunctionParameters, AnyJsDeclaration, AnyJsDecorator, AnyJsExpression,
-    AnyJsFormalParameter, AnyJsFunctionBody, AnyJsParameter, AnyJsStatement, AnyJsxTag,
-    JsArrowFunctionExpression, JsLanguage, JsModule, JsSyntaxKind, JsVariableDeclaration,
-    JsxElement, JsxExpressionChild, JsxSpreadChild, T,
+    AnyJsArrowFunctionParameters, AnyJsBinding, AnyJsBindingPattern, AnyJsCallArgument,
+    AnyJsDeclaration, AnyJsDecorator, AnyJsExpression, AnyJsFormalParameter, AnyJsFunctionBody,
+    AnyJsLiteralExpression, AnyJsParameter, AnyJsStatement, AnyJsxChild, AnyJsxTag,
+    JsArrayExpression, JsArrowFunctionExpression, JsAssignmentExpression, JsAwaitExpression,
+    JsBinaryExpression, JsBogusExpression, JsCallExpression, JsClassExpression,
+    JsComputedMemberExpression, JsConditionalExpression, JsFunctionExpression, JsIdentifierBinding,
+    JsIdentifierExpression, JsImportCallExpression, JsImportMetaExpression, JsInExpression,
+    JsInstanceofExpression, JsLanguage, JsLogicalExpression, JsMetavariable, JsModule,
+    JsNewExpression, JsNewTargetExpression, JsObjectExpression, JsParenthesizedExpression,
+    JsPostUpdateExpression, JsPreUpdateExpression, JsReferenceIdentifier, JsSequenceExpression,
+    JsStaticMemberExpression, JsSuperExpression, JsSyntaxKind, JsTemplateExpression,
+    JsThisExpression, JsUnaryExpression, JsVariableDeclaration, JsYieldExpression, JsxElement,
+    JsxExpressionChild, JsxFragment, JsxSelfClosingElement, JsxSpreadChild, JsxTagExpression,
+    JsxText, T, TsAsExpression, TsInstantiationExpression, TsNonNullAssertionExpression,
+    TsSatisfiesExpression, TsTypeAssertionExpression,
 };
 use biome_rowan::{
     AstNode, BatchMutation, BatchMutationExt, SyntaxNode, SyntaxNodeCast, SyntaxNodeChildren,
-    SyntaxNodeOptionExt, TriviaPieceKind,
+    SyntaxNodeOptionExt, TriviaPiece, TriviaPieceKind,
 };
 
 use biome_js_syntax::TextRange;
@@ -24,7 +39,10 @@ use sapling_transformation::helpers::jsx_template::{
     make_js_arrow_function_expression, make_js_call_arguments, make_js_function_body,
     make_js_parameters, make_js_return_statement,
 };
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    default,
+};
 
 impl SaplingTransformer {
     /// 基于 biome scope 和 scope_generated_identifiers，生成唯一 identifier 名称
@@ -96,7 +114,22 @@ pub struct SaplingTransformer {
     pub semantic_model: SemanticModel,
     pub scope_generated_identifiers: HashMap<TextRange, HashSet<String>>,
     pub config: Config,
+    pub traverse_result: TraverseResult,
 }
+
+// impl Default for SaplingTransformer {
+//     fn default() -> Self {
+//         Self {
+//             mutation: Default::default(),
+//             js_module: Default::default(),
+//             pre_process_errors: Default::default(),
+//             semantic_model: Default::default(),
+//             scope_generated_identifiers: Default::default(),
+//             config: Default::default(),
+//             traverse_result: Default::default(),
+//         }
+//     }
+// }
 
 pub struct TransformNodePathInfo {
     pub top_level: bool,
@@ -107,29 +140,436 @@ pub struct TransformNodePathInfo {
     pub fragment_child: bool,
 }
 
+#[derive(Debug, Clone, Default)]
+
+pub struct TraverseResult {
+    pub statments: Vec<AnyJsStatement>,
+}
+
 impl SaplingTransformer {
     pub fn transform(&mut self) {
         self.mutation = self.js_module.clone().begin();
         self.pre_process();
-        let descendants = self.js_module.syntax().descendants();
 
-        descendants
-            .filter(|node| matches!(node.kind(), JsSyntaxKind::JSX_TAG_EXPRESSION))
-            .filter(|node| {
-                let next = !node
-                    .parent()
-                    .map_or(false, |p| AnyJsxTag::can_cast(p.kind()));
-                println!(
-                    "Node: {:?}, Parent: {:?}, Next: {}",
-                    node.kind(),
-                    node.parent().map(|p| p.kind()),
-                    next
-                );
-                next
-            })
-            .for_each(|node| self.transform_jsx(node));
+        let syntax_node = self.js_module.syntax();
+
+        self.traverse_syntax_node(syntax_node.clone());
 
         self.post_process();
+    }
+
+    pub fn traverse_syntax_node(&mut self, syntax_node: SyntaxNode<JsLanguage>) -> Option<()> {
+        // let node = if let Ok(node) = JsxTagExpression::try_cast(syntax_node) {
+        //     node
+        // } else {
+        //     syntax_node.children().for_each(|syntax_node| {
+        //         self.traverse_syntax_node(syntax_node);
+        //     });
+        //     return;
+        // };
+
+        if matches!(syntax_node.kind(), JsSyntaxKind::JSX_TAG_EXPRESSION) {
+            let node = syntax_node.cast::<JsxTagExpression>()?;
+            self.transform_jsx_tag_expression(&node);
+            None
+        } else {
+            syntax_node.children().for_each(|syntax_node| {
+                self.traverse_syntax_node(syntax_node);
+            });
+            None
+        }
+    }
+
+    pub fn transform_jsx_tag_expression(&mut self, node: &JsxTagExpression) -> Option<()> {
+        let tag = node.tag().ok()?;
+        match tag {
+            AnyJsxTag::JsxElement(node) => {}
+            AnyJsxTag::JsxFragment(node) => {}
+            AnyJsxTag::JsxSelfClosingElement(node) => {}
+        }
+        // let children = node.syntax().children();
+        None
+    }
+
+    pub fn transform_jsx_element(&mut self, node: &JsxElement) -> Option<()> {
+        let name = jsx_element_name_to_string(&node.opening_element().ok()?.name().ok()?)?;
+
+        //  opening_element.name().ok()
+        // let _el$ = _$createElement("div");
+
+        node.children().into_iter().for_each(|node| {
+            self.transform_any_jsx_child(&node);
+        });
+        None
+    }
+
+    pub fn transform_jsx_fragment(&mut self, node: &JsxFragment) -> Option<()> {
+        None
+    }
+    pub fn transform_jsx_self_closing_element(
+        &mut self,
+        node: &JsxSelfClosingElement,
+    ) -> Option<()> {
+        None
+    }
+    pub fn transform_any_jsx_child(&mut self, node: &AnyJsxChild) -> Option<()> {
+        match node {
+            AnyJsxChild::JsMetavariable(node) => {
+                self.transform_js_metavariable(node);
+            }
+            AnyJsxChild::JsxElement(node) => {
+                self.transform_jsx_element(node);
+            }
+            AnyJsxChild::JsxExpressionChild(node) => {
+                self.transform_jsx_expression_child(node);
+            }
+            AnyJsxChild::JsxFragment(node) => {
+                self.transform_jsx_fragment(node);
+            }
+            AnyJsxChild::JsxSelfClosingElement(node) => {
+                self.transform_jsx_self_closing_element(node);
+            }
+            AnyJsxChild::JsxSpreadChild(node) => {
+                self.transform_jsx_spread_child(node);
+            }
+            AnyJsxChild::JsxText(node) => {
+                self.transform_jsx_text(node);
+            }
+        }
+        None
+    }
+    pub fn transform_js_metavariable(&mut self, node: &JsMetavariable) -> Option<()> {
+        None
+    }
+
+    pub fn transform_jsx_expression_child(&mut self, node: &JsxExpressionChild) -> Option<()> {
+        let node = node.expression()?;
+        match node {
+            AnyJsExpression::AnyJsLiteralExpression(node) => {
+                self.transform_any_js_literal_expression(&node);
+            }
+            AnyJsExpression::JsArrayExpression(node) => {
+                self.transform_js_array_expression(&node);
+            }
+            AnyJsExpression::JsArrowFunctionExpression(node) => {
+                self.transform_js_arrow_function_expression(&node);
+            }
+            AnyJsExpression::JsAssignmentExpression(node) => {
+                self.transform_js_assignment_expression(&node);
+            }
+            AnyJsExpression::JsAwaitExpression(node) => {
+                self.transform_js_await_expression(&node);
+            }
+            AnyJsExpression::JsBinaryExpression(node) => {
+                self.transform_js_binary_expression(&node);
+            }
+            AnyJsExpression::JsBogusExpression(node) => {
+                self.transform_js_bogus_expression(&node);
+            }
+            AnyJsExpression::JsCallExpression(node) => {
+                self.transform_js_call_expression(&node);
+            }
+            AnyJsExpression::JsClassExpression(node) => {
+                self.transform_js_class_expression(&node);
+            }
+            AnyJsExpression::JsComputedMemberExpression(node) => {
+                self.transform_js_computed_member_expression(&node);
+            }
+            AnyJsExpression::JsConditionalExpression(node) => {
+                self.transform_js_conditional_expression(&node);
+            }
+            AnyJsExpression::JsFunctionExpression(node) => {
+                self.transform_js_function_expression(&node);
+            }
+            AnyJsExpression::JsIdentifierExpression(node) => {
+                self.transform_js_identifier_expression(&node);
+            }
+            AnyJsExpression::JsImportCallExpression(node) => {
+                self.transform_js_import_call_expression(&node);
+            }
+            AnyJsExpression::JsImportMetaExpression(node) => {
+                self.transform_js_import_meta_expression(&node);
+            }
+            AnyJsExpression::JsInExpression(node) => {
+                self.transform_js_in_expression(&node);
+            }
+            AnyJsExpression::JsInstanceofExpression(node) => {
+                self.transform_js_instanceof_expression(&node);
+            }
+            AnyJsExpression::JsLogicalExpression(node) => {
+                self.transform_js_logical_expression(&node);
+            }
+            AnyJsExpression::JsMetavariable(node) => {
+                self.transform_js_metavariable(&node);
+            }
+            AnyJsExpression::JsNewExpression(node) => {
+                self.transform_js_new_expression(&node);
+            }
+            AnyJsExpression::JsNewTargetExpression(node) => {
+                self.transform_js_new_target_expression(&node);
+            }
+            AnyJsExpression::JsObjectExpression(node) => {
+                self.transform_js_object_expression(&node);
+            }
+            AnyJsExpression::JsParenthesizedExpression(node) => {
+                self.transform_js_parenthesized_expression(&node);
+            }
+            AnyJsExpression::JsPostUpdateExpression(node) => {
+                self.transform_js_post_update_expression(&node);
+            }
+            AnyJsExpression::JsPreUpdateExpression(node) => {
+                self.transform_js_pre_update_expression(&node);
+            }
+            AnyJsExpression::JsSequenceExpression(node) => {
+                self.transform_js_sequence_expression(&node);
+            }
+            AnyJsExpression::JsStaticMemberExpression(node) => {
+                self.transform_js_static_member_expression(&node);
+            }
+            AnyJsExpression::JsSuperExpression(node) => {
+                self.transform_js_super_expression(&node);
+            }
+            AnyJsExpression::JsTemplateExpression(node) => {
+                self.transform_js_template_expression(&node);
+            }
+            AnyJsExpression::JsThisExpression(node) => {
+                self.transform_js_this_expression(&node);
+            }
+            AnyJsExpression::JsUnaryExpression(node) => {
+                self.transform_js_unary_expression(&node);
+            }
+            AnyJsExpression::JsYieldExpression(node) => {
+                self.transform_js_yield_expression(&node);
+            }
+            AnyJsExpression::JsxTagExpression(node) => {
+                self.transform_jsx_tag_expression(&node);
+            }
+            AnyJsExpression::TsAsExpression(node) => {
+                self.transform_ts_as_expression(&node);
+            }
+            AnyJsExpression::TsInstantiationExpression(node) => {
+                self.transform_ts_instantiation_expression(&node);
+            }
+            AnyJsExpression::TsNonNullAssertionExpression(node) => {
+                self.transform_ts_non_null_assertion_expression(&node);
+            }
+            AnyJsExpression::TsSatisfiesExpression(node) => {
+                self.transform_ts_satisfies_expression(&node);
+            }
+            AnyJsExpression::TsTypeAssertionExpression(node) => {
+                self.transform_ts_type_assertion_expression(&node);
+            }
+        }
+        None
+    }
+    pub fn transform_jsx_spread_child(&mut self, node: &JsxSpreadChild) -> Option<()> {
+        None
+    }
+    pub fn transform_jsx_text(&mut self, node: &JsxText) -> Option<()> {
+        None
+    }
+    pub fn transform_any_js_literal_expression(
+        &mut self,
+        node: &AnyJsLiteralExpression,
+    ) -> Option<()> {
+        None
+    }
+    pub fn transform_js_array_expression(&mut self, node: &JsArrayExpression) -> Option<()> {
+        None
+    }
+    pub fn transform_js_arrow_function_expression(
+        &mut self,
+        node: &JsArrowFunctionExpression,
+    ) -> Option<()> {
+        None
+    }
+    pub fn transform_js_assignment_expression(
+        &mut self,
+        node: &JsAssignmentExpression,
+    ) -> Option<()> {
+        None
+    }
+    pub fn transform_js_await_expression(&mut self, node: &JsAwaitExpression) -> Option<()> {
+        None
+    }
+    pub fn transform_js_binary_expression(&mut self, node: &JsBinaryExpression) -> Option<()> {
+        None
+    }
+    pub fn transform_js_bogus_expression(&mut self, node: &JsBogusExpression) -> Option<()> {
+        None
+    }
+    pub fn transform_js_call_expression(&mut self, node: &JsCallExpression) -> Option<()> {
+        None
+    }
+    pub fn transform_js_class_expression(&mut self, node: &JsClassExpression) -> Option<()> {
+        None
+    }
+    pub fn transform_js_computed_member_expression(
+        &mut self,
+        node: &JsComputedMemberExpression,
+    ) -> Option<()> {
+        None
+    }
+    pub fn transform_js_conditional_expression(
+        &mut self,
+        node: &JsConditionalExpression,
+    ) -> Option<()> {
+        None
+    }
+    pub fn transform_js_function_expression(&mut self, node: &JsFunctionExpression) -> Option<()> {
+        None
+    }
+    pub fn transform_js_identifier_expression(
+        &mut self,
+        node: &JsIdentifierExpression,
+    ) -> Option<()> {
+        None
+    }
+    pub fn transform_js_import_call_expression(
+        &mut self,
+        node: &JsImportCallExpression,
+    ) -> Option<()> {
+        None
+    }
+    pub fn transform_js_import_meta_expression(
+        &mut self,
+        node: &JsImportMetaExpression,
+    ) -> Option<()> {
+        None
+    }
+    pub fn transform_js_in_expression(&mut self, node: &JsInExpression) -> Option<()> {
+        None
+    }
+    pub fn transform_js_instanceof_expression(
+        &mut self,
+        node: &JsInstanceofExpression,
+    ) -> Option<()> {
+        None
+    }
+    pub fn transform_js_logical_expression(&mut self, node: &JsLogicalExpression) -> Option<()> {
+        None
+    }
+    pub fn transform_js_new_expression(&mut self, node: &JsNewExpression) -> Option<()> {
+        None
+    }
+    pub fn transform_js_new_target_expression(
+        &mut self,
+        node: &JsNewTargetExpression,
+    ) -> Option<()> {
+        None
+    }
+    pub fn transform_js_object_expression(&mut self, node: &JsObjectExpression) -> Option<()> {
+        None
+    }
+    pub fn transform_js_parenthesized_expression(
+        &mut self,
+        node: &JsParenthesizedExpression,
+    ) -> Option<()> {
+        None
+    }
+    pub fn transform_js_post_update_expression(
+        &mut self,
+        node: &JsPostUpdateExpression,
+    ) -> Option<()> {
+        None
+    }
+    pub fn transform_js_pre_update_expression(
+        &mut self,
+        node: &JsPreUpdateExpression,
+    ) -> Option<()> {
+        None
+    }
+    pub fn transform_js_sequence_expression(&mut self, node: &JsSequenceExpression) -> Option<()> {
+        None
+    }
+    pub fn transform_js_static_member_expression(
+        &mut self,
+        node: &JsStaticMemberExpression,
+    ) -> Option<()> {
+        None
+    }
+    pub fn transform_js_super_expression(&mut self, node: &JsSuperExpression) -> Option<()> {
+        None
+    }
+    pub fn transform_js_template_expression(&mut self, node: &JsTemplateExpression) -> Option<()> {
+        None
+    }
+    pub fn transform_js_this_expression(&mut self, node: &JsThisExpression) -> Option<()> {
+        None
+    }
+    pub fn transform_js_unary_expression(&mut self, node: &JsUnaryExpression) -> Option<()> {
+        None
+    }
+    pub fn transform_js_yield_expression(&mut self, node: &JsYieldExpression) -> Option<()> {
+        None
+    }
+    pub fn transform_ts_as_expression(&mut self, node: &TsAsExpression) -> Option<()> {
+        None
+    }
+    pub fn transform_ts_instantiation_expression(
+        &mut self,
+        node: &TsInstantiationExpression,
+    ) -> Option<()> {
+        None
+    }
+    pub fn transform_ts_non_null_assertion_expression(
+        &mut self,
+        node: &TsNonNullAssertionExpression,
+    ) -> Option<()> {
+        None
+    }
+    pub fn transform_ts_satisfies_expression(
+        &mut self,
+        node: &TsSatisfiesExpression,
+    ) -> Option<()> {
+        None
+    }
+    pub fn transform_ts_type_assertion_expression(
+        &mut self,
+        node: &TsTypeAssertionExpression,
+    ) -> Option<()> {
+        None
+    }
+    pub fn create_js_tag_statement(&mut self, scope: &Scope, tag_name: &str) -> AnyJsStatement {
+        let id = self.generate_unique_identifier(scope, "_el$");
+        // 构造 let _el$ = _$createElement("div");
+        let callee = js_identifier_expression(js_reference_identifier(ident("_$createElement")));
+        let arg = AnyJsCallArgument::AnyJsExpression(AnyJsExpression::AnyJsLiteralExpression(
+            js_string_literal_expression(js_string_literal(tag_name)).into(),
+        ));
+        let call_expr =
+            js_call_expression(callee.into(), make_js_call_arguments(vec![arg], vec![])).build();
+
+        let binding = js_identifier_binding(ident(id.as_str()));
+        let declarator = js_variable_declarator(AnyJsBindingPattern::AnyJsBinding(
+            AnyJsBinding::JsIdentifierBinding(binding),
+        ))
+        .with_initializer(js_initializer_clause(
+            token(T![=])
+                .with_leading_trivia([(TriviaPieceKind::Whitespace, " ")])
+                .with_trailing_trivia([(TriviaPieceKind::Whitespace, " ")]),
+            call_expr.into(),
+        ))
+        .build();
+
+        // 让 let 和变量名之间有空格
+        let let_token = token(T![let]);
+        let let_token_with_space =
+            let_token.with_trailing_trivia([(TriviaPieceKind::Whitespace, " ")]);
+
+        let var_decl = js_variable_declaration(
+            let_token_with_space,
+            js_variable_declarator_list([declarator], []),
+        )
+        .build();
+
+        // 添加分号
+        let semicolon_token = token(T![;]);
+        let var_stmt = js_variable_statement(var_decl)
+            .with_semicolon_token(semicolon_token)
+            .build();
+
+        AnyJsStatement::JsVariableStatement(var_stmt)
     }
 }
 
@@ -455,38 +895,24 @@ impl SaplingTransformer {
         let mut exprs = vec![];
         let config = &self.config;
         let tag_name = get_tag_name(node_path)?;
-        // TODO: convertComponentIdentifier 逻辑
-        // 基础遍历 openingElement.attributes
-        // if let Some(opening_element) = node_path.children().find_map(|c| c.try_to::<JsxElement>()) {
-        //     if let Some(attributes) = opening_element.opening_element().and_then(|oe| oe.attributes()) {
-        //         for attr in attributes {
-        //             // 这里只做类型识别，后续细化
-        //             let kind = attr.kind();
-        //             println!("Found attribute kind: {:?}", kind);
-        //         }
-        //     }
-        // }
-        // 基础 children 处理
-        // 这里只做 children 节点遍历，后续细化
-        for child in node_path.children() {
-            println!("Found child kind: {:?}", child.kind());
-        }
-        // 基础 props 合并与 dynamicSpread 逻辑
-        // 这里只做 props 向量和 dynamic_spread 标志初始化，后续细化
-        // let mut props = vec![];
-        // let mut dynamic_spread = false;
-        // 基础组件表达式生成与条件提升
-        // 这里只做 createComponent 调用表达式的占位，后续细化
-        // 假设 create_component_expr 为最终表达式
-        // exprs.push(create_component_expr);
 
-        // TODO: 返回结构体
+        // tag_id = convertComponentIdentifier(path.node.openingElement.name)
+        let tag_id = {
+            // 获取 openingElement.name
+            let opening_element: biome_js_syntax::AnyJsxElementName = node_path
+                .clone()
+                .cast::<JsxElement>()?
+                .opening_element()
+                .ok()?
+                .name()
+                .ok()?;
+            convert_component_identifier(&opening_element)?
+        };
 
         // 返回结构体，确保与 JS 逻辑一致
         Some(TemplateInput {
             exprs,
             tag_name: Some(tag_name),
-            // 其它字段后续细化
             ..Default::default()
         })
     }
@@ -537,6 +963,15 @@ impl SaplingTransformer {
     ) -> bool {
         false
     }
+
+    pub fn register_import_method(
+        &self,
+        node_path: &SyntaxNode<JsLanguage>,
+        name: &str,
+        module_namee: &str,
+    ) -> JsIdentifierBinding {
+        todo!()
+    }
 }
 
 pub struct CheckDynamicOptions {
@@ -544,4 +979,10 @@ pub struct CheckDynamicOptions {
     pub check_tags: bool,
     pub check_call_expressions: bool,
     pub native: bool,
+}
+
+// 注册 import 方法，返回新的 tag_id（仅声明，具体实现可后续完善）
+pub struct TagId {
+    pub name: String,
+    // 可扩展其他字段
 }

@@ -113,7 +113,6 @@ pub fn convert_component_identifier(node: &AnyJsxElementName) -> Option<AnyJsExp
             }
         }
         AnyJsxElementName::JsMetavariable(v) => {
-            let name = v.value_token().ok()?.text();
             let name_token = v.value_token().ok()?;
             let ident = js_reference_identifier(name_token.clone());
             let ident_expr = biome_js_factory::make::js_identifier_expression(ident);
@@ -130,5 +129,16 @@ pub fn convert_component_identifier(node: &AnyJsxElementName) -> Option<AnyJsExp
                 AnyJsLiteralExpression::JsStringLiteralExpression(lit_expr),
             ))
         }
+    }
+}
+
+pub fn get_name_from_any_js_expression(expression: &AnyJsExpression) -> Option<String> {
+    match expression {
+        AnyJsExpression::AnyJsLiteralExpression(expression) => {
+            Some(expression.value_token().ok()?.text().to_string())
+        }
+        AnyJsExpression::JsComputedMemberExpression(expression) => Some(expression.to_string()),
+        AnyJsExpression::JsStaticMemberExpression(expression) => Some(expression.to_string()),
+        _ => None,
     }
 }
