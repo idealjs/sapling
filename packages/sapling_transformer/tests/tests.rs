@@ -115,8 +115,6 @@ mod tests {
             },
         };
 
-        transformer.transform();
-
         let node = transformer.mutation.commit();
 
         let source_type = input_file.try_into().ok()?;
