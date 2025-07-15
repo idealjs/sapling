@@ -146,7 +146,14 @@ impl SaplingTransformer {
         let attributes = node.opening_element().ok()?.attributes();
         attributes.into_iter().for_each(|attribute| {
             let set_prop_statement = self.create_set_prop_statement(id.as_str(), attribute);
-            // self.traverse_result.statments.push(set_prop_statement);
+            match set_prop_statement {
+                Some(set_prop_statement) => {
+                    self.traverse_result.statments.push(set_prop_statement);
+                }
+                None => {
+                    return;
+                }
+            }
         });
 
         node.children().into_iter().for_each(|node| {
