@@ -4,7 +4,7 @@ use biome_js_semantic::{SemanticModelOptions, semantic_model};
 use biome_js_syntax::JsFileSource;
 use biome_rowan::AstNode;
 use biome_rowan::BatchMutationExt;
-use sapling_transformer::{Config, SaplingTransformer, TraverseResult};
+use sapling_transformer::{Config, SaplingTransformer, TransformResult};
 use std::collections::HashMap;
 
 #[test]
@@ -23,7 +23,7 @@ fn test_create_js_statement() {
         semantic_model,
         scope_generated_identifiers: HashMap::new(),
         config: Config::default(),
-        traverse_result: TraverseResult::default(),
+        transform_result: TransformResult::default(),
     };
 
     let node_path = transformer.js_module.syntax();

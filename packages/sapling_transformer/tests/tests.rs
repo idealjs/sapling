@@ -10,7 +10,7 @@ mod tests {
     use biome_test_utils::register_leak_checker;
     use camino::Utf8Path;
     use sapling_transformer::{
-        Config, SaplingTransformer, TraverseResult, write_transformation_snapshot,
+        Config, SaplingTransformer, TransformResult, write_transformation_snapshot,
     };
     use std::{collections::HashMap, fs::read_to_string};
 
@@ -110,7 +110,7 @@ mod tests {
             config: Config {
                 ..Default::default()
             },
-            traverse_result: TraverseResult {
+            transform_result: TransformResult {
                 ..Default::default()
             },
         };
