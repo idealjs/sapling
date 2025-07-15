@@ -1,11 +1,15 @@
+use std::vec;
+
 use crate::{SaplingTransformer, jsx_element_name_to_string};
 use biome_js_factory::make::{
-    ident, js_identifier_expression, js_reference_identifier, js_return_statement, token,
+    ident, js_call_argument_list, js_call_arguments, js_call_expression, js_expression_statement,
+    js_identifier_expression, js_reference_identifier, js_return_statement, js_string_literal,
+    js_string_literal_expression, token,
 };
 use biome_js_syntax::{
-    AnyJsStatement, AnyJsxChild, AnyJsxTag, JsIdentifierExpression, JsMetavariable, JsxElement,
-    JsxExpressionChild, JsxFragment, JsxSelfClosingElement, JsxSpreadChild, JsxTagExpression,
-    JsxText, T,
+    AnyJsCallArgument, AnyJsExpression, AnyJsStatement, AnyJsxChild, AnyJsxTag,
+    JsIdentifierExpression, JsMetavariable, JsxElement, JsxExpressionChild, JsxFragment,
+    JsxSelfClosingElement, JsxSpreadChild, JsxTagExpression, JsxText, T,
 };
 use biome_rowan::AstNode;
 
@@ -34,10 +38,24 @@ impl SaplingTransformer {
         let js_tag_statement = self.create_js_tag_statement(id.as_str(), tag_name.as_str());
         statments.push(js_tag_statement);
 
+        let attributes = node.opening_element().ok()?.attributes();
+        attributes.into_iter().for_each(|attribute| {
+            let set_prop_statement = self.create_set_prop_statement(id.as_str(), attribute);
+            match set_prop_statement {
+                Some(set_prop_statement) => {
+                    statments.push(set_prop_statement);
+                }
+                None => {
+                    return;
+                }
+            }
+        });
+
         // Handle children
         let children = node.children();
         children.into_iter().for_each(|node| {
-            let Some(statements) = self.transform_any_jsx_child_to_statements(&node) else {
+            let Some(statements) = self.transform_any_jsx_child_to_statements(id.as_str(), &node)
+            else {
                 return;
             };
             statments.extend(statements);
@@ -67,6 +85,7 @@ impl SaplingTransformer {
     }
     pub fn transform_any_jsx_child_to_statements(
         &mut self,
+        parent_id: &str,
         node: &AnyJsxChild,
     ) -> Option<Vec<AnyJsStatement>> {
         match node {
@@ -82,7 +101,7 @@ impl SaplingTransformer {
             AnyJsxChild::JsxSpreadChild(node) => {
                 self.transform_jsx_spread_child_to_statements(node)
             }
-            AnyJsxChild::JsxText(node) => self.transform_jsx_text_to_statements(node),
+            AnyJsxChild::JsxText(node) => self.transform_jsx_text_to_statements(parent_id, node),
         }
     }
     pub fn transform_js_metavariable_to_statements(
@@ -110,7 +129,58 @@ impl SaplingTransformer {
     ) -> Option<Vec<AnyJsStatement>> {
         None
     }
-    pub fn transform_jsx_text_to_statements(&self, node: &JsxText) -> Option<Vec<AnyJsStatement>> {
-        None
+    pub fn transform_jsx_text_to_statements(
+        &self,
+        parent_id: &str,
+        node: &JsxText,
+    ) -> Option<Vec<AnyJsStatement>> {
+        // _$insertNode(_el$, _$createTextNode(`template`));
+        let callee = AnyJsExpression::JsIdentifierExpression(js_identifier_expression(
+            js_reference_identifier(ident("_$insertNode")),
+        ));
+        // 获取 JsxText 的 value_token
+        let binding = node.to_string();
+        let node_value = binding.as_str();
+        let string_literal = js_string_literal_expression(js_string_literal(node_value));
+        let inner_callee = AnyJsExpression::JsIdentifierExpression(js_identifier_expression(
+            js_reference_identifier(ident("_$createTextNode")),
+        ));
+        let inner_call_expression = js_call_expression(
+            inner_callee,
+            js_call_arguments(
+                token(T!['(']),
+                js_call_argument_list(
+                    vec![AnyJsCallArgument::AnyJsExpression(
+                        AnyJsExpression::AnyJsLiteralExpression(
+                            biome_js_syntax::AnyJsLiteralExpression::JsStringLiteralExpression(
+                                string_literal,
+                            ),
+                        ),
+                    )],
+                    vec![],
+                ),
+                token(T![')']),
+            ),
+        )
+        .build();
+        let arguments = js_call_arguments(
+            token(T!['(']),
+            js_call_argument_list(
+                vec![
+                    AnyJsCallArgument::AnyJsExpression(AnyJsExpression::JsIdentifierExpression(
+                        js_identifier_expression(js_reference_identifier(ident(parent_id))),
+                    )),
+                    AnyJsCallArgument::AnyJsExpression(inner_call_expression.into()),
+                ],
+                vec![token(T!(,))],
+            ),
+            token(T![')']),
+        );
+        Some(vec![AnyJsStatement::JsExpressionStatement(
+            js_expression_statement(AnyJsExpression::JsCallExpression(
+                js_call_expression(callee, arguments).build(),
+            ))
+            .build(),
+        )])
     }
 }

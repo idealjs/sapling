@@ -1,5 +1,5 @@
 ---
-source: packages/sapling_transformer/tests/specs/simple_elements/index.tsx
+source: packages/sapling_transformer/tests/tests.rs
 expression: index.tsx
 ---
 # Input
@@ -11,8 +11,8 @@ const template = <h1>template</h1>;
 # Transformations
 ```tsx
 const template = (() => {
-  var _el$ = _$createElement("h1");
-  _$insertNode(_el$, _$createTextNode(`template`));
+  let _el$ = _$createElement("h1");
+  _$insertNode(_el$, _$createTextNode("template"));
   return _el$;
 })();
 
