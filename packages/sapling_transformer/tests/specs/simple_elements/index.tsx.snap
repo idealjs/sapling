@@ -4,44 +4,16 @@ expression: index.tsx
 ---
 # Input
 ```tsx
-import React from "react";
-
-const Demo = () => {
-  const template = <h1>template</h1>;
-  return (
-    <div>
-      {() => {
-        return <span>demo</span>;
-      }}
-    </div>
-  );
-};
-
-export default Demo;
+const template = <h1>template</h1>;
 
 ```
 
 # Transformations
 ```tsx
-const Demo = () => {
-  const template = (() => {
-    var _el$ = _$createElement("h1");
-    _$insertNode(_el$, _$createTextNode(`template`));
-    return _el$;
-  })();
-  return (() => {
-    var _el$3 = _$createElement("div");
-    _$insert(_el$3, () => {
-      return (() => {
-        var _el$4 = _$createElement("span");
-        _$insertNode(_el$4, _$createTextNode(`demo`));
-        return _el$4;
-      })();
-    });
-    return _el$3;
-  })();
-};
-
-export default Demo;
+const template = (() => {
+  var _el$ = _$createElement("h1");
+  _$insertNode(_el$, _$createTextNode(`template`));
+  return _el$;
+})();
 
 ```

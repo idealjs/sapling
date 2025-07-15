@@ -24,27 +24,27 @@ impl SaplingTransformer {
         &self,
         node: &JsMetavariable,
     ) -> Option<AnyJsxChild> {
-        todo!()
+        None
     }
     pub fn transform_jsx_element_to_jsx_child(&self, node: &JsxElement) -> Option<AnyJsxChild> {
-        todo!()
+        None
     }
     pub fn transform_jsx_expression_child(&self, node: &JsxExpressionChild) -> Option<AnyJsxChild> {
-        todo!()
+        None
     }
     pub fn transform_jsx_fragment_to_jsx_child(&self, node: &JsxFragment) -> Option<AnyJsxChild> {
-        todo!()
+        None
     }
     pub fn transform_jsx_self_closing_element_to_jsx_child(
         &self,
         node: &JsxSelfClosingElement,
     ) -> Option<AnyJsxChild> {
-        todo!()
+        None
     }
     pub fn transform_jsx_spread_child(&self, node: &JsxSpreadChild) -> Option<AnyJsxChild> {
-        todo!()
+        None
     }
     pub fn transform_jsx_text(&self, node: &JsxText) -> Option<AnyJsxChild> {
-        todo!()
+        None
     }
 }

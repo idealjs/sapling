@@ -1,8 +1,7 @@
 use biome_js_semantic::SemanticModel;
-use biome_js_syntax::{AnyJsStatement, JsLanguage, JsModule, JsSyntaxKind};
-use biome_js_syntax::{JsStatementList, TextRange};
-use biome_rowan::AstNode;
-use biome_rowan::{BatchMutation, SyntaxNode, SyntaxNodeCast};
+use biome_js_syntax::TextRange;
+use biome_js_syntax::{AnyJsStatement, JsLanguage, JsModule};
+use biome_rowan::BatchMutation;
 
 use std::collections::{HashMap, HashSet};
 
@@ -81,26 +80,11 @@ pub struct TransformResult {
 
 impl SaplingTransformer {
     pub fn transform(&mut self) {
-        let syntax_node = self.js_module.syntax();
-
-        self.traverse_syntax_node(syntax_node.clone());
-    }
-
-    pub fn traverse_syntax_node(&mut self, syntax_node: SyntaxNode<JsLanguage>) -> Option<()> {
-        if matches!(syntax_node.kind(), JsSyntaxKind::JS_STATEMENT_LIST) {
-            let node = syntax_node.cast::<JsStatementList>()?;
-            node.into_iter().for_each(|statement| {
-                let Some(new_statement) = self.transform_any_js_statement(&statement) else {
-                    return;
-                };
-                self.mutation.replace_node(statement, new_statement);
-            });
-            None
-        } else {
-            syntax_node.children().for_each(|syntax_node| {
-                self.traverse_syntax_node(syntax_node);
-            });
-            None
-        }
+        self.js_module.items().into_iter().for_each(|node| {
+            let Some(new_node) = self.transform_any_js_module_item(&node) else {
+                return;
+            };
+            self.mutation.replace_node(node, new_node);
+        });
     }
 }
