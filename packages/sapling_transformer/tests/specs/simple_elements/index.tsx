@@ -1,5 +1,3 @@
-import React from "react";
-
 const Demo = () => {
   const template = <h1>template</h1>;
   return (
