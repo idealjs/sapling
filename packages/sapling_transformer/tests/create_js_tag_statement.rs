@@ -28,7 +28,9 @@ fn test_create_js_statement() {
 
     let node_path = transformer.js_module.syntax();
     let scope = transformer.semantic_model.scope(node_path);
-    let stmt1 = transformer.create_js_tag_statement(&scope, "div");
-    let stmt2 = transformer.create_js_tag_statement(&scope, "div");
+    let id1 = transformer.generate_unique_identifier(&scope, "_el$");
+    let id2 = transformer.generate_unique_identifier(&scope, "_el$");
+    let stmt1 = transformer.create_js_tag_statement(id1.as_str(), "div");
+    let stmt2 = transformer.create_js_tag_statement(id2.as_str(), "div");
     insta::assert_snapshot!(format!("{}\n{}", stmt1.to_string(), stmt2.to_string()));
 }

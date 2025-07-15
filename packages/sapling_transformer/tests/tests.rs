@@ -101,7 +101,7 @@ mod tests {
 
         let js_module = js_tree.as_js_module()?.clone();
 
-        let mut transformer = SaplingTransformer {
+        let transformer = SaplingTransformer {
             mutation: js_module.clone().begin(),
             js_module,
             pre_process_errors: Vec::new(),

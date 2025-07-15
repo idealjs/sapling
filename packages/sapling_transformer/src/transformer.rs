@@ -1,33 +1,34 @@
 use crate::jsx_element_name_to_string;
 use biome_js_factory::make::{
-    ident, js_call_expression, js_identifier_binding, js_identifier_expression,
-    js_initializer_clause, js_reference_identifier, js_string_literal,
+    ident, js_call_expression, js_expression_statement, js_identifier_binding,
+    js_identifier_expression, js_initializer_clause, js_reference_identifier, js_string_literal,
     js_string_literal_expression, js_variable_declaration, js_variable_declarator,
     js_variable_declarator_list, js_variable_statement, token,
 };
 use biome_js_semantic::{Scope, SemanticModel};
 use biome_js_syntax::{
     AnyJsBinding, AnyJsBindingPattern, AnyJsCallArgument, AnyJsExpression, AnyJsLiteralExpression,
-    AnyJsStatement, AnyJsxChild, AnyJsxTag, JsArrayExpression, JsArrowFunctionExpression,
-    JsAssignmentExpression, JsAwaitExpression, JsBinaryExpression, JsBogusExpression,
-    JsCallExpression, JsClassExpression, JsComputedMemberExpression, JsConditionalExpression,
-    JsFunctionExpression, JsIdentifierExpression, JsImportCallExpression, JsImportMetaExpression,
-    JsInExpression, JsInstanceofExpression, JsLanguage, JsLogicalExpression, JsMetavariable,
-    JsModule, JsNewExpression, JsNewTargetExpression, JsObjectExpression,
-    JsParenthesizedExpression, JsPostUpdateExpression, JsPreUpdateExpression, JsSequenceExpression,
-    JsStaticMemberExpression, JsSuperExpression, JsSyntaxKind, JsTemplateExpression,
-    JsThisExpression, JsUnaryExpression, JsYieldExpression, JsxElement, JsxExpressionChild,
-    JsxFragment, JsxSelfClosingElement, JsxSpreadChild, JsxTagExpression, JsxText, T,
-    TsAsExpression, TsInstantiationExpression, TsNonNullAssertionExpression, TsSatisfiesExpression,
-    TsTypeAssertionExpression,
+    AnyJsStatement, AnyJsxAttributeName, AnyJsxAttributeValue, AnyJsxChild, AnyJsxTag,
+    JsArrayExpression, JsArrowFunctionExpression, JsAssignmentExpression, JsAwaitExpression,
+    JsBinaryExpression, JsBogusExpression, JsCallExpression, JsClassExpression,
+    JsComputedMemberExpression, JsConditionalExpression, JsFunctionExpression,
+    JsIdentifierExpression, JsImportCallExpression, JsImportMetaExpression, JsInExpression,
+    JsInstanceofExpression, JsLanguage, JsLogicalExpression, JsMetavariable, JsModule,
+    JsNewExpression, JsNewTargetExpression, JsObjectExpression, JsParenthesizedExpression,
+    JsPostUpdateExpression, JsPreUpdateExpression, JsSequenceExpression, JsStaticMemberExpression,
+    JsSuperExpression, JsSyntaxKind, JsTemplateExpression, JsThisExpression, JsUnaryExpression,
+    JsYieldExpression, JsxElement, JsxExpressionChild, JsxFragment, JsxSelfClosingElement,
+    JsxSpreadChild, JsxTagExpression, JsxText, T, TsAsExpression, TsInstantiationExpression,
+    TsNonNullAssertionExpression, TsSatisfiesExpression, TsTypeAssertionExpression,
 };
+use biome_js_syntax::{AnyJsxAttribute, TextRange};
+use biome_rowan::{AstNode, SyntaxToken, TriviaPiece};
 use biome_rowan::{BatchMutation, SyntaxNode, SyntaxNodeCast, TriviaPieceKind};
-
-use biome_js_syntax::TextRange;
 use sapling_transformation::helpers::jsx_template::{
     make_js_arrow_function_expression, make_js_call_arguments, make_js_function_body,
     make_js_parameters, make_js_return_statement,
 };
+use std::str::FromStr;
 use std::{
     collections::{HashMap, HashSet},
     default,
@@ -125,16 +126,13 @@ pub struct TraverseResult {
 }
 
 impl SaplingTransformer {
-    pub fn traverse_syntax_node(&mut self, syntax_node: SyntaxNode<JsLanguage>) -> Option<()> {
-        // let node = if let Ok(node) = JsxTagExpression::try_cast(syntax_node) {
-        //     node
-        // } else {
-        //     syntax_node.children().for_each(|syntax_node| {
-        //         self.traverse_syntax_node(syntax_node);
-        //     });
-        //     return;
-        // };
+    pub fn transform(&mut self) {
+        let syntax_node = self.js_module.syntax();
 
+        self.traverse_syntax_node(syntax_node.clone());
+    }
+
+    pub fn traverse_syntax_node(&mut self, syntax_node: SyntaxNode<JsLanguage>) -> Option<()> {
         if matches!(syntax_node.kind(), JsSyntaxKind::JSX_TAG_EXPRESSION) {
             let node = syntax_node.cast::<JsxTagExpression>()?;
             self.transform_jsx_tag_expression(&node);
@@ -150,19 +148,32 @@ impl SaplingTransformer {
     pub fn transform_jsx_tag_expression(&mut self, node: &JsxTagExpression) -> Option<()> {
         let tag = node.tag().ok()?;
         match tag {
-            AnyJsxTag::JsxElement(node) => {}
-            AnyJsxTag::JsxFragment(node) => {}
-            AnyJsxTag::JsxSelfClosingElement(node) => {}
+            AnyJsxTag::JsxElement(node) => {
+                self.transform_jsx_element(&node);
+            }
+            AnyJsxTag::JsxFragment(node) => {
+                self.transform_jsx_fragment(&node);
+            }
+            AnyJsxTag::JsxSelfClosingElement(node) => {
+                self.transform_jsx_self_closing_element(&node);
+            }
         }
-        // let children = node.syntax().children();
         None
     }
 
     pub fn transform_jsx_element(&mut self, node: &JsxElement) -> Option<()> {
-        let name = jsx_element_name_to_string(&node.opening_element().ok()?.name().ok()?)?;
+        let tag_name = jsx_element_name_to_string(&node.opening_element().ok()?.name().ok()?)?;
 
-        //  opening_element.name().ok()
-        // let _el$ = _$createElement("div");
+        let scope = self.semantic_model.scope(node.syntax());
+        let id = self.generate_unique_identifier(&scope, "_el$");
+        let js_tag_statement = self.create_js_tag_statement(id.as_str(), tag_name.as_str());
+        self.traverse_result.statments.push(js_tag_statement);
+
+        let attributes = node.opening_element().ok()?.attributes();
+        attributes.into_iter().for_each(|attribute| {
+            let set_prop_statement = self.create_set_prop_statement(id.as_str(), attribute);
+            // self.traverse_result.statments.push(set_prop_statement);
+        });
 
         node.children().into_iter().for_each(|node| {
             self.transform_any_jsx_child(&node);
@@ -497,8 +508,7 @@ impl SaplingTransformer {
     ) -> Option<()> {
         None
     }
-    pub fn create_js_tag_statement(&mut self, scope: &Scope, tag_name: &str) -> AnyJsStatement {
-        let id = self.generate_unique_identifier(scope, "_el$");
+    pub fn create_js_tag_statement(&self, id: &str, tag_name: &str) -> AnyJsStatement {
         // 构造 let _el$ = _$createElement("div");
         let callee = js_identifier_expression(js_reference_identifier(ident("_$createElement")));
         let arg = AnyJsCallArgument::AnyJsExpression(AnyJsExpression::AnyJsLiteralExpression(
@@ -507,7 +517,7 @@ impl SaplingTransformer {
         let call_expr =
             js_call_expression(callee.into(), make_js_call_arguments(vec![arg], vec![])).build();
 
-        let binding = js_identifier_binding(ident(id.as_str()));
+        let binding = js_identifier_binding(ident(id));
         let declarator = js_variable_declarator(AnyJsBindingPattern::AnyJsBinding(
             AnyJsBinding::JsIdentifierBinding(binding),
         ))
@@ -537,5 +547,75 @@ impl SaplingTransformer {
             .build();
 
         AnyJsStatement::JsVariableStatement(var_stmt)
+    }
+}
+
+impl SaplingTransformer {
+    pub fn create_set_prop_statement(
+        &self,
+        id: &str,
+        any_js_attribute: AnyJsxAttribute,
+    ) -> Option<AnyJsStatement> {
+        let callee = js_identifier_expression(js_reference_identifier(ident("_$setProp")));
+
+        // 1. 第一个参数：id 转为 AST 表达式节点
+        let el_ident = js_identifier_expression(js_reference_identifier(ident(id)));
+        let mut args = vec![AnyJsCallArgument::AnyJsExpression(el_ident.into())];
+        let mut separators = vec![];
+        // 2. 处理属性名和属性值
+        if let AnyJsxAttribute::JsxAttribute(attr) = any_js_attribute {
+            let name = attr.name().ok()?;
+            let name_token = match name {
+                AnyJsxAttributeName::JsxName(name) => {
+                    String::from_str(name.value_token().ok()?.text()).ok()?
+                }
+                AnyJsxAttributeName::JsxNamespaceName(name) => {
+                    let ns = name.namespace().ok()?;
+                    let ns_token = ns.value_token().ok()?;
+                    let ns = ns_token.text();
+                    let name_val = name.name().ok()?;
+                    let nm_token = name_val.value_token().ok()?;
+                    let nm = nm_token.text();
+                    format!("{ns}:{nm}")
+                }
+            };
+
+            separators
+                .push(token(T!(,)).with_trailing_trivia([(TriviaPieceKind::Whitespace, " ")]));
+
+            args.push(AnyJsCallArgument::AnyJsExpression(
+                AnyJsExpression::AnyJsLiteralExpression(
+                    AnyJsLiteralExpression::JsStringLiteralExpression(
+                        js_string_literal_expression(js_string_literal(name_token.as_str())),
+                    ),
+                ),
+            ));
+
+            let value = attr.initializer().and_then(|init| init.value().ok())?;
+
+            let value_expr = match value {
+                AnyJsxAttributeValue::JsxString(str_val) => {
+                    AnyJsExpression::AnyJsLiteralExpression(
+                        js_string_literal_expression(str_val.value_token().ok()?).into(),
+                    )
+                }
+                AnyJsxAttributeValue::JsxExpressionAttributeValue(expr_val) => {
+                    expr_val.expression().ok()?
+                }
+                AnyJsxAttributeValue::AnyJsxTag(_) => {
+                    todo!()
+                }
+            };
+            separators
+                .push(token(T!(,)).with_trailing_trivia([(TriviaPieceKind::Whitespace, " ")]));
+            args.push(AnyJsCallArgument::AnyJsExpression(value_expr));
+        }
+
+        let call_expr =
+            js_call_expression(callee.into(), make_js_call_arguments(args, separators)).build();
+
+        Some(AnyJsStatement::JsExpressionStatement(
+            js_expression_statement(AnyJsExpression::JsCallExpression(call_expr)).build(),
+        ))
     }
 }
