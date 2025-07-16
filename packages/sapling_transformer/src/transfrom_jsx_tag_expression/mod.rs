@@ -42,7 +42,18 @@ impl SaplingTransformer {
             };
             elements.push(AnyJsArrayElement::AnyJsExpression(expression));
         });
-        Some(AnyJsExpression::JsArrayExpression(make_array(elements)))
+        match elements.len() {
+            1 => {
+                if let AnyJsArrayElement::AnyJsExpression(expr) =
+                    elements.into_iter().next().unwrap()
+                {
+                    Some(expr)
+                } else {
+                    None
+                }
+            }
+            _ => Some(AnyJsExpression::JsArrayExpression(make_array(elements))),
+        }
     }
     pub fn transform_jsx_self_closing_element(
         &self,

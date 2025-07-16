@@ -61,23 +61,19 @@ const template6 = (
 
 # Transformations
 ```tsx
-const template1 = [
-  (() => {
-    let _el$ = _$createElement("div");
-    _$insertNode(_el$, _$createTextNode("template1"));
-    return _el$;
-  })(),
-];
+const template1 = (() => {
+  let _el$ = _$createElement("div");
+  _$insertNode(_el$, _$createTextNode("template1"));
+  return _el$;
+})();
 
-const template2 = [
-  (() => {
-    let _el$1 = _$createElement("div");
-    let _el$2 = _$createElement("h1");
-    _$insertNode(_el$2, _$createTextNode("template2"));
-    _$insertNode("_el$1", "_el$2");
-    return _el$1;
-  })(),
-];
+const template2 = (() => {
+  let _el$1 = _$createElement("div");
+  let _el$2 = _$createElement("h1");
+  _$insertNode(_el$2, _$createTextNode("template2"));
+  _$insertNode("_el$1", "_el$2");
+  return _el$1;
+})();
 
 const template3 = [
   (() => {
