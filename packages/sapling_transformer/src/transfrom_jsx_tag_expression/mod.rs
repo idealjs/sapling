@@ -29,7 +29,7 @@ impl SaplingTransformer {
         ) else {
             return None;
         };
-        let iife = make_iife(js_directive_list(vec![]), js_statement_list(statements));
+        let iife = make_iife(vec![], statements);
 
         Some(AnyJsExpression::JsCallExpression(iife))
     }

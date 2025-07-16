@@ -1,11 +1,20 @@
 use biome_js_factory::make::{
     js_arrow_function_expression, js_call_argument_list, js_call_arguments, js_call_expression,
-    js_function_body, js_parameter_list, js_parameters, js_parenthesized_expression, token,
+    js_directive_list, js_function_body, js_parameter_list, js_parameters,
+    js_parenthesized_expression, js_statement_list, token,
 };
-use biome_js_syntax::{AnyJsExpression, JsCallExpression, JsDirectiveList, JsStatementList, T};
+use biome_js_syntax::{AnyJsExpression, AnyJsStatement, JsCallExpression, JsDirective, T};
 
-pub fn make_iife(directives: JsDirectiveList, statements: JsStatementList) -> JsCallExpression {
-    let function_body = js_function_body(token(T!['{']), directives, statements, token(T!['}']));
+pub fn make_iife(
+    directives: Vec<JsDirective>,
+    statements: Vec<AnyJsStatement>,
+) -> JsCallExpression {
+    let function_body = js_function_body(
+        token(T!['{']),
+        js_directive_list(directives),
+        js_statement_list(statements),
+        token(T!['}']),
+    );
     let params = js_parameters(
         token(T!['(']),
         js_parameter_list(vec![], vec![]),
