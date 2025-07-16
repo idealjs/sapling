@@ -2,27 +2,32 @@ use std::vec;
 
 use crate::{SaplingTransformer, jsx_element_name_to_string};
 use biome_js_factory::make::{
-    ident, js_call_argument_list, js_call_arguments, js_call_expression, js_expression_statement,
-    js_identifier_expression, js_reference_identifier, js_return_statement, js_string_literal,
-    js_string_literal_expression, token,
+    ident, js_array_element_list, js_array_expression, js_call_argument_list, js_call_arguments, js_call_expression, js_expression_statement, js_identifier_expression, js_reference_identifier, js_return_statement, js_string_literal, js_string_literal_expression, token
 };
 use biome_js_syntax::{
-    AnyJsCallArgument, AnyJsExpression, AnyJsStatement, AnyJsxChild, AnyJsxTag, JsMetavariable,
-    JsxElement, JsxExpressionChild, JsxFragment, JsxSelfClosingElement, JsxSpreadChild,
-    JsxTagExpression, JsxText, T,
+    AnyJsArrayElement, AnyJsCallArgument, AnyJsExpression, AnyJsStatement, AnyJsxChild, AnyJsxTag, JsMetavariable, JsxElement, JsxExpressionChild, JsxFragment, JsxSelfClosingElement, JsxSpreadChild, JsxTagExpression, JsxText, T
 };
 use biome_rowan::AstNode;
-use sapling_transformation::helpers::jsx_template::make_js_call_arguments;
+use sapling_transformation::helpers::jsx_template::{make_iife, make_js_call_arguments};
 
 pub struct TransformJsxElementToStatementsOptions {
     pub need_return: bool,
 }
 
 pub struct TransformAnyJsxChildToStatementsOptions {
+    pub parent_id: Option<String>,
+}
+
+pub struct TransformJsxFragmentToStatementsOptions {
+    pub parent_id: Option<String>,
+}
+
+pub struct TransformJsxTextToStatementsOptions {
     pub parent_id: String,
 }
 
 impl SaplingTransformer {
+    // main entry
     pub fn transform_jsx_tag_expression_to_statements(
         &mut self,
         node: &JsxTagExpression,
@@ -36,7 +41,10 @@ impl SaplingTransformer {
                 )?;
                 Some(statements)
             }
-            AnyJsxTag::JsxFragment(node) => self.transform_jsx_fragment_to_statements(&node),
+            AnyJsxTag::JsxFragment(node) => self.transform_jsx_fragment_to_statements(
+                &node,
+                TransformJsxFragmentToStatementsOptions { parent_id: None },
+            ),
             AnyJsxTag::JsxSelfClosingElement(node) => {
                 self.transform_jsx_self_closing_element_to_statements(&node)
             }
@@ -73,7 +81,7 @@ impl SaplingTransformer {
             let Some((statements, child_id)) = self.transform_any_jsx_child_to_statements(
                 &node,
                 TransformAnyJsxChildToStatementsOptions {
-                    parent_id: id.clone(),
+                    parent_id: Some(id.clone()),
                 },
             ) else {
                 return;
@@ -119,9 +127,26 @@ impl SaplingTransformer {
         Some((statments, id))
     }
     pub fn transform_jsx_fragment_to_statements(
-        &self,
+        &mut self,
         node: &JsxFragment,
+        transform_options: TransformJsxFragmentToStatementsOptions,
     ) -> Option<Vec<AnyJsStatement>> {
+        // // if children length more than 1(valid child not new line) ,return array statement
+        // node.children().into_iter().for_each(|node| {
+        //     self.transform_any_jsx_child_to_statements(
+        //         &node,
+        //         TransformAnyJsxChildToStatementsOptions {
+        //             parent_id: transform_options.parent_id.clone(),
+        //         },
+        //     );
+        // });
+
+        // make_iife(directives, statements)
+        
+        // // AnyJsArrayElement::AnyJsExpression(())
+        // js_array_element_list(items, separators)
+        // js_array_expression(token(T!('[')), elements, token(T!(']')));
+        // // return []
         None
     }
     pub fn transform_jsx_self_closing_element_to_statements(
@@ -152,7 +177,12 @@ impl SaplingTransformer {
                 Some((statements, None))
             }
             AnyJsxChild::JsxFragment(node) => {
-                let statements = self.transform_jsx_fragment_to_statements(node)?;
+                let statements = self.transform_jsx_fragment_to_statements(
+                    node,
+                    TransformJsxFragmentToStatementsOptions {
+                        parent_id: transform_options.parent_id.clone(),
+                    },
+                )?;
                 Some((statements, None))
             }
             AnyJsxChild::JsxSelfClosingElement(node) => {
@@ -164,8 +194,12 @@ impl SaplingTransformer {
                 Some((statements, None))
             }
             AnyJsxChild::JsxText(node) => {
-                let statements =
-                    self.transform_jsx_text_to_statements(&transform_options.parent_id, node)?;
+                let statements = self.transform_jsx_text_to_statements(
+                    node,
+                    TransformAnyJsxChildToStatementsOptions {
+                        parent_id: transform_options.parent_id.clone(),
+                    },
+                )?;
                 Some((statements, None))
             }
         }
@@ -173,12 +207,6 @@ impl SaplingTransformer {
     pub fn transform_js_metavariable_to_statements(
         &self,
         node: &JsMetavariable,
-    ) -> Option<Vec<AnyJsStatement>> {
-        None
-    }
-    pub fn transform_jsx_element_to_to_statements(
-        &self,
-        node: &JsxElement,
     ) -> Option<Vec<AnyJsStatement>> {
         None
     }
@@ -197,8 +225,8 @@ impl SaplingTransformer {
     }
     pub fn transform_jsx_text_to_statements(
         &self,
-        parent_id: &str,
         node: &JsxText,
+        transform_options: TransformAnyJsxChildToStatementsOptions,
     ) -> Option<Vec<AnyJsStatement>> {
         // _$insertNode(_el$, _$createTextNode(`template`));
         let binding = node.to_string();
@@ -239,7 +267,9 @@ impl SaplingTransformer {
             js_call_argument_list(
                 vec![
                     AnyJsCallArgument::AnyJsExpression(AnyJsExpression::JsIdentifierExpression(
-                        js_identifier_expression(js_reference_identifier(ident(parent_id))),
+                        js_identifier_expression(js_reference_identifier(ident(
+                            transform_options.parent_id?.as_str(),
+                        ))),
                     )),
                     AnyJsCallArgument::AnyJsExpression(inner_call_expression.into()),
                 ],

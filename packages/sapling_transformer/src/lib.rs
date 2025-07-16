@@ -11,6 +11,7 @@ pub mod transform_jsx_child;
 pub mod transform_jsx_tag_expression_to_statements;
 pub mod transform_statement;
 pub mod transformer;
+pub mod transfrom_jsx_tag_expression;
 pub mod write_transformation_snapshot;
 
 pub use compatible::*;
@@ -23,6 +24,7 @@ pub use transform_jsx_child::*;
 pub use transform_jsx_tag_expression_to_statements::*;
 pub use transform_statement::*;
 pub use transformer::*;
+pub use transfrom_jsx_tag_expression::*;
 pub use write_transformation_snapshot::*;
 
 pub type JsBatchMutation = BatchMutation<JsLanguage>;

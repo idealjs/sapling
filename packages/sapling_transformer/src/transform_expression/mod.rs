@@ -92,14 +92,7 @@ impl SaplingTransformer {
             AnyJsExpression::JsThisExpression(node) => self.transform_js_this_expression(node),
             AnyJsExpression::JsUnaryExpression(node) => self.transform_js_unary_expression(node),
             AnyJsExpression::JsYieldExpression(node) => self.transform_js_yield_expression(node),
-            AnyJsExpression::JsxTagExpression(node) => {
-                let iife = make_iife(
-                    js_directive_list(vec![]),
-                    js_statement_list(self.transform_jsx_tag_expression_to_statements(node)?),
-                );
-
-                Some(AnyJsExpression::JsCallExpression(iife))
-            }
+            AnyJsExpression::JsxTagExpression(node) => self.transform_jsx_tag_expression(node),
             AnyJsExpression::TsAsExpression(node) => self.transform_ts_as_expression(node),
             AnyJsExpression::TsInstantiationExpression(node) => {
                 self.transform_ts_instantiation_expression(node)
