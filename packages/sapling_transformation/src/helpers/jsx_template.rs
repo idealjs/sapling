@@ -1,5 +1,7 @@
 pub mod make_iife;
+pub mod make_array;
 
+pub use make_array::*;
 pub use make_iife::*;
 
 use biome_js_syntax::{

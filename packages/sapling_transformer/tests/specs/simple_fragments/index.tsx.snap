@@ -1,0 +1,122 @@
+---
+source: packages/sapling_transformer/tests/tests.rs
+expression: index.tsx
+---
+# Input
+```tsx
+const template1 = (
+  <>
+    <div>template1</div>
+  </>
+);
+
+const template2 = (
+  <>
+    <div>
+      <h1>template2</h1>
+    </div>
+  </>
+);
+
+const template3 = (
+  <>
+    <div>template1</div>
+    <div>template1</div>
+  </>
+);
+
+const template4 = (
+  <>
+    <div>
+      <h1>template2</h1>
+    </div>
+    <div>
+      <h1>template2</h1>
+    </div>
+  </>
+);
+
+const template5 = (
+  <div>
+    <>
+      <div>template1</div>
+    </>
+  </div>
+);
+
+const template6 = (
+  <div>
+    <>
+      <div>
+        <h1>template2</h1>
+      </div>
+      <div>
+        <h1>template2</h1>
+      </div>
+    </>
+  </div>
+);
+
+```
+
+# Transformations
+```tsx
+const template1 = [
+  (() => {
+    let _el$ = _$createElement("div");
+    _$insertNode(_el$, _$createTextNode("template1"));
+    return _el$;
+  })(),
+];
+
+const template2 = [
+  (() => {
+    let _el$1 = _$createElement("div");
+    let _el$2 = _$createElement("h1");
+    _$insertNode(_el$2, _$createTextNode("template2"));
+    _$insertNode("_el$1", "_el$2");
+    return _el$1;
+  })(),
+];
+
+const template3 = [
+  (() => {
+    let _el$3 = _$createElement("div");
+    _$insertNode(_el$3, _$createTextNode("template1"));
+    return _el$3;
+  })(),
+  (() => {
+    let _el$4 = _$createElement("div");
+    _$insertNode(_el$4, _$createTextNode("template1"));
+    return _el$4;
+  })(),
+];
+
+const template4 = [
+  (() => {
+    let _el$5 = _$createElement("div");
+    let _el$6 = _$createElement("h1");
+    _$insertNode(_el$6, _$createTextNode("template2"));
+    _$insertNode("_el$5", "_el$6");
+    return _el$5;
+  })(),
+  (() => {
+    let _el$7 = _$createElement("div");
+    let _el$8 = _$createElement("h1");
+    _$insertNode(_el$8, _$createTextNode("template2"));
+    _$insertNode("_el$7", "_el$8");
+    return _el$7;
+  })(),
+];
+
+const template5 = (() => {
+  let _el$9 = _$createElement("div");
+  return _el$9;
+})();
+
+const template6 = (() => {
+  let _el$10 = _$createElement("div");
+  return _el$10;
+})();
+
+```

@@ -70,6 +70,14 @@ mod tests {
         }
     }
 
+    mod simple_fragments {
+        #[test]
+        pub fn index_tsx() {
+            let test_file = "tests/specs/simple_fragments/index.tsx";
+            crate::tests::run_test(test_file);
+        }
+    }
+
     mod text_interpolation {
         #[test]
         pub fn index_tsx() {

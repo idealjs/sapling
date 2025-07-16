@@ -3,9 +3,10 @@ use crate::{
 };
 use biome_js_factory::make::{js_directive_list, js_statement_list};
 use biome_js_syntax::{
-    AnyJsExpression, AnyJsxTag, JsxElement, JsxFragment, JsxSelfClosingElement, JsxTagExpression,
+    AnyJsArrayElement, AnyJsExpression, AnyJsxTag, JsxElement, JsxFragment, JsxSelfClosingElement,
+    JsxTagExpression,
 };
-use sapling_transformation::helpers::jsx_template::make_iife;
+use sapling_transformation::helpers::jsx_template::{make_array, make_iife};
 
 impl SaplingTransformer {
     // main entry
@@ -33,8 +34,15 @@ impl SaplingTransformer {
 
         Some(AnyJsExpression::JsCallExpression(iife))
     }
-    pub fn transform_jsx_fragment(&self, node: &JsxFragment) -> Option<AnyJsExpression> {
-        None
+    pub fn transform_jsx_fragment(&mut self, node: &JsxFragment) -> Option<AnyJsExpression> {
+        let mut elements = vec![];
+        node.children().into_iter().for_each(|node| {
+            let Some(expression) = self.transform_any_jsx_child(&node) else {
+                return;
+            };
+            elements.push(AnyJsArrayElement::AnyJsExpression(expression));
+        });
+        Some(AnyJsExpression::JsArrayExpression(make_array(elements)))
     }
     pub fn transform_jsx_self_closing_element(
         &self,
