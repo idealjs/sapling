@@ -2,10 +2,14 @@ use std::vec;
 
 use crate::{SaplingTransformer, jsx_element_name_to_string};
 use biome_js_factory::make::{
-    ident, js_array_element_list, js_array_expression, js_call_argument_list, js_call_arguments, js_call_expression, js_expression_statement, js_identifier_expression, js_reference_identifier, js_return_statement, js_string_literal, js_string_literal_expression, token
+    ident, js_array_element_list, js_array_expression, js_call_argument_list, js_call_arguments,
+    js_call_expression, js_expression_statement, js_identifier_expression, js_reference_identifier,
+    js_return_statement, js_string_literal, js_string_literal_expression, token,
 };
 use biome_js_syntax::{
-    AnyJsArrayElement, AnyJsCallArgument, AnyJsExpression, AnyJsStatement, AnyJsxChild, AnyJsxTag, JsMetavariable, JsxElement, JsxExpressionChild, JsxFragment, JsxSelfClosingElement, JsxSpreadChild, JsxTagExpression, JsxText, T
+    AnyJsArrayElement, AnyJsCallArgument, AnyJsExpression, AnyJsStatement, AnyJsxChild, AnyJsxTag,
+    JsMetavariable, JsxElement, JsxExpressionChild, JsxFragment, JsxSelfClosingElement,
+    JsxSpreadChild, JsxTagExpression, JsxText, T,
 };
 use biome_rowan::AstNode;
 use sapling_transformation::helpers::jsx_template::{make_iife, make_js_call_arguments};
@@ -131,23 +135,24 @@ impl SaplingTransformer {
         node: &JsxFragment,
         transform_options: TransformJsxFragmentToStatementsOptions,
     ) -> Option<Vec<AnyJsStatement>> {
-        // // if children length more than 1(valid child not new line) ,return array statement
-        // node.children().into_iter().for_each(|node| {
-        //     self.transform_any_jsx_child_to_statements(
-        //         &node,
-        //         TransformAnyJsxChildToStatementsOptions {
-        //             parent_id: transform_options.parent_id.clone(),
-        //         },
-        //     );
-        // });
+        let expression = self.transform_jsx_fragment(node)?;
+        let callee = js_identifier_expression(js_reference_identifier(ident("_$insert")));
 
-        // make_iife(directives, statements)
-        
-        // // AnyJsArrayElement::AnyJsExpression(())
-        // js_array_element_list(items, separators)
-        // js_array_expression(token(T!('[')), elements, token(T!(']')));
-        // // return []
-        None
+        let arg1 = AnyJsCallArgument::AnyJsExpression(AnyJsExpression::AnyJsLiteralExpression(
+            js_string_literal_expression(js_string_literal(transform_options.parent_id?.as_str()))
+                .into(),
+        ));
+        let call_expr = js_call_expression(
+            callee.into(),
+            make_js_call_arguments(
+                vec![arg1, AnyJsCallArgument::AnyJsExpression(expression)],
+                vec![token(T!(,))],
+            ),
+        )
+        .build();
+        Some(vec![AnyJsStatement::JsExpressionStatement(
+            js_expression_statement(call_expr.into()).build(),
+        )])
     }
     pub fn transform_jsx_self_closing_element_to_statements(
         &self,

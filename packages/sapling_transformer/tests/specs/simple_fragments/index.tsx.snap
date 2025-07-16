@@ -107,12 +107,36 @@ const template4 = [
 
 const template5 = (() => {
   let _el$9 = _$createElement("div");
+  _$insert(
+    "_el$9",
+    (() => {
+      let _el$10 = _$createElement("div");
+      _$insertNode(_el$10, _$createTextNode("template1"));
+      return _el$10;
+    })(),
+  );
   return _el$9;
 })();
 
 const template6 = (() => {
-  let _el$10 = _$createElement("div");
-  return _el$10;
+  let _el$11 = _$createElement("div");
+  _$insert("_el$11", [
+    (() => {
+      let _el$12 = _$createElement("div");
+      let _el$13 = _$createElement("h1");
+      _$insertNode(_el$13, _$createTextNode("template2"));
+      _$insertNode("_el$12", "_el$13");
+      return _el$12;
+    })(),
+    (() => {
+      let _el$14 = _$createElement("div");
+      let _el$15 = _$createElement("h1");
+      _$insertNode(_el$15, _$createTextNode("template2"));
+      _$insertNode("_el$14", "_el$15");
+      return _el$14;
+    })(),
+  ]);
+  return _el$11;
 })();
 
 ```
