@@ -201,12 +201,17 @@ impl SaplingTransformer {
         node: &JsxText,
     ) -> Option<Vec<AnyJsStatement>> {
         // _$insertNode(_el$, _$createTextNode(`template`));
+        let binding = node.to_string();
+        let node_value = binding.as_str();
+        // due to new line between JSX_CHILD_LIST
+        // if node is new line return None
+        if node_value.trim().is_empty() {
+            return None;
+        }
         let callee = AnyJsExpression::JsIdentifierExpression(js_identifier_expression(
             js_reference_identifier(ident("_$insertNode")),
         ));
-        // 获取 JsxText 的 value_token
-        let binding = node.to_string();
-        let node_value = binding.as_str();
+
         let string_literal = js_string_literal_expression(js_string_literal(node_value));
         let inner_callee = AnyJsExpression::JsIdentifierExpression(js_identifier_expression(
             js_reference_identifier(ident("_$createTextNode")),

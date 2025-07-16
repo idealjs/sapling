@@ -24,23 +24,9 @@ const template1 = (() => {
 
 const template2 = (() => {
   let _el$1 = _$createElement("div");
-  _$insertNode(
-    _el$1,
-    _$createTextNode(
-      "
-    ",
-    ),
-  );
   let _el$2 = _$createElement("h1");
   _$insertNode(_el$2, _$createTextNode("template2"));
   _$insertNode("_el$1", "_el$2");
-  _$insertNode(
-    _el$1,
-    _$createTextNode(
-      "
-  ",
-    ),
-  );
   return _el$1;
 })();
 
