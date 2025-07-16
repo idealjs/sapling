@@ -1,3 +1,7 @@
+pub mod make_iife;
+
+pub use make_iife::*;
+
 use biome_js_syntax::{
     AnyJsAssignment, AnyJsAssignmentPattern, AnyJsBinding, AnyJsBindingPattern, AnyJsCallArgument,
 };

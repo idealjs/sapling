@@ -1,8 +1,4 @@
-use biome_js_factory::make::{
-    js_arrow_function_expression, js_call_argument_list, js_call_arguments, js_call_expression,
-    js_directive_list, js_function_body, js_parameter_list, js_parameters,
-    js_parenthesized_expression, js_statement_list, token,
-};
+use biome_js_factory::make::{js_directive_list, js_statement_list};
 use biome_js_syntax::{
     AnyJsExpression, AnyJsLiteralExpression, JsArrayExpression, JsArrowFunctionExpression,
     JsAssignmentExpression, JsAwaitExpression, JsBinaryExpression, JsBogusExpression,
@@ -15,6 +11,7 @@ use biome_js_syntax::{
     TsAsExpression, TsInstantiationExpression, TsNonNullAssertionExpression, TsSatisfiesExpression,
     TsTypeAssertionExpression,
 };
+use sapling_transformation::helpers::jsx_template::make_iife;
 
 use crate::SaplingTransformer;
 
@@ -96,37 +93,10 @@ impl SaplingTransformer {
             AnyJsExpression::JsUnaryExpression(node) => self.transform_js_unary_expression(node),
             AnyJsExpression::JsYieldExpression(node) => self.transform_js_yield_expression(node),
             AnyJsExpression::JsxTagExpression(node) => {
-                let function_body = js_function_body(
-                    token(T!['{']),
+                let iife = make_iife(
                     js_directive_list(vec![]),
                     js_statement_list(self.transform_jsx_tag_expression_to_statements(node)?),
-                    token(T!['}']),
                 );
-                let params = js_parameters(
-                    token(T!['(']),
-                    js_parameter_list(vec![], vec![]),
-                    token(T![')']),
-                );
-                let arrow_fn = js_arrow_function_expression(
-                    params.into(),
-                    token(T![=>]),
-                    function_body.into(),
-                )
-                .build();
-                let iife = js_call_expression(
-                    js_parenthesized_expression(
-                        token(T!['(']),
-                        AnyJsExpression::JsArrowFunctionExpression(arrow_fn),
-                        token(T![')']),
-                    )
-                    .into(),
-                    js_call_arguments(
-                        token(T!['(']),
-                        js_call_argument_list(vec![], vec![]),
-                        token(T![')']),
-                    ),
-                )
-                .build();
 
                 Some(AnyJsExpression::JsCallExpression(iife))
             }
