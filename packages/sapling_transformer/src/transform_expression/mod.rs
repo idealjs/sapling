@@ -269,10 +269,11 @@ impl SaplingTransformer {
         None
     }
     pub fn transform_js_parenthesized_expression(
-        &self,
+        &mut self,
         node: &JsParenthesizedExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        let expression = node.expression().ok()?;
+        self.transform_any_js_expression(&expression)
     }
     pub fn transform_js_post_update_expression(
         &self,

@@ -4,16 +4,44 @@ expression: index.tsx
 ---
 # Input
 ```tsx
-const template = <h1>template</h1>;
+const template1 = <h1>template1</h1>;
+
+const template2 = (
+  <div>
+    <h1>template2</h1>
+  </div>
+);
 
 ```
 
 # Transformations
 ```tsx
-const template = (() => {
+const template1 = (() => {
   let _el$ = _$createElement("h1");
-  _$insertNode(_el$, _$createTextNode("template"));
+  _$insertNode(_el$, _$createTextNode("template1"));
   return _el$;
+})();
+
+const template2 = (() => {
+  let _el$1 = _$createElement("div");
+  _$insertNode(
+    _el$1,
+    _$createTextNode(
+      "
+    ",
+    ),
+  );
+  let _el$2 = _$createElement("h1");
+  _$insertNode(_el$2, _$createTextNode("template2"));
+  _$insertNode("_el$1", "_el$2");
+  _$insertNode(
+    _el$1,
+    _$createTextNode(
+      "
+  ",
+    ),
+  );
+  return _el$1;
 })();
 
 ```
