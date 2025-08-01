@@ -144,9 +144,9 @@ impl SaplingTransformer {
         let new_body = self.transform_js_function_body(&node.body().ok()?)?;
 
         let new_func = js_function_declaration(
-            node.function_token().expect("Missing function token"),
-            node.id().expect("Missing id"),
-            node.parameters().expect("Missing parameters"),
+            node.function_token().ok()?,
+            node.id().ok()?,
+            node.parameters().ok()?,
             new_body,
         )
         .build();

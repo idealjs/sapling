@@ -1,4 +1,7 @@
-use biome_js_factory::make::{js_directive_list, js_statement_list};
+use biome_js_factory::make::{
+    js_arrow_function_expression, js_directive_list, js_function_expression, js_statement_list,
+    token,
+};
 use biome_js_syntax::{
     AnyJsExpression, AnyJsLiteralExpression, JsArrayExpression, JsArrowFunctionExpression,
     JsAssignmentExpression, JsAwaitExpression, JsBinaryExpression, JsBogusExpression,
@@ -121,10 +124,18 @@ impl SaplingTransformer {
         None
     }
     pub fn transform_js_arrow_function_expression(
-        &self,
+        &mut self,
         node: &JsArrowFunctionExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        let new_body = self.transform_any_js_function_body(&node.body().ok()?)?;
+        Some(AnyJsExpression::JsArrowFunctionExpression(
+            js_arrow_function_expression(
+                node.parameters().ok()?,
+                node.fat_arrow_token().ok()?,
+                new_body,
+            )
+            .build(),
+        ))
     }
     pub fn transform_js_assignment_expression(
         &self,
@@ -172,10 +183,18 @@ impl SaplingTransformer {
         None
     }
     pub fn transform_js_function_expression(
-        &self,
+        &mut self,
         node: &JsFunctionExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        let new_body = self.transform_js_function_body(&node.body().ok()?)?;
+        Some(AnyJsExpression::JsFunctionExpression(
+            js_function_expression(
+                node.function_token().ok()?,
+                node.parameters().ok()?,
+                new_body,
+            )
+            .build(),
+        ))
     }
     pub fn transform_js_identifier_expression(
         &self,
