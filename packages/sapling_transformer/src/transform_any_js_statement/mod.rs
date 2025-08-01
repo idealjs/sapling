@@ -1,5 +1,6 @@
 use biome_js_factory::make::{
-    js_variable_declaration, js_variable_declarator_list, js_variable_statement, token,
+    js_function_declaration, js_return_statement, js_variable_declaration,
+    js_variable_declarator_list, js_variable_statement, token,
 };
 use biome_js_syntax::{
     AnyJsStatement, JsBlockStatement, JsBogusStatement, JsBreakStatement, JsClassDeclaration,
@@ -12,6 +13,7 @@ use biome_js_syntax::{
     TsExternalModuleDeclaration, TsGlobalDeclaration, TsImportEqualsDeclaration,
     TsInterfaceDeclaration, TsModuleDeclaration, TsTypeAliasDeclaration,
 };
+use sapling_transformation::helpers::jsx_template::make_js_return_statement;
 
 use crate::SaplingTransformer;
 
@@ -136,10 +138,20 @@ impl SaplingTransformer {
         None
     }
     pub fn transform_js_function_declaration(
-        &self,
+        &mut self,
         node: &JsFunctionDeclaration,
     ) -> Option<AnyJsStatement> {
-        None
+        let new_body = self.transform_js_function_body(&node.body().ok()?)?;
+
+        let new_func = js_function_declaration(
+            node.function_token().expect("Missing function token"),
+            node.id().expect("Missing id"),
+            node.parameters().expect("Missing parameters"),
+            new_body,
+        )
+        .build();
+
+        Some(AnyJsStatement::JsFunctionDeclaration(new_func))
     }
     pub fn transform_js_if_statement(&self, node: &JsIfStatement) -> Option<AnyJsStatement> {
         None
@@ -157,10 +169,14 @@ impl SaplingTransformer {
         None
     }
     pub fn transform_js_return_statement(
-        &self,
+        &mut self,
         node: &JsReturnStatement,
     ) -> Option<AnyJsStatement> {
-        None
+        let argument = node.argument()?;
+        let new_expression = self.transform_any_js_expression(&argument)?;
+        Some(AnyJsStatement::JsReturnStatement(make_js_return_statement(
+            new_expression,
+        )))
     }
     pub fn transform_js_switch_statement(
         &self,
