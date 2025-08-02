@@ -97,10 +97,13 @@ impl SaplingTransformer {
             AnyJsExpression::JsThisExpression(node) => self.transform_js_this_expression(node),
             AnyJsExpression::JsUnaryExpression(node) => self.transform_js_unary_expression(node),
             AnyJsExpression::JsYieldExpression(node) => self.transform_js_yield_expression(node),
-            AnyJsExpression::JsxTagExpression(node) => self.transform_jsx_tag_expression(
-                node,
-                TransformAnyJsxTagExpressionOptions { parent_id: None },
-            ),
+            AnyJsExpression::JsxTagExpression(node) => {
+                let (expr, _) = self.transform_jsx_tag_expression(
+                    node,
+                    TransformAnyJsxTagExpressionOptions { parent_id: None },
+                )?;
+                expr
+            }
             AnyJsExpression::TsAsExpression(node) => self.transform_ts_as_expression(node),
             AnyJsExpression::TsInstantiationExpression(node) => {
                 self.transform_ts_instantiation_expression(node)
@@ -120,7 +123,7 @@ impl SaplingTransformer {
         &self,
         node: &AnyJsLiteralExpression,
     ) -> Option<AnyJsExpression> {
-        todo!()
+        Some(AnyJsExpression::AnyJsLiteralExpression(node.clone()))
     }
     pub fn transform_js_array_expression(
         &self,
@@ -167,7 +170,7 @@ impl SaplingTransformer {
         todo!()
     }
     pub fn transform_js_call_expression(&self, node: &JsCallExpression) -> Option<AnyJsExpression> {
-        todo!()
+        Some(AnyJsExpression::JsCallExpression(node.clone()))
     }
     pub fn transform_js_class_expression(
         &self,

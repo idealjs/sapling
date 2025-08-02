@@ -24,7 +24,7 @@ impl SaplingTransformer {
         &mut self,
         node: &AnyJsxChild,
         transform_options: TransformAnyJsxChildOptions,
-    ) -> Option<AnyJsExpression> {
+    ) -> Option<(Option<AnyJsExpression>, Option<String>)> {
         match node {
             AnyJsxChild::JsMetavariable(node) => self.transform_js_metavariable(node),
             AnyJsxChild::JsxElement(node) => self.transform_jsx_element(node),
@@ -47,16 +47,22 @@ impl SaplingTransformer {
             ),
         }
     }
-    pub fn transform_js_metavariable(&self, node: &JsMetavariable) -> Option<AnyJsExpression> {
+    pub fn transform_js_metavariable(
+        &self,
+        node: &JsMetavariable,
+    ) -> Option<(Option<AnyJsExpression>, Option<String>)> {
         todo!()
     }
     pub fn transform_jsx_expression_child(
         &self,
         node: &JsxExpressionChild,
-    ) -> Option<AnyJsExpression> {
+    ) -> Option<(Option<AnyJsExpression>, Option<String>)> {
         todo!()
     }
-    pub fn transform_jsx_spread_child(&self, node: &JsxSpreadChild) -> Option<AnyJsExpression> {
+    pub fn transform_jsx_spread_child(
+        &self,
+        node: &JsxSpreadChild,
+    ) -> Option<(Option<AnyJsExpression>, Option<String>)> {
         todo!()
     }
 
@@ -64,7 +70,7 @@ impl SaplingTransformer {
         &self,
         node: &JsxText,
         transform_options: TransformAnyJsxTextOptions,
-    ) -> Option<AnyJsExpression> {
+    ) -> Option<(Option<AnyJsExpression>, Option<String>)> {
         // _$insertNode(_el$, _$createTextNode(`template`));
         let binding = node.to_string();
         let node_value = binding.as_str();
@@ -114,8 +120,11 @@ impl SaplingTransformer {
             ),
             token(T![')']),
         );
-        Some(AnyJsExpression::JsCallExpression(
-            js_call_expression(callee, arguments).build(),
+        Some((
+            Some(AnyJsExpression::JsCallExpression(
+                js_call_expression(callee, arguments).build(),
+            )),
+            None,
         ))
     }
 }

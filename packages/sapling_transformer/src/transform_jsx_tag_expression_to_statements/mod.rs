@@ -33,30 +33,8 @@ pub struct TransformJsxTextToStatementsOptions {
     pub parent_id: String,
 }
 
+// todo none used
 impl SaplingTransformer {
-    // main entry
-    pub fn transform_jsx_tag_expression_to_statements(
-        &mut self,
-        node: &JsxTagExpression,
-    ) -> Option<Vec<AnyJsStatement>> {
-        let tag = node.tag().ok()?;
-        match tag {
-            AnyJsxTag::JsxElement(node) => {
-                let (statements, _id) = self.transform_jsx_element_to_statements(
-                    &node,
-                    TransformJsxElementToStatementsOptions { need_return: true },
-                )?;
-                Some(statements)
-            }
-            AnyJsxTag::JsxFragment(node) => self.transform_jsx_fragment_to_statements(
-                &node,
-                TransformJsxFragmentToStatementsOptions { parent_id: None },
-            ),
-            AnyJsxTag::JsxSelfClosingElement(node) => {
-                self.transform_jsx_self_closing_element_to_statements(&node)
-            }
-        }
-    }
     pub fn transform_jsx_element_to_statements(
         &mut self,
         node: &JsxElement,
@@ -119,6 +97,7 @@ impl SaplingTransformer {
             }
         });
 
+        // todo should refactor. need_return put outside
         transform_options.need_return.then(|| {
             let return_stmt = AnyJsStatement::JsReturnStatement(
                 js_return_statement(token(T![return]))
@@ -138,7 +117,7 @@ impl SaplingTransformer {
         node: &JsxFragment,
         transform_options: TransformJsxFragmentToStatementsOptions,
     ) -> Option<Vec<AnyJsStatement>> {
-        let expression = self.transform_jsx_fragment(
+        let (expression, _) = self.transform_jsx_fragment(
             node,
             TransformAnyJsxFragmentOptions {
                 parent_id: transform_options.parent_id.clone(),
@@ -146,6 +125,7 @@ impl SaplingTransformer {
         )?;
         let callee = js_identifier_expression(js_reference_identifier(ident("_$insert")));
 
+        // todo fix to ident
         let arg1 = AnyJsCallArgument::AnyJsExpression(AnyJsExpression::AnyJsLiteralExpression(
             js_string_literal_expression(js_string_literal(transform_options.parent_id?.as_str()))
                 .into(),
@@ -153,7 +133,7 @@ impl SaplingTransformer {
         let call_expr = js_call_expression(
             callee.into(),
             make_js_call_arguments(
-                vec![arg1, AnyJsCallArgument::AnyJsExpression(expression)],
+                vec![arg1, AnyJsCallArgument::AnyJsExpression(expression?)],
                 vec![token(T!(,))],
             ),
         )
@@ -241,7 +221,7 @@ impl SaplingTransformer {
         node: &JsxText,
         transform_options: TransformAnyJsxChildToStatementsOptions,
     ) -> Option<Vec<AnyJsStatement>> {
-        let expr = self.transform_jsx_text(
+        let (expr, _) = self.transform_jsx_text(
             node,
             TransformAnyJsxTextOptions {
                 parent_id: transform_options.parent_id,
@@ -249,7 +229,7 @@ impl SaplingTransformer {
         )?;
 
         Some(vec![AnyJsStatement::JsExpressionStatement(
-            js_expression_statement(expr).build(),
+            js_expression_statement(expr?).build(),
         )])
     }
 }

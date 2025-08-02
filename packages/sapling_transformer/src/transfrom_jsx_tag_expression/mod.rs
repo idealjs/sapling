@@ -23,7 +23,7 @@ impl SaplingTransformer {
         &mut self,
         node: &JsxTagExpression,
         transform_options: TransformAnyJsxTagExpressionOptions,
-    ) -> Option<AnyJsExpression> {
+    ) -> Option<(Option<AnyJsExpression>, Option<String>)> {
         let tag = node.tag().ok()?;
         match tag {
             AnyJsxTag::JsxElement(node) => self.transform_jsx_element(&node),
@@ -38,25 +38,26 @@ impl SaplingTransformer {
             }
         }
     }
-    pub fn transform_jsx_element(&mut self, node: &JsxElement) -> Option<AnyJsExpression> {
-        let Some((statements, _)) = self.transform_jsx_element_to_statements(
+    pub fn transform_jsx_element(
+        &mut self,
+        node: &JsxElement,
+    ) -> Option<(Option<AnyJsExpression>, Option<String>)> {
+        let (statements, _) = self.transform_jsx_element_to_statements(
             node,
             TransformJsxElementToStatementsOptions { need_return: true },
-        ) else {
-            return None;
-        };
+        )?;
         let iife = make_iife(vec![], statements);
 
-        Some(AnyJsExpression::JsCallExpression(iife))
+        Some((Some(AnyJsExpression::JsCallExpression(iife)), None))
     }
     pub fn transform_jsx_fragment(
         &mut self,
         node: &JsxFragment,
         transform_options: TransformAnyJsxFragmentOptions,
-    ) -> Option<AnyJsExpression> {
+    ) -> Option<(Option<AnyJsExpression>, Option<String>)> {
         let mut elements = vec![];
         node.children().into_iter().for_each(|node| {
-            let Some(expression) = self.transform_any_jsx_child(
+            let Some((Some(expression), _)) = self.transform_any_jsx_child(
                 &node,
                 TransformAnyJsxChildOptions {
                     parent_id: transform_options.parent_id.clone(),
@@ -71,18 +72,21 @@ impl SaplingTransformer {
                 if let AnyJsArrayElement::AnyJsExpression(expr) =
                     elements.into_iter().next().unwrap()
                 {
-                    Some(expr)
+                    Some((Some(expr), None))
                 } else {
                     None
                 }
             }
-            _ => Some(AnyJsExpression::JsArrayExpression(make_array(elements))),
+            _ => Some((
+                Some(AnyJsExpression::JsArrayExpression(make_array(elements))),
+                None,
+            )),
         }
     }
     pub fn transform_jsx_self_closing_element(
         &self,
         node: &JsxSelfClosingElement,
-    ) -> Option<AnyJsExpression> {
+    ) -> Option<(Option<AnyJsExpression>, Option<String>)> {
         todo!()
     }
 }
