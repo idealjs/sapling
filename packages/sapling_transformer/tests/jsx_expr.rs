@@ -4,6 +4,6 @@ use crate::test_utils::run_test;
 
 #[test]
 pub fn index_tsx() {
-    let test_file = "tests/specs/jsx_template/index.tsx";
+    let test_file = "tests/specs/jsx_expr/index.tsx";
     run_test(test_file);
 }
