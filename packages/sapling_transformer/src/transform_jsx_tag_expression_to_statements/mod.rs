@@ -1,18 +1,21 @@
 use std::vec;
 
-use crate::{SaplingTransformer, jsx_element_name_to_string};
+use crate::{
+    SaplingTransformer, TransformAnyJsxTextOptions, jsx_element_name_to_string,
+    transfrom_jsx_tag_expression::TransformAnyJsxFragmentOptions,
+};
 use biome_js_factory::make::{
-    ident, js_array_element_list, js_array_expression, js_call_argument_list, js_call_arguments,
-    js_call_expression, js_expression_statement, js_identifier_expression, js_reference_identifier,
-    js_return_statement, js_string_literal, js_string_literal_expression, token,
+    ident, js_call_expression, js_expression_statement, js_identifier_expression,
+    js_reference_identifier, js_return_statement, js_string_literal, js_string_literal_expression,
+    token,
 };
 use biome_js_syntax::{
-    AnyJsArrayElement, AnyJsCallArgument, AnyJsExpression, AnyJsStatement, AnyJsxChild, AnyJsxTag,
-    JsMetavariable, JsxElement, JsxExpressionChild, JsxFragment, JsxSelfClosingElement,
-    JsxSpreadChild, JsxTagExpression, JsxText, T,
+    AnyJsCallArgument, AnyJsExpression, AnyJsStatement, AnyJsxChild, AnyJsxTag, JsMetavariable,
+    JsxElement, JsxExpressionChild, JsxFragment, JsxSelfClosingElement, JsxSpreadChild,
+    JsxTagExpression, JsxText, T,
 };
 use biome_rowan::AstNode;
-use sapling_transformation::helpers::jsx_template::{make_iife, make_js_call_arguments};
+use sapling_transformation::helpers::jsx_template::make_js_call_arguments;
 
 pub struct TransformJsxElementToStatementsOptions {
     pub need_return: bool,
@@ -135,7 +138,12 @@ impl SaplingTransformer {
         node: &JsxFragment,
         transform_options: TransformJsxFragmentToStatementsOptions,
     ) -> Option<Vec<AnyJsStatement>> {
-        let expression = self.transform_jsx_fragment(node)?;
+        let expression = self.transform_jsx_fragment(
+            node,
+            TransformAnyJsxFragmentOptions {
+                parent_id: transform_options.parent_id.clone(),
+            },
+        )?;
         let callee = js_identifier_expression(js_reference_identifier(ident("_$insert")));
 
         let arg1 = AnyJsCallArgument::AnyJsExpression(AnyJsExpression::AnyJsLiteralExpression(
@@ -158,7 +166,7 @@ impl SaplingTransformer {
         &self,
         node: &JsxSelfClosingElement,
     ) -> Option<Vec<AnyJsStatement>> {
-        None
+        todo!()
     }
     pub fn transform_any_jsx_child_to_statements(
         &mut self,
@@ -213,80 +221,35 @@ impl SaplingTransformer {
         &self,
         node: &JsMetavariable,
     ) -> Option<Vec<AnyJsStatement>> {
-        None
+        todo!()
     }
     pub fn transform_jsx_expression_child_to_statements(
         &self,
         node: &JsxExpressionChild,
     ) -> Option<Vec<AnyJsStatement>> {
-        None
+        todo!()
     }
 
     pub fn transform_jsx_spread_child_to_statements(
         &self,
         node: &JsxSpreadChild,
     ) -> Option<Vec<AnyJsStatement>> {
-        None
+        todo!()
     }
     pub fn transform_jsx_text_to_statements(
         &self,
         node: &JsxText,
         transform_options: TransformAnyJsxChildToStatementsOptions,
     ) -> Option<Vec<AnyJsStatement>> {
-        // _$insertNode(_el$, _$createTextNode(`template`));
-        let binding = node.to_string();
-        let node_value = binding.as_str();
-        // due to new line between JSX_CHILD_LIST
-        // if node is new line return None
-        if node_value.trim().is_empty() {
-            return None;
-        }
-        let callee = AnyJsExpression::JsIdentifierExpression(js_identifier_expression(
-            js_reference_identifier(ident("_$insertNode")),
-        ));
+        let expr = self.transform_jsx_text(
+            node,
+            TransformAnyJsxTextOptions {
+                parent_id: transform_options.parent_id,
+            },
+        )?;
 
-        let string_literal = js_string_literal_expression(js_string_literal(node_value));
-        let inner_callee = AnyJsExpression::JsIdentifierExpression(js_identifier_expression(
-            js_reference_identifier(ident("_$createTextNode")),
-        ));
-        let inner_call_expression = js_call_expression(
-            inner_callee,
-            js_call_arguments(
-                token(T!['(']),
-                js_call_argument_list(
-                    vec![AnyJsCallArgument::AnyJsExpression(
-                        AnyJsExpression::AnyJsLiteralExpression(
-                            biome_js_syntax::AnyJsLiteralExpression::JsStringLiteralExpression(
-                                string_literal,
-                            ),
-                        ),
-                    )],
-                    vec![],
-                ),
-                token(T![')']),
-            ),
-        )
-        .build();
-        let arguments = js_call_arguments(
-            token(T!['(']),
-            js_call_argument_list(
-                vec![
-                    AnyJsCallArgument::AnyJsExpression(AnyJsExpression::JsIdentifierExpression(
-                        js_identifier_expression(js_reference_identifier(ident(
-                            transform_options.parent_id?.as_str(),
-                        ))),
-                    )),
-                    AnyJsCallArgument::AnyJsExpression(inner_call_expression.into()),
-                ],
-                vec![token(T!(,))],
-            ),
-            token(T![')']),
-        );
         Some(vec![AnyJsStatement::JsExpressionStatement(
-            js_expression_statement(AnyJsExpression::JsCallExpression(
-                js_call_expression(callee, arguments).build(),
-            ))
-            .build(),
+            js_expression_statement(expr).build(),
         )])
     }
 }

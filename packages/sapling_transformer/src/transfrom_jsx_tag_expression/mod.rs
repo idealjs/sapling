@@ -1,5 +1,6 @@
 use crate::{
-    SaplingTransformer, TransformJsxElementToStatementsOptions, jsx_element_name_to_string,
+    SaplingTransformer, TransformAnyJsxChildOptions, TransformJsxElementToStatementsOptions,
+    jsx_element_name_to_string,
 };
 use biome_js_factory::make::{js_directive_list, js_statement_list};
 use biome_js_syntax::{
@@ -8,16 +9,30 @@ use biome_js_syntax::{
 };
 use sapling_transformation::helpers::jsx_template::{make_array, make_iife};
 
+pub struct TransformAnyJsxFragmentOptions {
+    pub parent_id: Option<String>,
+}
+
+pub struct TransformAnyJsxTagExpressionOptions {
+    pub parent_id: Option<String>,
+}
+
 impl SaplingTransformer {
     // main entry
     pub fn transform_jsx_tag_expression(
         &mut self,
         node: &JsxTagExpression,
+        transform_options: TransformAnyJsxTagExpressionOptions,
     ) -> Option<AnyJsExpression> {
         let tag = node.tag().ok()?;
         match tag {
             AnyJsxTag::JsxElement(node) => self.transform_jsx_element(&node),
-            AnyJsxTag::JsxFragment(node) => self.transform_jsx_fragment(&node),
+            AnyJsxTag::JsxFragment(node) => self.transform_jsx_fragment(
+                &node,
+                TransformAnyJsxFragmentOptions {
+                    parent_id: transform_options.parent_id,
+                },
+            ),
             AnyJsxTag::JsxSelfClosingElement(node) => {
                 self.transform_jsx_self_closing_element(&node)
             }
@@ -34,10 +49,19 @@ impl SaplingTransformer {
 
         Some(AnyJsExpression::JsCallExpression(iife))
     }
-    pub fn transform_jsx_fragment(&mut self, node: &JsxFragment) -> Option<AnyJsExpression> {
+    pub fn transform_jsx_fragment(
+        &mut self,
+        node: &JsxFragment,
+        transform_options: TransformAnyJsxFragmentOptions,
+    ) -> Option<AnyJsExpression> {
         let mut elements = vec![];
         node.children().into_iter().for_each(|node| {
-            let Some(expression) = self.transform_any_jsx_child(&node) else {
+            let Some(expression) = self.transform_any_jsx_child(
+                &node,
+                TransformAnyJsxChildOptions {
+                    parent_id: transform_options.parent_id.clone(),
+                },
+            ) else {
                 return;
             };
             elements.push(AnyJsArrayElement::AnyJsExpression(expression));
@@ -59,6 +83,6 @@ impl SaplingTransformer {
         &self,
         node: &JsxSelfClosingElement,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
 }

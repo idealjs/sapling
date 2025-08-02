@@ -95,7 +95,7 @@ pub fn convert_component_identifier(node: &AnyJsxElementName) -> Option<AnyJsExp
                     biome_js_syntax::AnyJsExpression::JsCallExpression(expr) => {
                         biome_js_syntax::AnyJsExpression::JsCallExpression(expr.clone())
                     }
-                    _ => return None,
+                    _ => todo!(),
                 };
                 let prop = prop_expr.as_js_identifier_expression()?;
                 use biome_rowan::AstNode;
@@ -139,6 +139,6 @@ pub fn get_name_from_any_js_expression(expression: &AnyJsExpression) -> Option<S
         }
         AnyJsExpression::JsComputedMemberExpression(expression) => Some(expression.to_string()),
         AnyJsExpression::JsStaticMemberExpression(expression) => Some(expression.to_string()),
-        _ => None,
+        _ => todo!(),
     }
 }

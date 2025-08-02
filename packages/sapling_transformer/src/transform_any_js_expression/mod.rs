@@ -16,7 +16,9 @@ use biome_js_syntax::{
 };
 use sapling_transformation::helpers::jsx_template::make_iife;
 
-use crate::SaplingTransformer;
+use crate::{
+    SaplingTransformer, transfrom_jsx_tag_expression::TransformAnyJsxTagExpressionOptions,
+};
 
 impl SaplingTransformer {
     // main entry
@@ -95,7 +97,10 @@ impl SaplingTransformer {
             AnyJsExpression::JsThisExpression(node) => self.transform_js_this_expression(node),
             AnyJsExpression::JsUnaryExpression(node) => self.transform_js_unary_expression(node),
             AnyJsExpression::JsYieldExpression(node) => self.transform_js_yield_expression(node),
-            AnyJsExpression::JsxTagExpression(node) => self.transform_jsx_tag_expression(node),
+            AnyJsExpression::JsxTagExpression(node) => self.transform_jsx_tag_expression(
+                node,
+                TransformAnyJsxTagExpressionOptions { parent_id: None },
+            ),
             AnyJsExpression::TsAsExpression(node) => self.transform_ts_as_expression(node),
             AnyJsExpression::TsInstantiationExpression(node) => {
                 self.transform_ts_instantiation_expression(node)
@@ -115,13 +120,13 @@ impl SaplingTransformer {
         &self,
         node: &AnyJsLiteralExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_array_expression(
         &self,
         node: &JsArrayExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_arrow_function_expression(
         &mut self,
@@ -141,46 +146,46 @@ impl SaplingTransformer {
         &self,
         node: &JsAssignmentExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_await_expression(
         &self,
         node: &JsAwaitExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_binary_expression(
         &self,
         node: &JsBinaryExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_bogus_expression(
         &self,
         node: &JsBogusExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_call_expression(&self, node: &JsCallExpression) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_class_expression(
         &self,
         node: &JsClassExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_computed_member_expression(
         &self,
         node: &JsComputedMemberExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_conditional_expression(
         &self,
         node: &JsConditionalExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_function_expression(
         &mut self,
@@ -200,55 +205,55 @@ impl SaplingTransformer {
         &self,
         node: &JsIdentifierExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_import_call_expression(
         &self,
         node: &JsImportCallExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_import_meta_expression(
         &self,
         node: &JsImportMetaExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_in_expression(&self, node: &JsInExpression) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_instanceof_expression(
         &self,
         node: &JsInstanceofExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_logical_expression(
         &self,
         node: &JsLogicalExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_metavariable_to_js_expression(
         &self,
         node: &JsMetavariable,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_new_expression(&self, node: &JsNewExpression) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_new_target_expression(
         &self,
         node: &JsNewTargetExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_object_expression(
         &self,
         node: &JsObjectExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_parenthesized_expression(
         &mut self,
@@ -261,78 +266,78 @@ impl SaplingTransformer {
         &self,
         node: &JsPostUpdateExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_pre_update_expression(
         &self,
         node: &JsPreUpdateExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_sequence_expression(
         &self,
         node: &JsSequenceExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_static_member_expression(
         &self,
         node: &JsStaticMemberExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_super_expression(
         &self,
         node: &JsSuperExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_template_expression(
         &self,
         node: &JsTemplateExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_this_expression(&self, node: &JsThisExpression) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_unary_expression(
         &self,
         node: &JsUnaryExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_js_yield_expression(
         &self,
         node: &JsYieldExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_ts_as_expression(&self, node: &TsAsExpression) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_ts_instantiation_expression(
         &self,
         node: &TsInstantiationExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_ts_non_null_assertion_expression(
         &self,
         node: &TsNonNullAssertionExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_ts_satisfies_expression(
         &self,
         node: &TsSatisfiesExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
     pub fn transform_ts_type_assertion_expression(
         &self,
         node: &TsTypeAssertionExpression,
     ) -> Option<AnyJsExpression> {
-        None
+        todo!()
     }
 }

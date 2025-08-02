@@ -4,44 +4,21 @@ expression: index.tsx
 ---
 # Input
 ```tsx
-let some = () => {
-  return 1;
-};
-
-function Counter() {
-  const value = some();
-
-  return <button type="button">{value}</button>;
+function Attr() {
+  return <button type="button">attr</button>;
 }
-
-const Counter2 = () => {
-  const value = some();
-
-  return <button type="button">{value}</button>;
-};
 
 ```
 
 # Transformations
 ```tsx
-let some = () => {};
-
-function Counter() {
-  const
+function Attr() {
   return (() => {
     let _el$ = _$createElement("button");
     _$setProp(_el$, "type", "button");
+    _$insertNode(_el$, _$createTextNode("attr"));
     return _el$;
   })();
 }
-
-const Counter2 = () => {
-  const
-  return (() => {
-    let _el$ = _$createElement("button");
-    _$setProp(_el$, "type", "button");
-    return _el$;
-  })();
-};
 
 ```
