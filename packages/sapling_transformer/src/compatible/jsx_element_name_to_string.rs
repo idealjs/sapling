@@ -23,7 +23,7 @@ pub fn jsx_element_name_to_string(node: &AnyJsxElementName) -> Option<String> {
                 .to_string();
             Some(format!("{}.{}", object, property))
         }
-        AnyJsxElementName::JsxName(v) => Some(v.value_token().ok()?.text().to_string()),
+        AnyJsxElementName::JsxName(v) => Some(v.value_token().ok()?.text_trimmed().to_string()),
         AnyJsxElementName::JsxReferenceIdentifier(v) => {
             Some(v.value_token().ok()?.text().to_string())
         }
