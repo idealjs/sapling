@@ -65,7 +65,6 @@ impl SaplingTransformer {
         node: &JsxText,
         transform_options: TransformAnyJsxTextOptions,
     ) -> Option<AnyJsExpression> {
-        println!("node transfrom_options {:?} {:?}", node, transform_options);
         // _$insertNode(_el$, _$createTextNode(`template`));
         let binding = node.to_string();
         let node_value = binding.as_str();
