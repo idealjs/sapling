@@ -99,12 +99,12 @@ impl SaplingTransformer {
                 let callee =
                     js_identifier_expression(js_reference_identifier(ident("_$insertNode")));
                 let arg1 =
-                    AnyJsCallArgument::AnyJsExpression(AnyJsExpression::AnyJsLiteralExpression(
-                        js_string_literal_expression(js_string_literal(id.as_str())).into(),
+                    AnyJsCallArgument::AnyJsExpression(AnyJsExpression::JsIdentifierExpression(
+                        js_identifier_expression(js_reference_identifier(ident(id.as_str()))),
                     ));
                 let arg2 =
-                    AnyJsCallArgument::AnyJsExpression(AnyJsExpression::AnyJsLiteralExpression(
-                        js_string_literal_expression(js_string_literal(child_id.as_str())).into(),
+                    AnyJsCallArgument::AnyJsExpression(AnyJsExpression::JsIdentifierExpression(
+                        js_identifier_expression(js_reference_identifier(ident(child_id.as_str()))),
                     ));
                 let call_expr = js_call_expression(
                     callee.into(),
