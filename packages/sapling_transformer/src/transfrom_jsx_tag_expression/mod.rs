@@ -29,7 +29,7 @@ impl SaplingTransformer {
     ) -> Option<(Option<AnyJsExpression>, Option<String>)> {
         let tag = node.tag().ok()?;
         match tag {
-            AnyJsxTag::JsxElement(node) => self.transform_jsx_element(&node),
+            AnyJsxTag::JsxElement(node) => self.transform_jsx_element_to_iife(&node),
             AnyJsxTag::JsxFragment(node) => self.transform_jsx_fragment(
                 &node,
                 TransformAnyJsxFragmentOptions {
@@ -41,7 +41,7 @@ impl SaplingTransformer {
             }
         }
     }
-    pub fn transform_jsx_element(
+    pub fn transform_jsx_element_to_iife(
         &mut self,
         node: &JsxElement,
     ) -> Option<(Option<AnyJsExpression>, Option<String>)> {

@@ -27,7 +27,7 @@ impl SaplingTransformer {
     ) -> Option<(Option<AnyJsExpression>, Option<String>)> {
         match node {
             AnyJsxChild::JsMetavariable(node) => self.transform_js_metavariable(node),
-            AnyJsxChild::JsxElement(node) => self.transform_jsx_element(node),
+            AnyJsxChild::JsxElement(node) => self.transform_jsx_element_to_iife(node),
             AnyJsxChild::JsxExpressionChild(node) => self.transform_jsx_expression_child(node),
             AnyJsxChild::JsxFragment(node) => self.transform_jsx_fragment(
                 node,

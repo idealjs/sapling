@@ -15,7 +15,7 @@ use biome_js_syntax::{
     JsxTagExpression, JsxText, T,
 };
 use biome_rowan::AstNode;
-use sapling_transformation::helpers::jsx_template::make_js_call_arguments;
+use sapling_transformation::helpers::jsx_template::{make_iife, make_js_call_arguments};
 
 pub struct TransformJsxElementToStatementsOptions {
     pub need_return: bool,
@@ -98,7 +98,7 @@ impl SaplingTransformer {
 
         Some((statments, id))
     }
-    pub fn transform_jsx_fragment_to_statements(
+    pub fn transform_jsx_fragment_to_insert_statement(
         &mut self,
         node: &JsxFragment,
         transform_options: TransformJsxFragmentToStatementsOptions,
@@ -109,13 +109,15 @@ impl SaplingTransformer {
                 parent_id: transform_options.parent_id.clone(),
             },
         )?;
+
         let callee = js_identifier_expression(js_reference_identifier(ident("_$insert")));
 
-        // todo fix to ident
-        let arg1 = AnyJsCallArgument::AnyJsExpression(AnyJsExpression::AnyJsLiteralExpression(
-            js_string_literal_expression(js_string_literal(transform_options.parent_id?.as_str()))
-                .into(),
+        let arg1 = AnyJsCallArgument::AnyJsExpression(AnyJsExpression::JsIdentifierExpression(
+            js_identifier_expression(js_reference_identifier(ident(
+                transform_options.parent_id?.as_str(),
+            ))),
         ));
+
         let call_expr = js_call_expression(
             callee.into(),
             make_js_call_arguments(
@@ -153,7 +155,7 @@ impl SaplingTransformer {
                 Some((statements, None))
             }
             AnyJsxChild::JsxFragment(node) => {
-                let statements = self.transform_jsx_fragment_to_statements(
+                let statements = self.transform_jsx_fragment_to_insert_statement(
                     node,
                     TransformJsxFragmentToStatementsOptions {
                         parent_id: transform_options.parent_id.clone(),
