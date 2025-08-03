@@ -34,7 +34,7 @@ impl SaplingTransformer {
                 },
             ),
             AnyJsxChild::JsxSelfClosingElement(node) => {
-                self.transform_jsx_self_closing_element(node)
+                self.transform_jsx_self_closing_element_to_iife(node)
             }
             AnyJsxChild::JsxSpreadChild(node) => self.transform_jsx_spread_child(node),
             AnyJsxChild::JsxText(node) => self.transform_jsx_text(

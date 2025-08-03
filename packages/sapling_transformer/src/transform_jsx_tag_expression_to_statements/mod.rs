@@ -150,10 +150,9 @@ impl SaplingTransformer {
                 )?;
                 Some((statements, None))
             }
-            AnyJsxChild::JsxSelfClosingElement(node) => {
-                let statements = self.transform_jsx_self_closing_element_to_statements(node)?;
-                Some((statements, None))
-            }
+            AnyJsxChild::JsxSelfClosingElement(node) => self
+                .transform_jsx_self_closing_element_to_statements(node)
+                .map(|(stmts, id)| (stmts, Some(id))),
             AnyJsxChild::JsxSpreadChild(node) => {
                 let statements = self.transform_jsx_spread_child_to_statements(node)?;
                 Some((statements, None))
@@ -226,9 +225,29 @@ impl SaplingTransformer {
     }
 
     pub fn transform_jsx_self_closing_element_to_statements(
-        &self,
-        _node: &JsxSelfClosingElement,
-    ) -> Option<Vec<AnyJsStatement>> {
-        todo!()
+        &mut self,
+        node: &JsxSelfClosingElement,
+    ) -> Option<(Vec<AnyJsStatement>, String)> {
+        let mut statments: Vec<AnyJsStatement> = vec![];
+        let tag_name = jsx_element_name_to_string(&node.name().ok()?)?;
+        let scope = self.semantic_model.scope(node.syntax());
+        let id = self.generate_unique_identifier(&scope, "_el$");
+        let js_tag_statement = self.create_js_tag_statement(id.as_str(), tag_name.as_str());
+        statments.push(js_tag_statement);
+
+        let attributes = node.attributes();
+        attributes.into_iter().for_each(|attribute| {
+            let set_prop_statement = self.create_set_prop_statement(id.as_str(), attribute);
+            match set_prop_statement {
+                Some(set_prop_statement) => {
+                    statments.push(set_prop_statement);
+                }
+                None => {
+                    return;
+                }
+            }
+        });
+
+        Some((statments, id))
     }
 }

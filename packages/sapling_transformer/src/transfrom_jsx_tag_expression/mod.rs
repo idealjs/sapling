@@ -33,7 +33,7 @@ impl SaplingTransformer {
                 },
             ),
             AnyJsxTag::JsxSelfClosingElement(node) => {
-                self.transform_jsx_self_closing_element(&node)
+                self.transform_jsx_self_closing_element_to_iife(&node)
             }
         }
     }
@@ -82,10 +82,23 @@ impl SaplingTransformer {
             _ => Some(AnyJsExpression::JsArrayExpression(make_array(elements))),
         }
     }
-    pub fn transform_jsx_self_closing_element(
-        &self,
-        _node: &JsxSelfClosingElement,
+    pub fn transform_jsx_self_closing_element_to_iife(
+        &mut self,
+        node: &JsxSelfClosingElement,
     ) -> Option<AnyJsExpression> {
-        todo!()
+        let (mut statements, id) = self.transform_jsx_self_closing_element_to_statements(node)?;
+        let return_stmt = AnyJsStatement::JsReturnStatement(
+            js_return_statement(token(T![return]))
+                .with_argument(
+                    js_identifier_expression(js_reference_identifier(ident(&id))).into(),
+                )
+                .with_semicolon_token(token(T![;]))
+                .build(),
+        );
+        statements.push(return_stmt);
+
+        let iife = make_iife(vec![], statements);
+
+        Some(AnyJsExpression::JsCallExpression(iife))
     }
 }
