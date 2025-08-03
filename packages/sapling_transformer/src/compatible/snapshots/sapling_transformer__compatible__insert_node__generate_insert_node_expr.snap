@@ -1,0 +1,5 @@
+---
+source: packages/sapling_transformer/src/compatible/insert_node.rs
+expression: stmt.to_string()
+---
+_$insertNode(_el$,_child$)

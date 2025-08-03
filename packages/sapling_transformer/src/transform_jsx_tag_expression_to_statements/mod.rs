@@ -1,8 +1,8 @@
 use std::vec;
 
 use crate::{
-    SaplingTransformer, TransformAnyJsxTextOptions, jsx_element_name_to_string,
-    transfrom_jsx_tag_expression::TransformAnyJsxFragmentOptions,
+    SaplingTransformer, TransformAnyJsxTextOptions, generate_insert_node_expr,
+    jsx_element_name_to_string, transfrom_jsx_tag_expression::TransformAnyJsxFragmentOptions,
 };
 use biome_js_factory::make::{
     ident, js_call_expression, js_expression_statement, js_identifier_expression,
@@ -74,26 +74,11 @@ impl SaplingTransformer {
             };
             statments.extend(statements);
             if let Some(child_id) = child_id {
-                // _$insertNode(id, child_id);
-                let callee =
-                    js_identifier_expression(js_reference_identifier(ident("_$insertNode")));
-                let arg1 =
-                    AnyJsCallArgument::AnyJsExpression(AnyJsExpression::JsIdentifierExpression(
-                        js_identifier_expression(js_reference_identifier(ident(id.as_str()))),
-                    ));
-                let arg2 =
-                    AnyJsCallArgument::AnyJsExpression(AnyJsExpression::JsIdentifierExpression(
-                        js_identifier_expression(js_reference_identifier(ident(child_id.as_str()))),
-                    ));
-                let call_expr = js_call_expression(
-                    callee.into(),
-                    make_js_call_arguments(vec![arg1, arg2], vec![token(T!(,))]),
-                )
-                .build();
-                let insert_node_statement =
-                    js_expression_statement(AnyJsExpression::JsCallExpression(call_expr));
                 statments.push(AnyJsStatement::JsExpressionStatement(
-                    insert_node_statement.build(),
+                    js_expression_statement(
+                        generate_insert_node_expr(id.as_str(), child_id.as_str()).into(),
+                    )
+                    .build(),
                 ));
             }
         });
