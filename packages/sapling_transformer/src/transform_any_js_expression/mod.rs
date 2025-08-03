@@ -1,4 +1,7 @@
-use biome_js_factory::make::{js_arrow_function_expression, js_function_expression};
+use biome_js_factory::make::{
+    js_arrow_function_expression, js_function_expression, js_object_expression,
+    js_object_member_list, token,
+};
 use biome_js_syntax::{
     AnyJsExpression, AnyJsLiteralExpression, JsArrayExpression, JsArrowFunctionExpression,
     JsAssignmentExpression, JsAwaitExpression, JsBinaryExpression, JsBogusExpression,
@@ -7,10 +10,11 @@ use biome_js_syntax::{
     JsInExpression, JsInstanceofExpression, JsLogicalExpression, JsMetavariable, JsNewExpression,
     JsNewTargetExpression, JsObjectExpression, JsParenthesizedExpression, JsPostUpdateExpression,
     JsPreUpdateExpression, JsSequenceExpression, JsStaticMemberExpression, JsSuperExpression,
-    JsTemplateExpression, JsThisExpression, JsUnaryExpression, JsYieldExpression, TsAsExpression,
-    TsInstantiationExpression, TsNonNullAssertionExpression, TsSatisfiesExpression,
+    JsTemplateExpression, JsThisExpression, JsUnaryExpression, JsYieldExpression, T,
+    TsAsExpression, TsInstantiationExpression, TsNonNullAssertionExpression, TsSatisfiesExpression,
     TsTypeAssertionExpression,
 };
+use biome_rowan::TriviaPieceKind;
 
 use crate::{
     SaplingTransformer, transfrom_jsx_tag_expression::TransformAnyJsxTagExpressionOptions,
@@ -259,10 +263,29 @@ impl SaplingTransformer {
         todo!()
     }
     pub fn transform_js_object_expression(
-        &self,
-        _node: &JsObjectExpression,
+        &mut self,
+        node: &JsObjectExpression,
     ) -> Option<AnyJsExpression> {
-        todo!()
+        let members = node.members();
+        let mut new_members = vec![];
+        let mut separators = vec![];
+        members.into_iter().for_each(|member| {
+            let Ok(member) = member else {
+                return;
+            };
+            let new_member = self.transform_any_js_object_member(&member);
+            let Some(new_member) = new_member else {
+                return;
+            };
+            new_members.push(new_member);
+            separators
+                .push(token(T!(,)).with_trailing_trivia([(TriviaPieceKind::Whitespace, " ")]));
+        });
+        Some(AnyJsExpression::JsObjectExpression(js_object_expression(
+            token(T!['{']),
+            js_object_member_list(new_members, separators),
+            token(T!['}']),
+        )))
     }
 
     pub fn transform_js_post_update_expression(
