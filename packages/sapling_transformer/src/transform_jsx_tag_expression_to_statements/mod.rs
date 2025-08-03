@@ -28,7 +28,11 @@ pub struct TransformJsxFragmentToStatementsOptions {
 }
 
 pub struct TransformJsxTextToStatementsOptions {
-    pub parent_id: String,
+    pub parent_id: Option<String>,
+}
+
+pub struct TransformJsxExpressionChildToStatementsOptions {
+    pub parent_id: Option<String>,
 }
 
 // todo none used
@@ -144,7 +148,12 @@ impl SaplingTransformer {
                 Some((statements, Some(id)))
             }
             AnyJsxChild::JsxExpressionChild(node) => {
-                let statements = self.transform_jsx_expression_child_to_statements(node)?;
+                let statements = self.transform_jsx_expression_child_to_statements(
+                    node,
+                    TransformJsxExpressionChildToStatementsOptions {
+                        parent_id: Some(transform_options.parent_id?.clone()),
+                    },
+                )?;
                 Some((statements, None))
             }
             AnyJsxChild::JsxFragment(node) => {
@@ -183,9 +192,29 @@ impl SaplingTransformer {
     }
     pub fn transform_jsx_expression_child_to_statements(
         &self,
-        _node: &JsxExpressionChild,
+        node: &JsxExpressionChild,
+        transform_options: TransformJsxExpressionChildToStatementsOptions,
     ) -> Option<Vec<AnyJsStatement>> {
-        None
+        let expression = node.expression()?;
+        let callee = js_identifier_expression(js_reference_identifier(ident("_$insert")));
+
+        let arg1 = AnyJsCallArgument::AnyJsExpression(AnyJsExpression::JsIdentifierExpression(
+            js_identifier_expression(js_reference_identifier(ident(
+                transform_options.parent_id?.as_str(),
+            ))),
+        ));
+
+        let call_expr = js_call_expression(
+            callee.into(),
+            make_js_call_arguments(
+                vec![arg1, AnyJsCallArgument::AnyJsExpression(expression)],
+                vec![token(T!(,))],
+            ),
+        )
+        .build();
+        Some(vec![AnyJsStatement::JsExpressionStatement(
+            js_expression_statement(call_expr.into()).build(),
+        )])
     }
 
     pub fn transform_jsx_spread_child_to_statements(

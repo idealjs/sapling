@@ -26,6 +26,7 @@ function Expr() {
   const value = some();
   return (() => {
     let _el$ = _$createElement("div");
+    _$insert(_el$, value);
     return _el$;
   })();
 }
