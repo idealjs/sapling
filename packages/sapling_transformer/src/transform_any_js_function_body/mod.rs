@@ -1,5 +1,4 @@
-use biome_js_factory::make::{js_directive_list, js_function_body, js_statement_list, token};
-use biome_js_syntax::{AnyJsFunctionBody, AnyJsStatement, JsFunctionBody, T};
+use biome_js_syntax::AnyJsFunctionBody;
 
 use crate::SaplingTransformer;
 

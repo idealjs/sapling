@@ -185,7 +185,7 @@ impl SaplingTransformer {
         &self,
         _node: &JsxExpressionChild,
     ) -> Option<Vec<AnyJsStatement>> {
-        todo!()
+        None
     }
 
     pub fn transform_jsx_spread_child_to_statements(

@@ -1,6 +1,6 @@
 use biome_js_factory::make::{
-    js_function_declaration, js_return_statement, js_variable_declaration,
-    js_variable_declarator_list, js_variable_statement, token,
+    js_function_declaration, js_variable_declaration, js_variable_declarator_list,
+    js_variable_statement, token,
 };
 use biome_js_syntax::{
     AnyJsStatement, JsBlockStatement, JsBogusStatement, JsBreakStatement, JsClassDeclaration,
@@ -86,57 +86,6 @@ impl SaplingTransformer {
             }
         }
     }
-    pub fn transform_js_block_statement(&self, node: &JsBlockStatement) -> Option<AnyJsStatement> {
-        todo!()
-    }
-    pub fn transform_js_bogus_statement(&self, node: &JsBogusStatement) -> Option<AnyJsStatement> {
-        todo!()
-    }
-    pub fn transform_js_break_statement(&self, node: &JsBreakStatement) -> Option<AnyJsStatement> {
-        todo!()
-    }
-    pub fn transform_js_class_declaration(
-        &self,
-        node: &JsClassDeclaration,
-    ) -> Option<AnyJsStatement> {
-        todo!()
-    }
-    pub fn transform_js_continue_statement(
-        &self,
-        node: &JsContinueStatement,
-    ) -> Option<AnyJsStatement> {
-        todo!()
-    }
-    pub fn transform_js_debugger_statement(
-        &self,
-        node: &JsDebuggerStatement,
-    ) -> Option<AnyJsStatement> {
-        todo!()
-    }
-    pub fn transform_js_do_while_statement(
-        &self,
-        node: &JsDoWhileStatement,
-    ) -> Option<AnyJsStatement> {
-        todo!()
-    }
-    pub fn transform_js_empty_statement(&self, node: &JsEmptyStatement) -> Option<AnyJsStatement> {
-        todo!()
-    }
-    pub fn transform_js_expression_statement(
-        &self,
-        node: &JsExpressionStatement,
-    ) -> Option<AnyJsStatement> {
-        todo!()
-    }
-    pub fn transform_js_for_in_statement(&self, node: &JsForInStatement) -> Option<AnyJsStatement> {
-        todo!()
-    }
-    pub fn transform_js_for_of_statement(&self, node: &JsForOfStatement) -> Option<AnyJsStatement> {
-        todo!()
-    }
-    pub fn transform_js_for_statement(&self, node: &JsForStatement) -> Option<AnyJsStatement> {
-        todo!()
-    }
     pub fn transform_js_function_declaration(
         &mut self,
         node: &JsFunctionDeclaration,
@@ -153,21 +102,6 @@ impl SaplingTransformer {
 
         Some(AnyJsStatement::JsFunctionDeclaration(new_func))
     }
-    pub fn transform_js_if_statement(&self, node: &JsIfStatement) -> Option<AnyJsStatement> {
-        todo!()
-    }
-    pub fn transform_js_labeled_statement(
-        &self,
-        node: &JsLabeledStatement,
-    ) -> Option<AnyJsStatement> {
-        todo!()
-    }
-    pub fn transform_js_metavariable_to_js_statement(
-        &self,
-        node: &JsMetavariable,
-    ) -> Option<AnyJsStatement> {
-        todo!()
-    }
     pub fn transform_js_return_statement(
         &mut self,
         node: &JsReturnStatement,
@@ -177,24 +111,6 @@ impl SaplingTransformer {
         Some(AnyJsStatement::JsReturnStatement(make_js_return_statement(
             new_expression,
         )))
-    }
-    pub fn transform_js_switch_statement(
-        &self,
-        node: &JsSwitchStatement,
-    ) -> Option<AnyJsStatement> {
-        todo!()
-    }
-    pub fn transform_js_throw_statement(&self, node: &JsThrowStatement) -> Option<AnyJsStatement> {
-        todo!()
-    }
-    pub fn transform_js_try_finally_statement(
-        &self,
-        node: &JsTryFinallyStatement,
-    ) -> Option<AnyJsStatement> {
-        todo!()
-    }
-    pub fn transform_js_try_statement(&self, node: &JsTryStatement) -> Option<AnyJsStatement> {
-        todo!()
     }
     pub fn transform_js_variable_statement(
         &mut self,
@@ -224,63 +140,154 @@ impl SaplingTransformer {
             .build(),
         )
     }
-    pub fn transform_js_while_statement(&self, node: &JsWhileStatement) -> Option<AnyJsStatement> {
+    // === 未实现函数，已统一移动到 impl 末尾，参数名加下划线 ===
+    pub fn transform_js_block_statement(&self, _node: &JsBlockStatement) -> Option<AnyJsStatement> {
         todo!()
     }
-    pub fn transform_js_with_statement(&self, node: &JsWithStatement) -> Option<AnyJsStatement> {
+    pub fn transform_js_bogus_statement(&self, _node: &JsBogusStatement) -> Option<AnyJsStatement> {
+        todo!()
+    }
+    pub fn transform_js_break_statement(&self, _node: &JsBreakStatement) -> Option<AnyJsStatement> {
+        todo!()
+    }
+    pub fn transform_js_class_declaration(
+        &self,
+        _node: &JsClassDeclaration,
+    ) -> Option<AnyJsStatement> {
+        todo!()
+    }
+    pub fn transform_js_continue_statement(
+        &self,
+        _node: &JsContinueStatement,
+    ) -> Option<AnyJsStatement> {
+        todo!()
+    }
+    pub fn transform_js_debugger_statement(
+        &self,
+        _node: &JsDebuggerStatement,
+    ) -> Option<AnyJsStatement> {
+        todo!()
+    }
+    pub fn transform_js_do_while_statement(
+        &self,
+        _node: &JsDoWhileStatement,
+    ) -> Option<AnyJsStatement> {
+        todo!()
+    }
+    pub fn transform_js_empty_statement(&self, _node: &JsEmptyStatement) -> Option<AnyJsStatement> {
+        todo!()
+    }
+    pub fn transform_js_expression_statement(
+        &self,
+        _node: &JsExpressionStatement,
+    ) -> Option<AnyJsStatement> {
+        todo!()
+    }
+    pub fn transform_js_for_in_statement(
+        &self,
+        _node: &JsForInStatement,
+    ) -> Option<AnyJsStatement> {
+        todo!()
+    }
+    pub fn transform_js_for_of_statement(
+        &self,
+        _node: &JsForOfStatement,
+    ) -> Option<AnyJsStatement> {
+        todo!()
+    }
+    pub fn transform_js_for_statement(&self, _node: &JsForStatement) -> Option<AnyJsStatement> {
+        todo!()
+    }
+    pub fn transform_js_if_statement(&self, _node: &JsIfStatement) -> Option<AnyJsStatement> {
+        todo!()
+    }
+    pub fn transform_js_labeled_statement(
+        &self,
+        _node: &JsLabeledStatement,
+    ) -> Option<AnyJsStatement> {
+        todo!()
+    }
+    pub fn transform_js_metavariable_to_js_statement(
+        &self,
+        _node: &JsMetavariable,
+    ) -> Option<AnyJsStatement> {
+        todo!()
+    }
+    pub fn transform_js_switch_statement(
+        &self,
+        _node: &JsSwitchStatement,
+    ) -> Option<AnyJsStatement> {
+        todo!()
+    }
+    pub fn transform_js_throw_statement(&self, _node: &JsThrowStatement) -> Option<AnyJsStatement> {
+        todo!()
+    }
+    pub fn transform_js_try_finally_statement(
+        &self,
+        _node: &JsTryFinallyStatement,
+    ) -> Option<AnyJsStatement> {
+        todo!()
+    }
+    pub fn transform_js_try_statement(&self, _node: &JsTryStatement) -> Option<AnyJsStatement> {
+        todo!()
+    }
+    pub fn transform_js_while_statement(&self, _node: &JsWhileStatement) -> Option<AnyJsStatement> {
+        todo!()
+    }
+    pub fn transform_js_with_statement(&self, _node: &JsWithStatement) -> Option<AnyJsStatement> {
         todo!()
     }
     pub fn transform_ts_declare_function_declaration(
         &self,
-        node: &TsDeclareFunctionDeclaration,
+        _node: &TsDeclareFunctionDeclaration,
     ) -> Option<AnyJsStatement> {
         todo!()
     }
     pub fn transform_ts_declare_statement(
         &self,
-        node: &TsDeclareStatement,
+        _node: &TsDeclareStatement,
     ) -> Option<AnyJsStatement> {
         todo!()
     }
     pub fn transform_ts_enum_declaration(
         &self,
-        node: &TsEnumDeclaration,
+        _node: &TsEnumDeclaration,
     ) -> Option<AnyJsStatement> {
         todo!()
     }
     pub fn transform_ts_external_module_declaration(
         &self,
-        node: &TsExternalModuleDeclaration,
+        _node: &TsExternalModuleDeclaration,
     ) -> Option<AnyJsStatement> {
         todo!()
     }
     pub fn transform_ts_global_declaration(
         &self,
-        node: &TsGlobalDeclaration,
+        _node: &TsGlobalDeclaration,
     ) -> Option<AnyJsStatement> {
         todo!()
     }
     pub fn transform_ts_import_equals_declaration(
         &self,
-        node: &TsImportEqualsDeclaration,
+        _node: &TsImportEqualsDeclaration,
     ) -> Option<AnyJsStatement> {
         todo!()
     }
     pub fn transform_ts_interface_declaration(
         &self,
-        node: &TsInterfaceDeclaration,
+        _node: &TsInterfaceDeclaration,
     ) -> Option<AnyJsStatement> {
         todo!()
     }
     pub fn transform_ts_module_declaration(
         &self,
-        node: &TsModuleDeclaration,
+        _node: &TsModuleDeclaration,
     ) -> Option<AnyJsStatement> {
         todo!()
     }
     pub fn transform_ts_type_alias_declaration(
         &self,
-        node: &TsTypeAliasDeclaration,
+        _node: &TsTypeAliasDeclaration,
     ) -> Option<AnyJsStatement> {
         todo!()
     }
