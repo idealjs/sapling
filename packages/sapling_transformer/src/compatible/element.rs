@@ -1,19 +1,17 @@
 use biome_js_factory::make::{
-    ident, js_call_expression, js_expression_statement, js_identifier_binding,
-    js_identifier_expression, js_initializer_clause, js_reference_identifier, js_string_literal,
+    ident, js_call_expression, js_identifier_binding, js_identifier_expression,
+    js_initializer_clause, js_reference_identifier, js_string_literal,
     js_string_literal_expression, js_variable_declaration, js_variable_declarator,
     js_variable_declarator_list, js_variable_statement, token,
 };
 use biome_js_syntax::{
-    AnyJsBinding, AnyJsBindingPattern, AnyJsCallArgument, AnyJsExpression, AnyJsLiteralExpression,
-    AnyJsStatement, T,
+    AnyJsBinding, AnyJsBindingPattern, AnyJsCallArgument, AnyJsExpression, AnyJsStatement, T,
 };
 use biome_rowan::TriviaPieceKind;
 use sapling_transformation::helpers::jsx_template::make_js_call_arguments;
-use std::str::FromStr;
 
 /// 生成 let id = _$createElement(tag_name); 的语句
-pub fn generate_create_js_tag_statement(id: &str, tag_name: &str) -> AnyJsStatement {
+pub fn generate_create_element(id: &str, tag_name: &str) -> AnyJsStatement {
     // 构造 let _el$ = _$createElement("div");
     let callee = js_identifier_expression(js_reference_identifier(ident("_$createElement")));
     let arg = AnyJsCallArgument::AnyJsExpression(AnyJsExpression::AnyJsLiteralExpression(
@@ -36,8 +34,7 @@ pub fn generate_create_js_tag_statement(id: &str, tag_name: &str) -> AnyJsStatem
 
     // 让 let 和变量名之间有空格
     let let_token = token(T![let]);
-    let let_token_with_space =
-        let_token.with_trailing_trivia([(TriviaPieceKind::Whitespace, " ")]);
+    let let_token_with_space = let_token.with_trailing_trivia([(TriviaPieceKind::Whitespace, " ")]);
 
     let var_decl = js_variable_declaration(
         let_token_with_space,
@@ -52,4 +49,11 @@ pub fn generate_create_js_tag_statement(id: &str, tag_name: &str) -> AnyJsStatem
         .build();
 
     AnyJsStatement::JsVariableStatement(var_stmt)
+}
+
+#[test]
+fn test_generate_create_element() {
+    let stmt1 = generate_create_element("_el1$", "div");
+    let stmt2 = generate_create_element("_el2$", "div");
+    insta::assert_snapshot!(format!("{}\n{}", stmt1.to_string(), stmt2.to_string()));
 }

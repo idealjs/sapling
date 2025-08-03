@@ -18,7 +18,7 @@ pub fn generate_create_text_node_expr(text: &str) -> JsCallExpression {
 }
 
 #[test]
-fn test_generate_text_node_expr() {
+fn test_generate_create_text_node_expr() {
     let expr = generate_create_text_node_expr("hello");
     // 只做快照测试，确保语法结构正确
     insta::assert_snapshot!(expr.to_string());
