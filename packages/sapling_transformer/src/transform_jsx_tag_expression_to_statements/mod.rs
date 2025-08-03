@@ -4,6 +4,8 @@ use crate::{
     SaplingTransformer, TransformAnyJsxTextOptions, generate_insert_node_expr,
     jsx_element_name_to_string, transfrom_jsx_tag_expression::TransformAnyJsxFragmentOptions,
 };
+use crate::compatible::create_js_tag_statement::generate_create_js_tag_statement;
+use crate::compatible::set_prop_statement::generate_set_prop_statement;
 use biome_js_factory::make::{
     ident, js_call_expression, js_expression_statement, js_identifier_expression,
     js_reference_identifier, token,
@@ -45,12 +47,12 @@ impl SaplingTransformer {
         let tag_name = jsx_element_name_to_string(&node.opening_element().ok()?.name().ok()?)?;
         let scope = self.semantic_model.scope(node.syntax());
         let id = self.generate_unique_identifier(&scope, "_el$");
-        let js_tag_statement = self.create_js_tag_statement(id.as_str(), tag_name.as_str());
+        let js_tag_statement = generate_create_js_tag_statement(id.as_str(), tag_name.as_str());
         statments.push(js_tag_statement);
 
         let attributes = node.opening_element().ok()?.attributes();
         attributes.into_iter().for_each(|attribute| {
-            let set_prop_statement = self.create_set_prop_statement(id.as_str(), attribute);
+            let set_prop_statement = generate_set_prop_statement(id.as_str(), attribute);
             match set_prop_statement {
                 Some(set_prop_statement) => {
                     statments.push(set_prop_statement);
@@ -232,12 +234,12 @@ impl SaplingTransformer {
         let tag_name = jsx_element_name_to_string(&node.name().ok()?)?;
         let scope = self.semantic_model.scope(node.syntax());
         let id = self.generate_unique_identifier(&scope, "_el$");
-        let js_tag_statement = self.create_js_tag_statement(id.as_str(), tag_name.as_str());
+        let js_tag_statement = generate_create_js_tag_statement(id.as_str(), tag_name.as_str());
         statments.push(js_tag_statement);
 
         let attributes = node.attributes();
         attributes.into_iter().for_each(|attribute| {
-            let set_prop_statement = self.create_set_prop_statement(id.as_str(), attribute);
+            let set_prop_statement = generate_set_prop_statement(id.as_str(), attribute);
             match set_prop_statement {
                 Some(set_prop_statement) => {
                     statments.push(set_prop_statement);

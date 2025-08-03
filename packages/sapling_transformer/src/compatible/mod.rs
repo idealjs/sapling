@@ -5,6 +5,8 @@ pub mod is_component;
 pub mod is_valid_html_nesting;
 pub mod jsx_element_name_to_string;
 pub mod text_node;
+pub mod create_js_tag_statement;
+pub mod set_prop_statement;
 
 pub use convert_component_identifier::*;
 pub use get_tag_name::*;
@@ -13,3 +15,5 @@ pub use is_component::*;
 pub use is_valid_html_nesting::*;
 pub use jsx_element_name_to_string::*;
 pub use text_node::*;
+pub use create_js_tag_statement::*;
+pub use set_prop_statement::*;

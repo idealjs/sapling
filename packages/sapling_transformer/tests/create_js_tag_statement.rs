@@ -1,36 +1,8 @@
-// biome相关依赖
-use biome_js_parser::{JsParserOptions, parse};
-use biome_js_semantic::{SemanticModelOptions, semantic_model};
-use biome_js_syntax::JsFileSource;
-use biome_rowan::AstNode;
-use biome_rowan::BatchMutationExt;
-use sapling_transformer::{Config, SaplingTransformer, TransformResult};
-use std::collections::HashMap;
+use sapling_transformer::compatible::create_js_tag_statement::generate_create_js_tag_statement;
 
 #[test]
-fn test_create_js_statement() {
-    let input_code = "let a;";
-    let parsed_root = parse(input_code, JsFileSource::tsx(), JsParserOptions::default());
-    let js_tree = parsed_root.tree();
-    let semantic_model = semantic_model(&js_tree, SemanticModelOptions::default());
-
-    let js_module = js_tree.as_js_module().expect("tree not exist").clone();
-
-    let mut transformer = SaplingTransformer {
-        mutation: js_module.clone().begin(),
-        js_module,
-        pre_process_errors: Vec::new(),
-        semantic_model,
-        scope_generated_identifiers: HashMap::new(),
-        config: Config::default(),
-        transform_result: TransformResult::default(),
-    };
-
-    let node_path = transformer.js_module.syntax();
-    let scope = transformer.semantic_model.scope(node_path);
-    let id1 = transformer.generate_unique_identifier(&scope, "_el$");
-    let id2 = transformer.generate_unique_identifier(&scope, "_el$");
-    let stmt1 = transformer.create_js_tag_statement(id1.as_str(), "div");
-    let stmt2 = transformer.create_js_tag_statement(id2.as_str(), "div");
-    insta::assert_snapshot!(format!("{}\n{}", stmt1.to_string(), stmt2.to_string()));
+fn test_generate_create_js_tag_statement() {
+   let stmt1 = generate_create_js_tag_statement("_el1$", "div");
+   let stmt2 = generate_create_js_tag_statement("_el2$", "div");
+   insta::assert_snapshot!(format!("{}\n{}", stmt1.to_string(), stmt2.to_string()));
 }

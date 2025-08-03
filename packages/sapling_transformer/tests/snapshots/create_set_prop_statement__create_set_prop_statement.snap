@@ -2,6 +2,6 @@
 source: packages/sapling_transformer/tests/create_set_prop_statement.rs
 expression: "format!(\"{}\\n{}\\n{}\", stmt1.to_string(), stmt2.to_string(), stmt3.to_string())"
 ---
-_$setProp(_el$, "id", "foo" )
+_$setProp(_el$, "id", "foo")
 _$setProp(_el$, "title", "bar")
 _$setProp(_el$, "foo:some", 0)
