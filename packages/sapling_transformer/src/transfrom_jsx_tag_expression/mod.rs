@@ -1,10 +1,6 @@
-use crate::{
-    SaplingTransformer, TransformAnyJsxChildOptions, TransformJsxElementToStatementsOptions,
-    jsx_element_name_to_string,
-};
+use crate::{SaplingTransformer, TransformAnyJsxChildOptions};
 use biome_js_factory::make::{
-    ident, js_directive_list, js_identifier_expression, js_reference_identifier,
-    js_return_statement, js_statement_list, token,
+    ident, js_identifier_expression, js_reference_identifier, js_return_statement, token,
 };
 use biome_js_syntax::{
     AnyJsArrayElement, AnyJsExpression, AnyJsStatement, AnyJsxTag, JsxElement, JsxFragment,
@@ -26,7 +22,7 @@ impl SaplingTransformer {
         &mut self,
         node: &JsxTagExpression,
         transform_options: TransformAnyJsxTagExpressionOptions,
-    ) -> Option<(Option<AnyJsExpression>, Option<String>)> {
+    ) -> Option<AnyJsExpression> {
         let tag = node.tag().ok()?;
         match tag {
             AnyJsxTag::JsxElement(node) => self.transform_jsx_element_to_iife(&node),
@@ -41,10 +37,7 @@ impl SaplingTransformer {
             }
         }
     }
-    pub fn transform_jsx_element_to_iife(
-        &mut self,
-        node: &JsxElement,
-    ) -> Option<(Option<AnyJsExpression>, Option<String>)> {
+    pub fn transform_jsx_element_to_iife(&mut self, node: &JsxElement) -> Option<AnyJsExpression> {
         let (mut statements, id) = self.transform_jsx_element_to_statements(node)?;
 
         let return_stmt = AnyJsStatement::JsReturnStatement(
@@ -57,16 +50,16 @@ impl SaplingTransformer {
 
         let iife = make_iife(vec![], statements);
 
-        Some((Some(AnyJsExpression::JsCallExpression(iife)), None))
+        Some(AnyJsExpression::JsCallExpression(iife))
     }
     pub fn transform_jsx_fragment(
         &mut self,
         node: &JsxFragment,
         transform_options: TransformAnyJsxFragmentOptions,
-    ) -> Option<(Option<AnyJsExpression>, Option<String>)> {
+    ) -> Option<AnyJsExpression> {
         let mut elements = vec![];
         node.children().into_iter().for_each(|node| {
-            let Some((Some(expression), _)) = self.transform_any_jsx_child(
+            let Some(expression) = self.transform_any_jsx_child(
                 &node,
                 TransformAnyJsxChildOptions {
                     parent_id: transform_options.parent_id.clone(),
@@ -81,21 +74,18 @@ impl SaplingTransformer {
                 if let AnyJsArrayElement::AnyJsExpression(expr) =
                     elements.into_iter().next().unwrap()
                 {
-                    Some((Some(expr), None))
+                    Some(expr)
                 } else {
                     None
                 }
             }
-            _ => Some((
-                Some(AnyJsExpression::JsArrayExpression(make_array(elements))),
-                None,
-            )),
+            _ => Some(AnyJsExpression::JsArrayExpression(make_array(elements))),
         }
     }
     pub fn transform_jsx_self_closing_element(
         &self,
-        node: &JsxSelfClosingElement,
-    ) -> Option<(Option<AnyJsExpression>, Option<String>)> {
+        _node: &JsxSelfClosingElement,
+    ) -> Option<AnyJsExpression> {
         todo!()
     }
 }

@@ -3,8 +3,8 @@ use biome_js_factory::make::{
     js_reference_identifier, js_string_literal, js_string_literal_expression, token,
 };
 use biome_js_syntax::{
-    AnyJsCallArgument, AnyJsExpression, AnyJsxChild, JsMetavariable, JsxElement,
-    JsxExpressionChild, JsxFragment, JsxSelfClosingElement, JsxSpreadChild, JsxText, T,
+    AnyJsCallArgument, AnyJsExpression, AnyJsxChild, JsMetavariable, JsxExpressionChild,
+    JsxSpreadChild, JsxText, T,
 };
 
 #[derive(Debug)]
@@ -24,7 +24,7 @@ impl SaplingTransformer {
         &mut self,
         node: &AnyJsxChild,
         transform_options: TransformAnyJsxChildOptions,
-    ) -> Option<(Option<AnyJsExpression>, Option<String>)> {
+    ) -> Option<AnyJsExpression> {
         match node {
             AnyJsxChild::JsMetavariable(node) => self.transform_js_metavariable(node),
             AnyJsxChild::JsxElement(node) => self.transform_jsx_element_to_iife(node),
@@ -47,30 +47,12 @@ impl SaplingTransformer {
             ),
         }
     }
-    pub fn transform_js_metavariable(
-        &self,
-        node: &JsMetavariable,
-    ) -> Option<(Option<AnyJsExpression>, Option<String>)> {
-        todo!()
-    }
-    pub fn transform_jsx_expression_child(
-        &self,
-        node: &JsxExpressionChild,
-    ) -> Option<(Option<AnyJsExpression>, Option<String>)> {
-        todo!()
-    }
-    pub fn transform_jsx_spread_child(
-        &self,
-        node: &JsxSpreadChild,
-    ) -> Option<(Option<AnyJsExpression>, Option<String>)> {
-        todo!()
-    }
 
     pub fn transform_jsx_text(
         &self,
         node: &JsxText,
         transform_options: TransformAnyJsxTextOptions,
-    ) -> Option<(Option<AnyJsExpression>, Option<String>)> {
+    ) -> Option<AnyJsExpression> {
         // _$insertNode(_el$, _$createTextNode(`template`));
         let binding = node.to_string();
         let node_value = binding.as_str();
@@ -120,11 +102,23 @@ impl SaplingTransformer {
             ),
             token(T![')']),
         );
-        Some((
-            Some(AnyJsExpression::JsCallExpression(
-                js_call_expression(callee, arguments).build(),
-            )),
-            None,
+        Some(AnyJsExpression::JsCallExpression(
+            js_call_expression(callee, arguments).build(),
         ))
+    }
+
+    pub fn transform_js_metavariable(&self, _node: &JsMetavariable) -> Option<AnyJsExpression> {
+        todo!()
+    }
+
+    pub fn transform_jsx_expression_child(
+        &self,
+        _node: &JsxExpressionChild,
+    ) -> Option<AnyJsExpression> {
+        todo!()
+    }
+
+    pub fn transform_jsx_spread_child(&self, _node: &JsxSpreadChild) -> Option<AnyJsExpression> {
+        todo!()
     }
 }

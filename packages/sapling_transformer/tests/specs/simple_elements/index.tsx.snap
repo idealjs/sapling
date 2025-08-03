@@ -1,5 +1,5 @@
 ---
-source: packages/sapling_transformer/tests/tests.rs
+source: packages/sapling_transformer/tests/test_utils.rs
 expression: index.tsx
 ---
 # Input
@@ -26,7 +26,7 @@ const template2 = (() => {
   let _el$1 = _$createElement("div");
   let _el$2 = _$createElement("h1");
   _$insertNode(_el$2, _$createTextNode("template2"));
-  _$insertNode("_el$1", "_el$2");
+  _$insertNode(_el$1, _el$2);
   return _el$1;
 })();
 
