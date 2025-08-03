@@ -38,7 +38,6 @@ impl SaplingTransformer {
     pub fn transform_jsx_element_to_statements(
         &mut self,
         node: &JsxElement,
-        transform_options: TransformJsxElementToStatementsOptions,
     ) -> Option<(Vec<AnyJsStatement>, String)> {
         let mut statments: Vec<AnyJsStatement> = vec![];
         let tag_name = jsx_element_name_to_string(&node.opening_element().ok()?.name().ok()?)?;
@@ -97,19 +96,6 @@ impl SaplingTransformer {
             }
         });
 
-        // todo should refactor. need_return put outside
-        transform_options.need_return.then(|| {
-            let return_stmt = AnyJsStatement::JsReturnStatement(
-                js_return_statement(token(T![return]))
-                    .with_argument(
-                        js_identifier_expression(js_reference_identifier(ident(&id))).into(),
-                    )
-                    .with_semicolon_token(token(T![;]))
-                    .build(),
-            );
-            statments.push(return_stmt);
-        });
-
         Some((statments, id))
     }
     pub fn transform_jsx_fragment_to_statements(
@@ -159,10 +145,7 @@ impl SaplingTransformer {
                 Some((statements, None))
             }
             AnyJsxChild::JsxElement(node) => {
-                let (statements, id) = self.transform_jsx_element_to_statements(
-                    node,
-                    TransformJsxElementToStatementsOptions { need_return: false },
-                )?;
+                let (statements, id) = self.transform_jsx_element_to_statements(node)?;
                 Some((statements, Some(id)))
             }
             AnyJsxChild::JsxExpressionChild(node) => {

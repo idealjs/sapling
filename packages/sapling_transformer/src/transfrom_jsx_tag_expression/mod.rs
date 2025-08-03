@@ -2,10 +2,13 @@ use crate::{
     SaplingTransformer, TransformAnyJsxChildOptions, TransformJsxElementToStatementsOptions,
     jsx_element_name_to_string,
 };
-use biome_js_factory::make::{js_directive_list, js_statement_list};
+use biome_js_factory::make::{
+    ident, js_directive_list, js_identifier_expression, js_reference_identifier,
+    js_return_statement, js_statement_list, token,
+};
 use biome_js_syntax::{
-    AnyJsArrayElement, AnyJsExpression, AnyJsxTag, JsxElement, JsxFragment, JsxSelfClosingElement,
-    JsxTagExpression,
+    AnyJsArrayElement, AnyJsExpression, AnyJsStatement, AnyJsxTag, JsxElement, JsxFragment,
+    JsxSelfClosingElement, JsxTagExpression, T,
 };
 use sapling_transformation::helpers::jsx_template::{make_array, make_iife};
 
@@ -42,10 +45,16 @@ impl SaplingTransformer {
         &mut self,
         node: &JsxElement,
     ) -> Option<(Option<AnyJsExpression>, Option<String>)> {
-        let (statements, _) = self.transform_jsx_element_to_statements(
-            node,
-            TransformJsxElementToStatementsOptions { need_return: true },
-        )?;
+        let (mut statements, id) = self.transform_jsx_element_to_statements(node)?;
+
+        let return_stmt = AnyJsStatement::JsReturnStatement(
+            js_return_statement(token(T![return]))
+                .with_argument(js_identifier_expression(js_reference_identifier(ident(&id))).into())
+                .with_semicolon_token(token(T![;]))
+                .build(),
+        );
+        statements.push(return_stmt);
+
         let iife = make_iife(vec![], statements);
 
         Some((Some(AnyJsExpression::JsCallExpression(iife)), None))
