@@ -18,3 +18,14 @@ const Expr3 = () => {
   };
   return <div>{some()}</div>;
 };
+
+const Expr4 = () => {
+  const some = () => {
+    return 3;
+  };
+  return (
+    <div>
+      <div>{some()}</div>
+    </div>
+  );
+};

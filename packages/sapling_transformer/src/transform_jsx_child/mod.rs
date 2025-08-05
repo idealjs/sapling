@@ -1,11 +1,15 @@
 use biome_js_factory::make::{
-    ident, js_call_expression, js_identifier_expression, js_reference_identifier, token,
+    ident, js_arrow_function_expression, js_call_expression, js_directive_list,
+    js_identifier_expression, js_parameter_list, js_reference_identifier, js_statement_list, token,
 };
 use biome_js_syntax::{
     AnyJsCallArgument, AnyJsExpression, AnyJsxChild, JsMetavariable, JsxExpressionChild,
     JsxSpreadChild, JsxText, T,
 };
-use sapling_transformation::helpers::jsx_template::make_js_call_arguments;
+use sapling_transformation::helpers::jsx_template::{
+    make_js_arrow_function_expression, make_js_call_arguments, make_js_function_body,
+    make_js_parameters, make_js_return_statement,
+};
 
 #[derive(Debug)]
 pub struct TransformAnyJsxTextOptions {
@@ -99,10 +103,18 @@ impl SaplingTransformer {
             ))),
         ));
 
+        let params = make_js_parameters(js_parameter_list(vec![], vec![]));
+        let body = make_js_function_body(
+            js_directive_list(vec![]),
+            js_statement_list(vec![make_js_return_statement(expression).into()]),
+        );
+        let expr = AnyJsExpression::JsArrowFunctionExpression(make_js_arrow_function_expression(
+            params, body,
+        ));
         let call_expr = js_call_expression(
             callee.into(),
             make_js_call_arguments(
-                vec![arg1, AnyJsCallArgument::AnyJsExpression(expression)],
+                vec![arg1, AnyJsCallArgument::AnyJsExpression(expr)],
                 vec![token(T!(,))],
             ),
         )

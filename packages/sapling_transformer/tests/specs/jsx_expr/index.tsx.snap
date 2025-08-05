@@ -18,6 +18,24 @@ const Expr2 = () => {
   return <div>{some()}</div>;
 };
 
+const Expr3 = () => {
+  const some = () => {
+    return 2;
+  };
+  return <div>{some()}</div>;
+};
+
+const Expr4 = () => {
+  const some = () => {
+    return 3;
+  };
+  return (
+    <div>
+      <div>{some()}</div>
+    </div>
+  );
+};
+
 ```
 
 # Transformations
@@ -39,6 +57,30 @@ const Expr2 = () => {
   return (() => {
     let _el$ = _$createElement("div");
     _$insert(_el$, some());
+    return _el$;
+  })();
+};
+
+const Expr3 = () => {
+  const some = () => {
+    return 2;
+  };
+  return (() => {
+    let _el$ = _$createElement("div");
+    _$insert(_el$, some());
+    return _el$;
+  })();
+};
+
+const Expr4 = () => {
+  const some = () => {
+    return 3;
+  };
+  return (() => {
+    let _el$ = _$createElement("div");
+    let _el$1 = _$createElement("div");
+    _$insert(_el$1, some());
+    _$insertNode(_el$, _el$1);
     return _el$;
   })();
 };
