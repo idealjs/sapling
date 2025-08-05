@@ -29,3 +29,11 @@ const Expr4 = () => {
     </div>
   );
 };
+
+const Expr5 = () => {
+  return (
+    <div>
+      <div>abcd{some()}efg</div>
+    </div>
+  );
+};

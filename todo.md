@@ -5,4 +5,4 @@
 
 # Expr
 
-- 添加 `{getValue()}` 测试
+- 添加 `abc{getValue()}abc{getValue()}` 测试

@@ -37,6 +37,14 @@ const Expr4 = () => {
   );
 };
 
+const Expr5 = () => {
+  return (
+    <div>
+      <div>abcd{some()}efg</div>
+    </div>
+  );
+};
+
 ```
 
 # Transformations
@@ -89,6 +97,20 @@ const Expr4 = () => {
     _$insert(_el$1, () => {
       return some();
     });
+    _$insertNode(_el$, _el$1);
+    return _el$;
+  })();
+};
+
+const Expr5 = () => {
+  return (() => {
+    let _el$ = _$createElement("div");
+    let _el$1 = _$createElement("div");
+    _$insertNode(_el$1, _$createTextNode("abcd"));
+    _$insert(_el$1, () => {
+      return some();
+    });
+    _$insertNode(_el$1, _$createTextNode("efg"));
     _$insertNode(_el$, _el$1);
     return _el$;
   })();
