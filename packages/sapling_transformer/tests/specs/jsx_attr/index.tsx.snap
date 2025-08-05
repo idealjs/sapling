@@ -8,6 +8,12 @@ function Attr() {
   return <button type="button">attr</button>;
 }
 
+let someStyle = { color: "red", fontSize: "16px" };
+
+function Attr2() {
+  return <div style={someStyle}>attr</div>;
+}
+
 ```
 
 # Transformations
@@ -16,6 +22,17 @@ function Attr() {
   return (() => {
     let _el$ = _$createElement("button");
     _$setProp(_el$, "type", "button");
+    _$insertNode(_el$, _$createTextNode("attr"));
+    return _el$;
+  })();
+}
+
+let someStyle = { color: "red", fontSize: "16px" };
+
+function Attr2() {
+  return (() => {
+    let _el$ = _$createElement("div");
+    _$setProp(_el$, "style", someStyle);
     _$insertNode(_el$, _$createTextNode("attr"));
     return _el$;
   })();

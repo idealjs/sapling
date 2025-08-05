@@ -1,11 +1,11 @@
 use std::vec;
 
+use crate::compatible::element::generate_create_element;
+use crate::compatible::set_prop::generate_set_prop_statement;
 use crate::{
     SaplingTransformer, TransformAnyJsxTextOptions, generate_insert_node_expr,
     jsx_element_name_to_string, transfrom_jsx_tag_expression::TransformAnyJsxFragmentOptions,
 };
-use crate::compatible::element::generate_create_element;
-use crate::compatible::set_prop::generate_set_prop_statement;
 use biome_js_factory::make::{
     ident, js_call_expression, js_expression_statement, js_identifier_expression,
     js_reference_identifier, token,
@@ -181,25 +181,15 @@ impl SaplingTransformer {
         node: &JsxExpressionChild,
         transform_options: TransformJsxExpressionChildToStatementsOptions,
     ) -> Option<Vec<AnyJsStatement>> {
-        let expression = node.expression()?;
-        let callee = js_identifier_expression(js_reference_identifier(ident("_$insert")));
+        let expr = self.transform_jsx_expression_child(
+            node,
+            crate::TransformJsxExpressionChildOptions {
+                parent_id: transform_options.parent_id,
+            },
+        );
 
-        let arg1 = AnyJsCallArgument::AnyJsExpression(AnyJsExpression::JsIdentifierExpression(
-            js_identifier_expression(js_reference_identifier(ident(
-                transform_options.parent_id?.as_str(),
-            ))),
-        ));
-
-        let call_expr = js_call_expression(
-            callee.into(),
-            make_js_call_arguments(
-                vec![arg1, AnyJsCallArgument::AnyJsExpression(expression)],
-                vec![token(T!(,))],
-            ),
-        )
-        .build();
         Some(vec![AnyJsStatement::JsExpressionStatement(
-            js_expression_statement(call_expr.into()).build(),
+            js_expression_statement(expr?.into()).build(),
         )])
     }
 

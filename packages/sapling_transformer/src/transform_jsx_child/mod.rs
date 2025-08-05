@@ -1,6 +1,11 @@
-use biome_js_syntax::{
-    AnyJsExpression, AnyJsxChild, JsMetavariable, JsxExpressionChild, JsxSpreadChild, JsxText,
+use biome_js_factory::make::{
+    ident, js_call_expression, js_identifier_expression, js_reference_identifier, token,
 };
+use biome_js_syntax::{
+    AnyJsCallArgument, AnyJsExpression, AnyJsxChild, JsMetavariable, JsxExpressionChild,
+    JsxSpreadChild, JsxText, T,
+};
+use sapling_transformation::helpers::jsx_template::make_js_call_arguments;
 
 #[derive(Debug)]
 pub struct TransformAnyJsxTextOptions {
@@ -8,6 +13,10 @@ pub struct TransformAnyJsxTextOptions {
 }
 
 pub struct TransformAnyJsxChildOptions {
+    pub parent_id: Option<String>,
+}
+
+pub struct TransformJsxExpressionChildOptions {
     pub parent_id: Option<String>,
 }
 
@@ -26,7 +35,12 @@ impl SaplingTransformer {
         match node {
             AnyJsxChild::JsMetavariable(node) => self.transform_js_metavariable(node),
             AnyJsxChild::JsxElement(node) => self.transform_jsx_element_to_iife(node),
-            AnyJsxChild::JsxExpressionChild(node) => self.transform_jsx_expression_child(node),
+            AnyJsxChild::JsxExpressionChild(node) => self.transform_jsx_expression_child(
+                node,
+                TransformJsxExpressionChildOptions {
+                    parent_id: transform_options.parent_id,
+                },
+            ),
             AnyJsxChild::JsxFragment(node) => self.transform_jsx_fragment(
                 node,
                 TransformAnyJsxFragmentOptions {
@@ -73,9 +87,27 @@ impl SaplingTransformer {
 
     pub fn transform_jsx_expression_child(
         &self,
-        _node: &JsxExpressionChild,
+        node: &JsxExpressionChild,
+        transform_options: TransformJsxExpressionChildOptions,
     ) -> Option<AnyJsExpression> {
-        todo!()
+        let expression = node.expression()?;
+        let callee = js_identifier_expression(js_reference_identifier(ident("_$insert")));
+
+        let arg1 = AnyJsCallArgument::AnyJsExpression(AnyJsExpression::JsIdentifierExpression(
+            js_identifier_expression(js_reference_identifier(ident(
+                transform_options.parent_id?.as_str(),
+            ))),
+        ));
+
+        let call_expr = js_call_expression(
+            callee.into(),
+            make_js_call_arguments(
+                vec![arg1, AnyJsCallArgument::AnyJsExpression(expression)],
+                vec![token(T!(,))],
+            ),
+        )
+        .build();
+        Some(AnyJsExpression::JsCallExpression(call_expr))
     }
 
     pub fn transform_jsx_spread_child(&self, _node: &JsxSpreadChild) -> Option<AnyJsExpression> {

@@ -7,3 +7,14 @@ function Expr() {
 
   return <div>{value}</div>;
 }
+
+const Expr2 = () => {
+  return <div>{some()}</div>;
+};
+
+const Expr3 = () => {
+  const some = () => {
+    return 2;
+  };
+  return <div>{some()}</div>;
+};
