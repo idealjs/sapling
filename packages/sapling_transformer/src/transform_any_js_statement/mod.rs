@@ -13,9 +13,8 @@ use biome_js_syntax::{
     TsExternalModuleDeclaration, TsGlobalDeclaration, TsImportEqualsDeclaration,
     TsInterfaceDeclaration, TsModuleDeclaration, TsTypeAliasDeclaration,
 };
-use sapling_transformation::helpers::jsx_template::make_js_return_statement;
 
-use crate::SaplingTransformer;
+use crate::{SaplingTransformer, make_js_return_statement};
 
 impl SaplingTransformer {
     // main entry

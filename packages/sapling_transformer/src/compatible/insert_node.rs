@@ -2,7 +2,8 @@ use biome_js_factory::make::{
     ident, js_call_expression, js_identifier_expression, js_reference_identifier, token,
 };
 use biome_js_syntax::{AnyJsCallArgument, AnyJsExpression, JsCallExpression, T};
-use sapling_transformation::helpers::jsx_template::make_js_call_arguments;
+
+use crate::make_js_call_arguments;
 
 /// 生成 _$insertNode(parent_id, child_id) 的表达式语句
 pub fn generate_insert_node_expr(parent_id: &str, child_id: &str) -> JsCallExpression {

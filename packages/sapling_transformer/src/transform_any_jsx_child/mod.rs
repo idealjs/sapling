@@ -1,14 +1,6 @@
-use biome_js_factory::make::{
-    ident, js_arrow_function_expression, js_call_expression, js_directive_list,
-    js_identifier_expression, js_parameter_list, js_reference_identifier, js_statement_list, token,
-};
+use biome_js_factory::make::{js_directive_list, js_parameter_list, js_statement_list};
 use biome_js_syntax::{
-    AnyJsCallArgument, AnyJsExpression, AnyJsxChild, JsMetavariable, JsxExpressionChild,
-    JsxSpreadChild, JsxText, T,
-};
-use sapling_transformation::helpers::jsx_template::{
-    make_js_arrow_function_expression, make_js_call_arguments, make_js_function_body,
-    make_js_parameters, make_js_return_statement,
+    AnyJsExpression, AnyJsxChild, JsMetavariable, JsxExpressionChild, JsxSpreadChild, JsxText,
 };
 
 #[derive(Debug)]
@@ -25,8 +17,9 @@ pub struct TransformJsxExpressionChildOptions {
 }
 
 use crate::{
-    SaplingTransformer, generate_create_text_node_expr, generate_insert_node_expr,
-    transfrom_jsx_tag_expression::TransformAnyJsxFragmentOptions,
+    SaplingTransformer, generate_create_text_node_expr, generate_insert_node_expr, make_insert,
+    make_js_arrow_function_expression, make_js_function_body, make_js_parameters,
+    make_js_return_statement, transfrom_jsx_tag_expression::TransformAnyJsxFragmentOptions,
 };
 
 impl SaplingTransformer {
@@ -38,7 +31,9 @@ impl SaplingTransformer {
     ) -> Option<AnyJsExpression> {
         match node {
             AnyJsxChild::JsMetavariable(node) => self.transform_js_metavariable(node),
-            AnyJsxChild::JsxElement(node) => self.transform_jsx_element_to_create_jsx_tag_element(node),
+            AnyJsxChild::JsxElement(node) => {
+                self.transform_jsx_element_to_create_jsx_tag_element(node)
+            }
             AnyJsxChild::JsxExpressionChild(node) => self.transform_jsx_expression_child(
                 node,
                 TransformJsxExpressionChildOptions {
@@ -104,10 +99,7 @@ impl SaplingTransformer {
         let expr = AnyJsExpression::JsArrowFunctionExpression(make_js_arrow_function_expression(
             params, body,
         ));
-        let call_expr = sapling_transformation::helpers::jsx_template::make_insert(
-            parent_id.as_str(),
-            expr,
-        );
+        let call_expr = make_insert(parent_id.as_str(), expr);
         Some(AnyJsExpression::JsCallExpression(call_expr))
     }
 

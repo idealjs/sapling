@@ -11,11 +11,12 @@
 // # 用法示例
 // let call_expr = make_insert("_el$", some_expr);
 
-use crate::helpers::jsx_template::make_js_call_arguments;
 use biome_js_factory::make::{
     js_call_expression, js_identifier_expression, js_reference_identifier, token,
 };
 use biome_js_syntax::{AnyJsCallArgument, AnyJsExpression, JsCallExpression, T};
+
+use crate::make_js_call_arguments;
 
 /// 生成 _$insert(parent_id, expr) 的 JsCallExpression
 pub fn make_insert(parent_id: &str, expr: AnyJsExpression) -> JsCallExpression {

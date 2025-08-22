@@ -2,20 +2,17 @@ use std::vec;
 
 use crate::compatible::element::generate_create_element;
 use crate::compatible::set_prop::generate_set_prop_statement;
+use crate::make_insert;
 use crate::{
     SaplingTransformer, TransformAnyJsxTextOptions, generate_insert_node_expr,
     jsx_element_name_to_string, transfrom_jsx_tag_expression::TransformAnyJsxFragmentOptions,
 };
-use biome_js_factory::make::{
-    ident, js_call_expression, js_expression_statement, js_identifier_expression,
-    js_reference_identifier, token,
-};
+use biome_js_factory::make::js_expression_statement;
 use biome_js_syntax::{
-    AnyJsCallArgument, AnyJsExpression, AnyJsStatement, AnyJsxChild, JsMetavariable, JsxElement,
-    JsxExpressionChild, JsxFragment, JsxSelfClosingElement, JsxSpreadChild, JsxText, T,
+    AnyJsStatement, AnyJsxChild, JsMetavariable, JsxElement, JsxExpressionChild, JsxFragment,
+    JsxSelfClosingElement, JsxSpreadChild, JsxText,
 };
 use biome_rowan::AstNode;
-use sapling_transformation::helpers::jsx_template::make_js_call_arguments;
 
 pub struct TransformJsxElementToStatementsOptions {
     pub need_return: bool,
@@ -100,10 +97,7 @@ impl SaplingTransformer {
         )?;
 
         let parent_id = transform_options.parent_id?;
-        let call_expr = sapling_transformation::helpers::jsx_template::make_insert(
-            parent_id.as_str(),
-            expression,
-        );
+        let call_expr = make_insert(parent_id.as_str(), expression);
         Some(vec![AnyJsStatement::JsExpressionStatement(
             js_expression_statement(call_expr.into()).build(),
         )])

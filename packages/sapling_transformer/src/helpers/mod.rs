@@ -1,11 +1,3 @@
-pub mod make_array;
-pub mod make_create_jsx_tag_element;
-pub mod make_insert;
-
-pub use make_array::*;
-pub use make_create_jsx_tag_element::*;
-pub use make_insert::*;
-
 use biome_js_factory::make::{
     js_expression_statement, js_function_body, js_identifier_binding, js_identifier_expression,
     js_initializer_clause, js_parameters, js_parenthesized_expression, js_reference_identifier,
@@ -31,6 +23,14 @@ use biome_js_syntax::{
 };
 
 use biome_rowan::SyntaxToken;
+
+pub mod make_array;
+pub mod make_create_jsx_tag_element;
+pub mod make_insert;
+
+pub use make_array::*;
+pub use make_create_jsx_tag_element::*;
+pub use make_insert::*;
 
 pub fn make_js_call_expression(
     arrow_function_expression: JsArrowFunctionExpression,

@@ -8,7 +8,8 @@ use biome_js_syntax::{
     AnyJsBinding, AnyJsBindingPattern, AnyJsCallArgument, AnyJsExpression, AnyJsStatement, T,
 };
 use biome_rowan::TriviaPieceKind;
-use sapling_transformation::helpers::jsx_template::make_js_call_arguments;
+
+use crate::make_js_call_arguments;
 
 /// 生成 let id = _$createElement(tag_name); 的语句
 pub fn generate_create_element(id: &str, tag_name: &str) -> AnyJsStatement {

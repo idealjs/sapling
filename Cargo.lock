@@ -2411,17 +2411,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sapling_transformation"
-version = "0.1.0"
-dependencies = [
- "biome_analyze",
- "biome_js_factory",
- "biome_js_semantic",
- "biome_js_syntax",
- "biome_rowan",
-]
-
-[[package]]
 name = "sapling_transformer"
 version = "0.1.0"
 dependencies = [
@@ -2440,7 +2429,6 @@ dependencies = [
  "insta",
  "sapling_macros",
  "sapling_shared",
- "sapling_transformation",
  "tests_macros",
 ]
 

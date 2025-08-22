@@ -7,8 +7,9 @@ use biome_js_syntax::{
     AnyJsxAttributeName, AnyJsxAttributeValue, T,
 };
 use biome_rowan::TriviaPieceKind;
-use sapling_transformation::helpers::jsx_template::make_js_call_arguments;
 use std::str::FromStr;
+
+use crate::make_js_call_arguments;
 
 /// 生成 _$setProp(el, name, value) 的表达式语句
 pub fn generate_set_prop_statement(

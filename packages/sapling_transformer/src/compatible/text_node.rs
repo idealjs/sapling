@@ -5,7 +5,8 @@ use biome_js_factory::make::{
 use biome_js_syntax::{
     AnyJsCallArgument, AnyJsExpression, AnyJsLiteralExpression, JsCallExpression,
 };
-use sapling_transformation::helpers::jsx_template::make_js_call_arguments;
+
+use crate::make_js_call_arguments;
 
 pub fn generate_create_text_node_expr(text: &str) -> JsCallExpression {
     let callee = js_identifier_expression(js_reference_identifier(ident("_$createTextNode")));

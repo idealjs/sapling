@@ -13,7 +13,6 @@ biome_rowan.workspace = true
 insta = { workspace = true }
 biome_analyze = { workspace = true }
 biome_js_transform = { workspace = true }
-sapling_transformation = { version = "0.1.0", path = "../sapling_transformation" }
 biome_diagnostics = { workspace = true }
 camino = { workspace = true }
 biome_js_formatter = { workspace = true }
