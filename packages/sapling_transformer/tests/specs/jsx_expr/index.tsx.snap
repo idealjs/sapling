@@ -54,43 +54,43 @@ let some = () => {
 
 function Expr() {
   const value = some();
-  return (() => {
+  return _$createJsxTagElement(() => {
     let _el$ = _$createElement("div");
     _$insert(_el$, () => {
       return value;
     });
     return _el$;
-  })();
+  });
 }
 
 const Expr2 = () => {
-  return (() => {
+  return _$createJsxTagElement(() => {
     let _el$ = _$createElement("div");
     _$insert(_el$, () => {
       return some();
     });
     return _el$;
-  })();
+  });
 };
 
 const Expr3 = () => {
   const some = () => {
     return 2;
   };
-  return (() => {
+  return _$createJsxTagElement(() => {
     let _el$ = _$createElement("div");
     _$insert(_el$, () => {
       return some();
     });
     return _el$;
-  })();
+  });
 };
 
 const Expr4 = () => {
   const some = () => {
     return 3;
   };
-  return (() => {
+  return _$createJsxTagElement(() => {
     let _el$ = _$createElement("div");
     let _el$1 = _$createElement("div");
     _$insert(_el$1, () => {
@@ -98,11 +98,11 @@ const Expr4 = () => {
     });
     _$insertNode(_el$, _el$1);
     return _el$;
-  })();
+  });
 };
 
 const Expr5 = () => {
-  return (() => {
+  return _$createJsxTagElement(() => {
     let _el$ = _$createElement("div");
     let _el$1 = _$createElement("div");
     _$insertNode(_el$1, _$createTextNode("abcd"));
@@ -112,7 +112,7 @@ const Expr5 = () => {
     _$insertNode(_el$1, _$createTextNode("efg"));
     _$insertNode(_el$, _el$1);
     return _el$;
-  })();
+  });
 };
 
 ```
