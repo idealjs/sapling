@@ -91,15 +91,19 @@ impl SaplingTransformer {
     ) -> Option<AnyJsExpression> {
         let expression = node.expression()?;
         let parent_id = transform_options.parent_id?;
-        let params = make_js_parameters(js_parameter_list(vec![], vec![]));
-        let body = make_js_function_body(
-            js_directive_list(vec![]),
-            js_statement_list(vec![make_js_return_statement(expression).into()]),
-        );
-        let expr = AnyJsExpression::JsArrowFunctionExpression(make_js_arrow_function_expression(
-            params, body,
-        ));
-        let call_expr = make_insert(parent_id.as_str(), expr);
+        let call_expr = if let AnyJsExpression::JsCallExpression(_) = &expression {
+            let params = make_js_parameters(js_parameter_list(vec![], vec![]));
+            let body = make_js_function_body(
+                js_directive_list(vec![]),
+                js_statement_list(vec![make_js_return_statement(expression).into()]),
+            );
+            let expr = AnyJsExpression::JsArrowFunctionExpression(make_js_arrow_function_expression(
+                params, body,
+            ));
+            make_insert(parent_id.as_str(), expr)
+        } else {
+            make_insert(parent_id.as_str(), expression)
+        };
         Some(AnyJsExpression::JsCallExpression(call_expr))
     }
 

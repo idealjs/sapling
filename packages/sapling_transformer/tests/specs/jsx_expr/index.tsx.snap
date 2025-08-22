@@ -56,9 +56,7 @@ function Expr() {
   const value = some();
   return _$createJsxTagElement(() => {
     let _el$ = _$createElement("div");
-    _$insert(_el$, () => {
-      return value;
-    });
+    _$insert(_el$, value);
     return _el$;
   });
 }
