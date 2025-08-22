@@ -216,9 +216,9 @@ impl SaplingTransformer {
 
     pub fn transform_js_identifier_expression(
         &self,
-        _node: &JsIdentifierExpression,
+        node: &JsIdentifierExpression,
     ) -> Option<AnyJsExpression> {
-        todo!()
+        Some(AnyJsExpression::JsIdentifierExpression(node.clone()))
     }
     pub fn transform_js_import_call_expression(
         &self,

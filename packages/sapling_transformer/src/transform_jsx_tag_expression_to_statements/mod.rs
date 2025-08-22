@@ -4,11 +4,15 @@ use crate::{
     SaplingTransformer, TransformAnyJsxTextOptions, jsx_element_name_to_string, make_insert_node,
     transfrom_jsx_tag_expression::TransformAnyJsxFragmentOptions,
 };
-use crate::{make_create_element, make_insert, make_set_prop};
+use crate::{
+    make_arrow_function_from_statement, make_create_element, make_effect, make_insert,
+    make_set_prop,
+};
 use biome_js_factory::make::js_expression_statement;
 use biome_js_syntax::{
-    AnyJsStatement, AnyJsxChild, JsMetavariable, JsxElement, JsxExpressionChild, JsxFragment,
-    JsxSelfClosingElement, JsxSpreadChild, JsxText,
+    AnyJsExpression, AnyJsStatement, AnyJsxAttribute, AnyJsxAttributeValue, AnyJsxChild,
+    JsMetavariable, JsxElement, JsxExpressionChild, JsxFragment, JsxSelfClosingElement,
+    JsxSpreadChild, JsxText,
 };
 use biome_rowan::AstNode;
 
@@ -47,7 +51,7 @@ impl SaplingTransformer {
 
         let attributes = node.opening_element().ok()?.attributes();
         attributes.into_iter().for_each(|attribute| {
-            let set_prop_statement = make_set_prop(id.as_str(), attribute);
+            let set_prop_statement = make_set_prop(id.as_str(), &attribute);
             match set_prop_statement {
                 Some(set_prop_statement) => {
                     statments.push(set_prop_statement);
@@ -210,10 +214,36 @@ impl SaplingTransformer {
 
         let attributes = node.attributes();
         attributes.into_iter().for_each(|attribute| {
-            let set_prop_statement = make_set_prop(id.as_str(), attribute);
+            let set_prop_statement = make_set_prop(id.as_str(), &attribute);
+            let is_call_expr = match &attribute {
+                AnyJsxAttribute::JsxAttribute(attr) => {
+                    let expr = attr
+                        .initializer()
+                        .and_then(|init| init.value().ok())
+                        .and_then(|val| match val {
+                            AnyJsxAttributeValue::JsxExpressionAttributeValue(expr_val) => {
+                                expr_val.expression().ok()
+                            }
+                            _ => None,
+                        });
+                    matches!(expr, Some(AnyJsExpression::JsCallExpression(_)))
+                }
+                _ => false,
+            };
             match set_prop_statement {
                 Some(set_prop_statement) => {
-                    statments.push(set_prop_statement);
+                    if is_call_expr {
+                        statments.push(AnyJsStatement::JsExpressionStatement(
+                            js_expression_statement(AnyJsExpression::JsCallExpression(
+                                make_effect(AnyJsExpression::JsArrowFunctionExpression(
+                                    make_arrow_function_from_statement(set_prop_statement),
+                                )),
+                            ))
+                            .build(),
+                        ));
+                    } else {
+                        statments.push(set_prop_statement);
+                    }
                 }
                 None => {
                     return;

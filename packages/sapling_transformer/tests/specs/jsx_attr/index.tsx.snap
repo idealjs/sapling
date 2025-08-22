@@ -14,6 +14,16 @@ function Attr2() {
   return <div style={someStyle}>attr</div>;
 }
 
+let getSomeStyle = () => someStyle;
+
+function Attr3() {
+  return <div style={getSomeStyle()}>attr</div>;
+}
+
+function Attr4() {
+  return <div style={getSomeStyle()} />;
+}
+
 ```
 
 # Transformations
@@ -34,6 +44,27 @@ function Attr2() {
     let _el$ = _$createElement("div");
     _$setProp(_el$, "style", someStyle);
     _$insertNode(_el$, _$createTextNode("attr"));
+    return _el$;
+  });
+}
+
+let getSomeStyle = () => someStyle;
+
+function Attr3() {
+  return _$createJsxTagElement(() => {
+    let _el$ = _$createElement("div");
+    _$setProp(_el$, "style", getSomeStyle());
+    _$insertNode(_el$, _$createTextNode("attr"));
+    return _el$;
+  });
+}
+
+function Attr4() {
+  return _$createJsxTagElement(() => {
+    let _el$ = _$createElement("div");
+    _$effect(() => {
+      _$setProp(_el$, "style", getSomeStyle());
+    });
     return _el$;
   });
 }

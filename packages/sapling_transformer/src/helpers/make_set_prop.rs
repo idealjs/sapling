@@ -12,10 +12,7 @@ use std::str::FromStr;
 use crate::make_js_call_arguments;
 
 /// 生成 _$setProp(el, name, value) 的表达式语句
-pub fn make_set_prop(
-    id: &str,
-    any_js_attribute: AnyJsxAttribute,
-) -> Option<AnyJsStatement> {
+pub fn make_set_prop(id: &str, any_js_attribute: &AnyJsxAttribute) -> Option<AnyJsStatement> {
     let callee = js_identifier_expression(js_reference_identifier(ident("_$setProp")));
 
     // 1. 第一个参数：id 转为 AST 表达式节点
@@ -149,9 +146,9 @@ fn test_make_set_prop() {
         .build(),
     );
 
-    let stmt1 = make_set_prop("_el$", id_attr).expect("stmt1 is None");
-    let stmt2 = make_set_prop("_el$", title_attr).expect("stmt2 is None");
-    let stmt3 = make_set_prop("_el$", foo_attr).expect("stmt3 is None");
+    let stmt1 = make_set_prop("_el$", &id_attr).expect("stmt1 is None");
+    let stmt2 = make_set_prop("_el$", &title_attr).expect("stmt2 is None");
+    let stmt3 = make_set_prop("_el$", &foo_attr).expect("stmt3 is None");
 
     insta::assert_snapshot!(format!(
         "{}\n{}\n{}",
