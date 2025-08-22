@@ -99,22 +99,11 @@ impl SaplingTransformer {
             },
         )?;
 
-        let callee = js_identifier_expression(js_reference_identifier(ident("_$insert")));
-
-        let arg1 = AnyJsCallArgument::AnyJsExpression(AnyJsExpression::JsIdentifierExpression(
-            js_identifier_expression(js_reference_identifier(ident(
-                transform_options.parent_id?.as_str(),
-            ))),
-        ));
-
-        let call_expr = js_call_expression(
-            callee.into(),
-            make_js_call_arguments(
-                vec![arg1, AnyJsCallArgument::AnyJsExpression(expression)],
-                vec![token(T!(,))],
-            ),
-        )
-        .build();
+        let parent_id = transform_options.parent_id?;
+        let call_expr = sapling_transformation::helpers::jsx_template::make_insert(
+            parent_id.as_str(),
+            expression,
+        );
         Some(vec![AnyJsStatement::JsExpressionStatement(
             js_expression_statement(call_expr.into()).build(),
         )])

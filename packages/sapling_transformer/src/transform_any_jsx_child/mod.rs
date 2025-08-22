@@ -95,14 +95,7 @@ impl SaplingTransformer {
         transform_options: TransformJsxExpressionChildOptions,
     ) -> Option<AnyJsExpression> {
         let expression = node.expression()?;
-        let callee = js_identifier_expression(js_reference_identifier(ident("_$insert")));
-
-        let arg1 = AnyJsCallArgument::AnyJsExpression(AnyJsExpression::JsIdentifierExpression(
-            js_identifier_expression(js_reference_identifier(ident(
-                transform_options.parent_id?.as_str(),
-            ))),
-        ));
-
+        let parent_id = transform_options.parent_id?;
         let params = make_js_parameters(js_parameter_list(vec![], vec![]));
         let body = make_js_function_body(
             js_directive_list(vec![]),
@@ -111,14 +104,10 @@ impl SaplingTransformer {
         let expr = AnyJsExpression::JsArrowFunctionExpression(make_js_arrow_function_expression(
             params, body,
         ));
-        let call_expr = js_call_expression(
-            callee.into(),
-            make_js_call_arguments(
-                vec![arg1, AnyJsCallArgument::AnyJsExpression(expr)],
-                vec![token(T!(,))],
-            ),
-        )
-        .build();
+        let call_expr = sapling_transformation::helpers::jsx_template::make_insert(
+            parent_id.as_str(),
+            expr,
+        );
         Some(AnyJsExpression::JsCallExpression(call_expr))
     }
 

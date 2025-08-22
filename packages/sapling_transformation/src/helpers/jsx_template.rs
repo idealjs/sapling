@@ -1,8 +1,10 @@
 pub mod make_array;
 pub mod make_create_jsx_tag_element;
+pub mod make_insert;
 
 pub use make_array::*;
 pub use make_create_jsx_tag_element::*;
+pub use make_insert::*;
 
 use biome_js_factory::make::{
     js_expression_statement, js_function_body, js_identifier_binding, js_identifier_expression,
