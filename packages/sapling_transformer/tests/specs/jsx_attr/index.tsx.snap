@@ -19,23 +19,23 @@ function Attr2() {
 # Transformations
 ```tsx
 function Attr() {
-  return (() => {
+  return _$createJsxTagElement(() => {
     let _el$ = _$createElement("button");
     _$setProp(_el$, "type", "button");
     _$insertNode(_el$, _$createTextNode("attr"));
     return _el$;
-  })();
+  });
 }
 
 let someStyle = { color: "red", fontSize: "16px" };
 
 function Attr2() {
-  return (() => {
+  return _$createJsxTagElement(() => {
     let _el$ = _$createElement("div");
     _$setProp(_el$, "style", someStyle);
     _$insertNode(_el$, _$createTextNode("attr"));
     return _el$;
-  })();
+  });
 }
 
 ```

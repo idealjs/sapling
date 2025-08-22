@@ -6,7 +6,9 @@ use biome_js_syntax::{
     AnyJsArrayElement, AnyJsExpression, AnyJsStatement, AnyJsxTag, JsxElement, JsxFragment,
     JsxSelfClosingElement, JsxTagExpression, T,
 };
-use sapling_transformation::helpers::jsx_template::{make_array, make_iife};
+use sapling_transformation::helpers::jsx_template::{
+    make_array, make_create_jsx_tag_element,
+};
 
 pub struct TransformAnyJsxFragmentOptions {
     pub parent_id: Option<String>,
@@ -25,7 +27,9 @@ impl SaplingTransformer {
     ) -> Option<AnyJsExpression> {
         let tag = node.tag().ok()?;
         match tag {
-            AnyJsxTag::JsxElement(node) => self.transform_jsx_element_to_iife(&node),
+            AnyJsxTag::JsxElement(node) => {
+                self.transform_jsx_element_to_create_jsx_tag_element(&node)
+            }
             AnyJsxTag::JsxFragment(node) => self.transform_jsx_fragment(
                 &node,
                 TransformAnyJsxFragmentOptions {
@@ -33,11 +37,32 @@ impl SaplingTransformer {
                 },
             ),
             AnyJsxTag::JsxSelfClosingElement(node) => {
-                self.transform_jsx_self_closing_element_to_iife(&node)
+                self.transform_jsx_self_closing_element_to_create_jsx_tag_element(&node)
             }
         }
     }
-    pub fn transform_jsx_element_to_iife(&mut self, node: &JsxElement) -> Option<AnyJsExpression> {
+    pub fn transform_jsx_self_closing_element_to_create_jsx_tag_element(
+        &mut self,
+        node: &JsxSelfClosingElement,
+    ) -> Option<AnyJsExpression> {
+        let (mut statements, id) = self.transform_jsx_self_closing_element_to_statements(node)?;
+        let return_stmt = AnyJsStatement::JsReturnStatement(
+            js_return_statement(token(T![return]))
+                .with_argument(js_identifier_expression(js_reference_identifier(ident(&id))).into())
+                .with_semicolon_token(token(T![;]))
+                .build(),
+        );
+        statements.push(return_stmt);
+
+        let call = make_create_jsx_tag_element(vec![], statements);
+
+        Some(AnyJsExpression::JsCallExpression(call))
+    }
+
+    pub fn transform_jsx_element_to_create_jsx_tag_element(
+        &mut self,
+        node: &JsxElement,
+    ) -> Option<AnyJsExpression> {
         let (mut statements, id) = self.transform_jsx_element_to_statements(node)?;
 
         let return_stmt = AnyJsStatement::JsReturnStatement(
@@ -48,9 +73,9 @@ impl SaplingTransformer {
         );
         statements.push(return_stmt);
 
-        let iife = make_iife(vec![], statements);
+        let call = make_create_jsx_tag_element(vec![], statements);
 
-        Some(AnyJsExpression::JsCallExpression(iife))
+        Some(AnyJsExpression::JsCallExpression(call))
     }
     pub fn transform_jsx_fragment(
         &mut self,
@@ -81,24 +106,5 @@ impl SaplingTransformer {
             }
             _ => Some(AnyJsExpression::JsArrayExpression(make_array(elements))),
         }
-    }
-    pub fn transform_jsx_self_closing_element_to_iife(
-        &mut self,
-        node: &JsxSelfClosingElement,
-    ) -> Option<AnyJsExpression> {
-        let (mut statements, id) = self.transform_jsx_self_closing_element_to_statements(node)?;
-        let return_stmt = AnyJsStatement::JsReturnStatement(
-            js_return_statement(token(T![return]))
-                .with_argument(
-                    js_identifier_expression(js_reference_identifier(ident(&id))).into(),
-                )
-                .with_semicolon_token(token(T![;]))
-                .build(),
-        );
-        statements.push(return_stmt);
-
-        let iife = make_iife(vec![], statements);
-
-        Some(AnyJsExpression::JsCallExpression(iife))
     }
 }

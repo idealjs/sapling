@@ -38,7 +38,7 @@ impl SaplingTransformer {
     ) -> Option<AnyJsExpression> {
         match node {
             AnyJsxChild::JsMetavariable(node) => self.transform_js_metavariable(node),
-            AnyJsxChild::JsxElement(node) => self.transform_jsx_element_to_iife(node),
+            AnyJsxChild::JsxElement(node) => self.transform_jsx_element_to_create_jsx_tag_element(node),
             AnyJsxChild::JsxExpressionChild(node) => self.transform_jsx_expression_child(
                 node,
                 TransformJsxExpressionChildOptions {
@@ -52,7 +52,7 @@ impl SaplingTransformer {
                 },
             ),
             AnyJsxChild::JsxSelfClosingElement(node) => {
-                self.transform_jsx_self_closing_element_to_iife(node)
+                self.transform_jsx_self_closing_element_to_create_jsx_tag_element(node)
             }
             AnyJsxChild::JsxSpreadChild(node) => self.transform_jsx_spread_child(node),
             AnyJsxChild::JsxText(node) => self.transform_jsx_text(
