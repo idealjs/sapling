@@ -4,8 +4,7 @@ use biome_js_syntax::JsCallArguments;
 use std::vec;
 
 use biome_js_factory::make::{
-    js_arrow_function_expression, js_call_argument_list, js_call_arguments, js_call_expression,
-    js_return_statement, token,
+    js_call_argument_list, js_call_arguments, js_call_expression, js_return_statement, token,
 };
 use biome_js_syntax::{
     AnyJsExpression, JsArrowFunctionExpression, JsCallExpression, JsDirectiveList, JsFunctionBody,
@@ -63,17 +62,6 @@ pub fn make_js_call_arguments(
         js_call_argument_list(arguments, separators),
         token(T![')']),
     )
-}
-
-pub fn make_js_arrow_function_expression(
-    params: JsParameters,
-    body: JsFunctionBody,
-) -> JsArrowFunctionExpression {
-    use biome_js_syntax::{AnyJsArrowFunctionParameters, AnyJsFunctionBody, T};
-
-    let params = AnyJsArrowFunctionParameters::JsParameters(params);
-    let body: AnyJsFunctionBody = AnyJsFunctionBody::JsFunctionBody(body);
-    js_arrow_function_expression(params, token(T![=>]), body).build()
 }
 
 pub fn make_js_parameters(

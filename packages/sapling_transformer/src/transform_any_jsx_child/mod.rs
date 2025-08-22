@@ -1,4 +1,4 @@
-use biome_js_factory::make::{js_directive_list, js_parameter_list, js_statement_list};
+use biome_js_factory::make::js_expression_statement;
 use biome_js_syntax::{
     AnyJsExpression, AnyJsxChild, JsMetavariable, JsxExpressionChild, JsxSpreadChild, JsxText,
 };
@@ -17,9 +17,8 @@ pub struct TransformJsxExpressionChildOptions {
 }
 
 use crate::{
-    SaplingTransformer, make_create_text_node, make_insert_node, make_insert,
-    make_js_arrow_function_expression, make_js_function_body, make_js_parameters,
-    make_js_return_statement, transfrom_jsx_tag_expression::TransformAnyJsxFragmentOptions,
+    SaplingTransformer, make_arrow_function_from_statement, make_create_text_node, make_effect,
+    make_insert, make_insert_node, transfrom_jsx_tag_expression::TransformAnyJsxFragmentOptions,
 };
 
 impl SaplingTransformer {
@@ -92,15 +91,17 @@ impl SaplingTransformer {
         let expression = node.expression()?;
         let parent_id = transform_options.parent_id?;
         let call_expr = if let AnyJsExpression::JsCallExpression(_) = &expression {
-            let params = make_js_parameters(js_parameter_list(vec![], vec![]));
-            let body = make_js_function_body(
-                js_directive_list(vec![]),
-                js_statement_list(vec![make_js_return_statement(expression).into()]),
-            );
-            let expr = AnyJsExpression::JsArrowFunctionExpression(make_js_arrow_function_expression(
-                params, body,
-            ));
-            make_insert(parent_id.as_str(), expr)
+            make_effect(AnyJsExpression::JsArrowFunctionExpression(
+                make_arrow_function_from_statement(
+                    biome_js_syntax::AnyJsStatement::JsExpressionStatement(
+                        js_expression_statement(AnyJsExpression::JsCallExpression(make_insert(
+                            parent_id.as_str(),
+                            expression,
+                        )))
+                        .build(),
+                    ),
+                ),
+            ))
         } else {
             make_insert(parent_id.as_str(), expression)
         };
