@@ -1,0 +1,6 @@
+---
+source: packages/sapling_transformer/src/helpers/make_create_element.rs
+expression: "format!(\"{}\\n{}\", stmt1.to_string(), stmt2.to_string())"
+---
+let _el1$ = _$createElement("div");
+let _el2$ = _$createElement("div");

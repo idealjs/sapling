@@ -1,0 +1,5 @@
+---
+source: packages/sapling_transformer/src/helpers/make_create_text_node.rs
+expression: expr.to_string()
+---
+_$createTextNode("hello")

@@ -11,7 +11,7 @@
   "scripts": {
     "lint": "eslint packages/**/*.{tsx,ts} apps/**/*.{tsx,ts} --fix",
     "cargo-test": "cargo test --no-fail-fast",
-    "cargo-snap-snap": "cargo insta test"
+    "cargo-test-snap": "cargo insta test"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.18.0",

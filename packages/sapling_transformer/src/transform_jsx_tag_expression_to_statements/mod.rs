@@ -1,12 +1,10 @@
 use std::vec;
 
-use crate::compatible::element::generate_create_element;
-use crate::compatible::set_prop::generate_set_prop_statement;
-use crate::make_insert;
 use crate::{
-    SaplingTransformer, TransformAnyJsxTextOptions, generate_insert_node_expr,
-    jsx_element_name_to_string, transfrom_jsx_tag_expression::TransformAnyJsxFragmentOptions,
+    SaplingTransformer, TransformAnyJsxTextOptions, jsx_element_name_to_string, make_insert_node,
+    transfrom_jsx_tag_expression::TransformAnyJsxFragmentOptions,
 };
+use crate::{make_create_element, make_insert, make_set_prop};
 use biome_js_factory::make::js_expression_statement;
 use biome_js_syntax::{
     AnyJsStatement, AnyJsxChild, JsMetavariable, JsxElement, JsxExpressionChild, JsxFragment,
@@ -44,12 +42,12 @@ impl SaplingTransformer {
         let tag_name = jsx_element_name_to_string(&node.opening_element().ok()?.name().ok()?)?;
         let scope = self.semantic_model.scope(node.syntax());
         let id = self.generate_unique_identifier(&scope, "_el$");
-        let js_tag_statement = generate_create_element(id.as_str(), tag_name.as_str());
+        let js_tag_statement = make_create_element(id.as_str(), tag_name.as_str());
         statments.push(js_tag_statement);
 
         let attributes = node.opening_element().ok()?.attributes();
         attributes.into_iter().for_each(|attribute| {
-            let set_prop_statement = generate_set_prop_statement(id.as_str(), attribute);
+            let set_prop_statement = make_set_prop(id.as_str(), attribute);
             match set_prop_statement {
                 Some(set_prop_statement) => {
                     statments.push(set_prop_statement);
@@ -75,7 +73,7 @@ impl SaplingTransformer {
             if let Some(child_id) = child_id {
                 statments.push(AnyJsStatement::JsExpressionStatement(
                     js_expression_statement(
-                        generate_insert_node_expr(id.as_str(), child_id.as_str()).into(),
+                        make_insert_node(id.as_str(), child_id.as_str()).into(),
                     )
                     .build(),
                 ));
@@ -207,12 +205,12 @@ impl SaplingTransformer {
         let tag_name = jsx_element_name_to_string(&node.name().ok()?)?;
         let scope = self.semantic_model.scope(node.syntax());
         let id = self.generate_unique_identifier(&scope, "_el$");
-        let js_tag_statement = generate_create_element(id.as_str(), tag_name.as_str());
+        let js_tag_statement = make_create_element(id.as_str(), tag_name.as_str());
         statments.push(js_tag_statement);
 
         let attributes = node.attributes();
         attributes.into_iter().for_each(|attribute| {
-            let set_prop_statement = generate_set_prop_statement(id.as_str(), attribute);
+            let set_prop_statement = make_set_prop(id.as_str(), attribute);
             match set_prop_statement {
                 Some(set_prop_statement) => {
                     statments.push(set_prop_statement);

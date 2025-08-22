@@ -25,12 +25,22 @@ use biome_js_syntax::{
 use biome_rowan::SyntaxToken;
 
 pub mod make_array;
+pub mod make_create_element;
 pub mod make_create_jsx_tag_element;
+pub mod make_create_text_node;
 pub mod make_insert;
+pub mod make_insert_node;
+pub mod make_set_prop;
+pub mod jsx_element_name_to_string;
 
 pub use make_array::*;
+pub use make_create_element::*;
 pub use make_create_jsx_tag_element::*;
+pub use make_create_text_node::*;
 pub use make_insert::*;
+pub use make_insert_node::*;
+pub use make_set_prop::*;
+pub use jsx_element_name_to_string::*;
 
 pub fn make_js_call_expression(
     arrow_function_expression: JsArrowFunctionExpression,

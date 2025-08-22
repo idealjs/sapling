@@ -1,7 +1,6 @@
 use biome_js_syntax::JsLanguage;
 use biome_rowan::BatchMutation;
 
-pub mod compatible;
 pub mod helpers;
 pub mod scope;
 pub mod transform_any_js_expression;
@@ -17,7 +16,6 @@ pub mod transformer;
 pub mod transfrom_jsx_tag_expression;
 pub mod write_transformation_snapshot;
 
-pub use compatible::*;
 pub use helpers::*;
 pub use scope::*;
 pub use transform_any_js_expression::*;

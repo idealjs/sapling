@@ -17,7 +17,7 @@ pub struct TransformJsxExpressionChildOptions {
 }
 
 use crate::{
-    SaplingTransformer, generate_create_text_node_expr, generate_insert_node_expr, make_insert,
+    SaplingTransformer, make_create_text_node, make_insert_node, make_insert,
     make_js_arrow_function_expression, make_js_function_body, make_js_parameters,
     make_js_return_statement, transfrom_jsx_tag_expression::TransformAnyJsxFragmentOptions,
 };
@@ -72,9 +72,9 @@ impl SaplingTransformer {
         if node_value.trim().is_empty() {
             return None;
         }
-        let inner_call_expression = generate_create_text_node_expr(node_value);
+        let inner_call_expression = make_create_text_node(node_value);
         let parent_id = transform_options.parent_id?;
-        Some(AnyJsExpression::from(generate_insert_node_expr(
+        Some(AnyJsExpression::from(make_insert_node(
             parent_id.as_str(),
             &inner_call_expression.to_string(),
         )))
