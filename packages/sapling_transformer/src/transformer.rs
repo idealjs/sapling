@@ -1,6 +1,6 @@
 use biome_js_semantic::SemanticModel;
 use biome_js_syntax::TextRange;
-use biome_js_syntax::{AnyJsStatement, JsLanguage, JsModule};
+use biome_js_syntax::{JsLanguage, JsModule};
 use biome_rowan::BatchMutation;
 
 use std::collections::{HashMap, HashSet};
@@ -51,31 +51,9 @@ impl Default for Config {
 pub struct SaplingTransformer {
     pub mutation: BatchMutation<JsLanguage>,
     pub js_module: JsModule,
-    pub pre_process_errors: Vec<String>,
     pub semantic_model: SemanticModel,
     pub scope_generated_identifiers: HashMap<TextRange, HashSet<String>>,
     pub config: Config,
-    pub transform_result: TransformResult,
-}
-
-// impl Default for SaplingTransformer {
-//     fn default() -> Self {
-//         Self {
-//             mutation: Default::default(),
-//             js_module: Default::default(),
-//             pre_process_errors: Default::default(),
-//             semantic_model: Default::default(),
-//             scope_generated_identifiers: Default::default(),
-//             config: Default::default(),
-//             traverse_result: Default::default(),
-//         }
-//     }
-// }
-
-#[derive(Debug, Clone, Default)]
-
-pub struct TransformResult {
-    pub statments: Vec<AnyJsStatement>,
 }
 
 impl SaplingTransformer {

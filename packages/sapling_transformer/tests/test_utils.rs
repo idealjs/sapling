@@ -7,9 +7,7 @@ use biome_js_syntax::JsFileSource;
 use biome_rowan::BatchMutationExt;
 use biome_test_utils::register_leak_checker;
 use camino::Utf8Path;
-use sapling_transformer::{
-    Config, SaplingTransformer, TransformResult, write_transformation_snapshot,
-};
+use sapling_transformer::{Config, SaplingTransformer, write_transformation_snapshot};
 use std::{collections::HashMap, fs::read_to_string};
 
 pub fn run_test(input: &'static str) -> Option<()> {
@@ -38,13 +36,9 @@ pub fn run_test(input: &'static str) -> Option<()> {
     let mut transformer = SaplingTransformer {
         mutation: js_module.clone().begin(),
         js_module,
-        pre_process_errors: Vec::new(),
         semantic_model,
         scope_generated_identifiers: HashMap::new(),
         config: Config {
-            ..Default::default()
-        },
-        transform_result: TransformResult {
             ..Default::default()
         },
     };
