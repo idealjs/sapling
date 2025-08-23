@@ -34,6 +34,7 @@
   },
   "devDependencies": {
     "@types/lodash.chunk": "^4.2.9",
+    "@types/node": "^24.3.0",
     "esbuild": "^0.19.11",
     "happy-dom": "^12.10.3",
     "jsdom": "^23.2.0",
