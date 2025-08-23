@@ -1,84 +1,204 @@
-# @idealjs/sapling 是什么？
+# Sapling Jsx 框架
 
-@idealjs/sapling 是一个简易的 jsx-runtime
+Sapling 的理念是，在尽可能减少非用户代码与心智负担的情况下，由框架提供响应式编程的能力。
 
-它内置了缓存，用于解决性能问题。并且规避了 react 中的树状更新问题。
+## 快速入门
 
-## 快速开始
+🚧
 
-1. 使用 vite 快速创建 vanilla-ts 项目
+### 计数器
 
+main.tsx
+
+```ts
+import App from "./App.tsx"
+
+const domNode = document.getElementById('root');
+const root = createRoot(domNode);
+
+root.render(<App />);
 ```
-yarn create vite my-reactive-app --template vanilla-ts
+
+App.tsx
+
+```tsx
+class App {
+  @State accessor count: number = 0;
+  public render() {
+    return (
+      <div>
+        <button
+          onClick={() => {
+            this.count++;
+          }}
+        >
+          +
+        </button>
+        {this.count}
+        <button
+          onClick={() => {
+            this.count--;
+          }}
+        >
+          -
+        </button>
+      </div>
+    );
+  }
+}
+
+export default App;
 ```
 
-2. 安装依赖
+### 代办列表
 
+main.tsx
+
+```ts
+import App from "./App.tsx"
+
+const domNode = document.getElementById('root');
+const root = createRoot(domNode);
+
+root.render(<App />);
 ```
-yarn add @idealjs/sapling
-```
 
-3. 更新 tsconfig.json
+App.tsx
 
-```json
-{
-  "compilerOptions": {
-    "target": "ES2020",
-    "useDefineForClassFields": true,
-    "module": "ESNext",
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "skipLibCheck": true,
+```tsx
+import Todo, { type ITodo } from "./Todo.tsx";
 
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-
-    /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-
-    /* 添加下面两行 */
-    "jsx": "react-jsx",
-    "jsxImportSource": "@idealjs/sapling"
-  },
-  "include": ["src"]
+class App {
+  @State accessor todos: ITodo[] = [];
+  public render() {
+    return (
+      <div>
+        <For each={state.list} fallback={<div>Loading...</div>}>
+          {(item) => <Todo todo={item} />}
+        </For>
+      </div>
+    );
+  }
 }
 ```
 
-4. 修改 index.html
-
-```html
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + TS</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <!-- 修改下行 src="/src/main.tsx" -->
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
-```
-
-5. 新建 src/main.tsx
+Todo.tsx
 
 ```tsx
-import { upsert } from "@idealjs/sapling";
+export interface ITodo {
+  name: string;
+  done: boolean;
+}
 
-const root = document.getElementById("app")!;
+interface IProps {
+  todo: ITodo;
+}
 
-upsert(root, <div>hello world</div>);
+class Todo {
+  constructor(props: IProps) {}
+}
+export default Todo;
 ```
 
-6. 启动项目
+### 带有初始化数据的代办
 
-![image](./hello_world.png)
+🚧
+
+## State 定义
+
+```tsx
+class Example {
+  @State accessor value: number = 0;
+}
+```
+
+## Derive 定义
+
+```tsx
+class Example {
+  @Derive get doubleValue() {
+    return this.value * 2;
+  }
+}
+```
+
+## effect 使用
+
+```ts
+class Example {
+  constructor() {
+    effect(() => {
+      getData(this.inputValue).then((value) => {
+        this.value = value;
+      });
+    });
+  }
+}
+```
+
+## render 定义
+
+```tsx
+class Example {
+  public render() {
+    return <div>{this.value}</div>;
+  }
+}
+```
+
+## batch update
+
+```tsx
+class Example {
+  public render() {
+    return (
+      <div
+        onClick={() => {
+          // 仅触发一次更新
+          batch(() => {
+            this.value++;
+            this.value++;
+            this.value++;
+          });
+        }}
+      />
+    );
+  }
+}
+```
+
+# 非用户代码
+
+如，为提供响应式能力而添加的非用户代码 ———— get 函数。
+
+```tsx
+<Counter value={value()}>
+```
+
+```ts
+createComponent(Counter, {
+  get value() {
+    return value();
+  },
+});
+```
+
+# 心智负担
+
+如，为了响应式能力要求用户使用特定语法 ———— props.xxx
+
+```tsx
+interface IProps {
+  value: number;
+}
+const Counter = (props: IProps) => {
+  // 必须使用此语法才能获得响应式能力
+  return <div>{props.value}</div>;
+};
+
+const Counter = (props: IProps) => {
+  // 此类写法无法支持响应式能力
+  const { value } = props;
+  return <div>{value}</div>;
+};
+```
