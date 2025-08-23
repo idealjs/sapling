@@ -5,7 +5,10 @@ import type { JSXElementType, SaplingElement } from "./createElement";
 import type { InnerElement, TagOption } from "./type";
 
 export namespace JSX {
-  export type ElementType = string | JSXElementType<any>;
+  export type ClassComponentType = new (...args: any[]) => {
+    render(): Element;
+  };
+  export type ElementType = string | JSXElementType<any> | ClassComponentType;
   export interface ElementAttributesProperty {
     props: object;
   }
