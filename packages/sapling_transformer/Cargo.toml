@@ -19,3 +19,6 @@ biome_js_formatter = { workspace = true }
 biome_js_factory.workspace = true
 biome_formatter = { workspace = true }
 biome_js_semantic = { workspace = true }
+
+[build-dependencies]
+wasm-bindgen = "0.2.100"
