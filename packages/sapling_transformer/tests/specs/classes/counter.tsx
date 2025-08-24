@@ -1,7 +1,8 @@
 import { State } from "@idealjs/sapling";
 
 class App {
-  @State accessor count: number = 0;
+  @State 
+  accessor count: number = 0;
   public render() {
     return (
       <div>

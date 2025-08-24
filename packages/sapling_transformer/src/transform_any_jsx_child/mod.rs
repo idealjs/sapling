@@ -96,7 +96,7 @@ impl SaplingTransformer {
                 let member = expr.member().ok()?;
                 let name = member.as_js_name().cloned()?;
                 let token = name.value_token().ok()?;
-                let token_text = token.text().to_string();
+                let token_text = token.text_trimmed().to_string();
                 let call_expr = if self.decorated_members.contains(&token_text) {
                     make_effect(AnyJsExpression::JsArrowFunctionExpression(
                         make_arrow_function_from_statement(

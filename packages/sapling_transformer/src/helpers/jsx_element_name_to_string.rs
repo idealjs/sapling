@@ -19,18 +19,32 @@ pub fn jsx_element_name_to_string(node: &AnyJsxElementName) -> Option<String> {
                 .ok()?
                 .value_token()
                 .ok()?
-                .text()
+                .text_trimmed()
                 .to_string();
             Some(format!("{}.{}", object, property))
         }
         AnyJsxElementName::JsxName(v) => Some(v.value_token().ok()?.text_trimmed().to_string()),
         AnyJsxElementName::JsxReferenceIdentifier(v) => {
-            Some(v.value_token().ok()?.text().to_string())
+            Some(v.value_token().ok()?.text_trimmed().to_string())
         }
-        AnyJsxElementName::JsMetavariable(v) => Some(v.value_token().ok()?.text().to_string()),
+        AnyJsxElementName::JsMetavariable(v) => {
+            Some(v.value_token().ok()?.text_trimmed().to_string())
+        }
         AnyJsxElementName::JsxNamespaceName(ns) => {
-            let namespace = ns.namespace().ok()?.value_token().ok()?.text().to_string();
-            let name = ns.name().ok()?.value_token().ok()?.text().to_string();
+            let namespace = ns
+                .namespace()
+                .ok()?
+                .value_token()
+                .ok()?
+                .text_trimmed()
+                .to_string();
+            let name = ns
+                .name()
+                .ok()?
+                .value_token()
+                .ok()?
+                .text_trimmed()
+                .to_string();
             Some(format!("{}:{}", namespace, name))
         }
     }

@@ -7,7 +7,8 @@ expression: counter.tsx
 import { State } from "@idealjs/sapling";
 
 class App {
-  @State accessor count: number = 0;
+  @State 
+  accessor count: number = 0;
   public render() {
     return (
       <div>
@@ -40,19 +41,15 @@ export default App;
 import { State } from "@idealjs/sapling";
 
 class App {
-  @State accessor count: number = 0;
+  @State
+  accessor count: number = 0;
   public render() {
     return _$createJsxTagElement(() => {
       let _el$ = _$createElement("div");
       let _el$1 = _$createElement("button");
-      _$setProp(
-        _el$1,
-        "
-          onClick",
-        () => {
-          this.count++;
-        },
-      );
+      _$setProp(_el$1, "onClick", () => {
+        this.count++;
+      });
       _$insertNode(
         _el$1,
         _$createTextNode("
@@ -64,14 +61,9 @@ class App {
         _$insert(_el$, this.count);
       });
       let _el$2 = _$createElement("button");
-      _$setProp(
-        _el$2,
-        "
-          onClick",
-        () => {
-          this.count--;
-        },
-      );
+      _$setProp(_el$2, "onClick", () => {
+        this.count--;
+      });
       _$insertNode(
         _el$2,
         _$createTextNode("

@@ -24,15 +24,15 @@ pub fn make_set_prop(id: &str, any_js_attribute: &AnyJsxAttribute) -> Option<Any
         let name = attr.name().ok()?;
         let name_token = match name {
             AnyJsxAttributeName::JsxName(name) => {
-                String::from_str(name.value_token().ok()?.text()).ok()?
+                String::from_str(name.value_token().ok()?.text_trimmed()).ok()?
             }
             AnyJsxAttributeName::JsxNamespaceName(name) => {
                 let ns = name.namespace().ok()?;
                 let ns_token = ns.value_token().ok()?;
-                let ns = ns_token.text();
+                let ns = ns_token.text_trimmed();
                 let name_val = name.name().ok()?;
                 let nm_token = name_val.value_token().ok()?;
-                let nm = nm_token.text();
+                let nm = nm_token.text_trimmed();
                 format!("{ns}:{nm}")
             }
         };
