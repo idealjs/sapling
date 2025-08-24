@@ -2,19 +2,20 @@ use biome_js_factory::make::{
     js_class_member_list, js_function_declaration, js_variable_declaration,
     js_variable_declarator_list, js_variable_statement, token,
 };
+use biome_js_semantic::BindingExtensions;
 use biome_js_syntax::{
-    AnyJsClassMember, AnyJsStatement, JsBlockStatement, JsBogusStatement, JsBreakStatement,
-    JsClassDeclaration, JsContinueStatement, JsDebuggerStatement, JsDoWhileStatement,
-    JsEmptyStatement, JsExpressionStatement, JsForInStatement, JsForOfStatement, JsForStatement,
-    JsFunctionDeclaration, JsIfStatement, JsLabeledStatement, JsMetavariable, JsReturnStatement,
-    JsSwitchStatement, JsThrowStatement, JsTryFinallyStatement, JsTryStatement,
-    JsVariableDeclarator, JsVariableStatement, JsWhileStatement, JsWithStatement, T,
-    TsDeclareFunctionDeclaration, TsDeclareStatement, TsEnumDeclaration,
-    TsExternalModuleDeclaration, TsGlobalDeclaration, TsImportEqualsDeclaration,
+    AnyJsClassMember, AnyJsDecorator, AnyJsPropertyModifier, AnyJsStatement, JsBlockStatement,
+    JsBogusStatement, JsBreakStatement, JsClassDeclaration, JsContinueStatement,
+    JsDebuggerStatement, JsDoWhileStatement, JsEmptyStatement, JsExpressionStatement,
+    JsForInStatement, JsForOfStatement, JsForStatement, JsFunctionDeclaration, JsIfStatement,
+    JsLabeledStatement, JsMetavariable, JsReturnStatement, JsSwitchStatement, JsThrowStatement,
+    JsTryFinallyStatement, JsTryStatement, JsVariableDeclarator, JsVariableStatement,
+    JsWhileStatement, JsWithStatement, T, TsDeclareFunctionDeclaration, TsDeclareStatement,
+    TsEnumDeclaration, TsExternalModuleDeclaration, TsGlobalDeclaration, TsImportEqualsDeclaration,
     TsInterfaceDeclaration, TsModuleDeclaration, TsTypeAliasDeclaration,
 };
 
-use crate::{SaplingTransformer, make_js_return_statement};
+use crate::{SaplingTransformer, get_js_module_source_from_binding, make_js_return_statement};
 
 impl SaplingTransformer {
     // main entry
@@ -153,28 +154,66 @@ impl SaplingTransformer {
         &mut self,
         node: &JsClassDeclaration,
     ) -> Option<AnyJsStatement> {
+        self.decorated_members.clear();
         let mut new_members = vec![];
-        for member in node.members() {
-            let method = match member.as_js_method_class_member() {
-                Some(m) => m,
-                None => {
-                    new_members.push(member);
-                    continue;
-                }
-            };
 
-            match method.body().ok() {
-                Some(body) => {
-                    let new_body = self.transform_js_function_body(&body);
+        for member in node.members() {
+            match member {
+                AnyJsClassMember::JsPropertyClassMember(member) => {
+                    for modifer in member.modifiers() {
+                        match modifer {
+                            AnyJsPropertyModifier::JsDecorator(modifer) => {
+                                let expr = modifer.expression().ok()?;
+                                let binding = match expr {
+                                    AnyJsDecorator::JsIdentifierExpression(expr) => {
+                                        expr.name().ok()?.binding(&self.semantic_model)
+                                    }
+                                    AnyJsDecorator::JsStaticMemberExpression(expr) => expr
+                                        .object()
+                                        .ok()?
+                                        .as_js_identifier_expression()?
+                                        .name()
+                                        .ok()?
+                                        .binding(&self.semantic_model),
+                                    _ => None,
+                                }?;
+                                let js_module_source = get_js_module_source_from_binding(
+                                    &self.semantic_model,
+                                    &binding,
+                                )?;
+                                if js_module_source == "@idealjs/sapling" {
+                                    self.decorated_members.insert(
+                                        member
+                                            .name()
+                                            .ok()?
+                                            .as_js_literal_member_name()?
+                                            .name()
+                                            .ok()?
+                                            .text()
+                                            .into(),
+                                    );
+                                }
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+        for member in node.members() {
+            match member {
+                AnyJsClassMember::JsMethodClassMember(member) => {
+                    let body = member.body().ok()?;
+                    let new_body = self.transform_js_function_body(&body)?;
                     new_members.push(AnyJsClassMember::JsMethodClassMember(
-                        method.clone().with_body(new_body?),
+                        member.clone().with_body(new_body),
                     ));
                 }
-                None => {
+                _ => {
                     new_members.push(member);
-                    continue;
                 }
-            };
+            }
         }
         Some(AnyJsStatement::JsClassDeclaration(
             node.clone().with_members(js_class_member_list(new_members)),

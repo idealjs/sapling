@@ -64,9 +64,7 @@ function Expr() {
 const Expr2 = () => {
   return _$createJsxTagElement(() => {
     let _el$ = _$createElement("div");
-    _$effect(() => {
-      _$insert(_el$, some());
-    });
+    _$insert(_el$, some());
     return _el$;
   });
 };
@@ -77,9 +75,7 @@ const Expr3 = () => {
   };
   return _$createJsxTagElement(() => {
     let _el$ = _$createElement("div");
-    _$effect(() => {
-      _$insert(_el$, some());
-    });
+    _$insert(_el$, some());
     return _el$;
   });
 };
@@ -91,9 +87,7 @@ const Expr4 = () => {
   return _$createJsxTagElement(() => {
     let _el$ = _$createElement("div");
     let _el$1 = _$createElement("div");
-    _$effect(() => {
-      _$insert(_el$1, some());
-    });
+    _$insert(_el$1, some());
     _$insertNode(_el$, _el$1);
     return _el$;
   });
@@ -104,9 +98,7 @@ const Expr5 = () => {
     let _el$ = _$createElement("div");
     let _el$1 = _$createElement("div");
     _$insertNode(_el$1, _$createTextNode("abcd"));
-    _$effect(() => {
-      _$insert(_el$1, some());
-    });
+    _$insert(_el$1, some());
     _$insertNode(_el$1, _$createTextNode("efg"));
     _$insertNode(_el$, _el$1);
     return _el$;

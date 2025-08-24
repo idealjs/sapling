@@ -8,7 +8,7 @@ use biome_rowan::BatchMutationExt;
 use biome_test_utils::register_leak_checker;
 use camino::Utf8Path;
 use sapling_transformer::{Config, SaplingTransformer, write_transformation_snapshot};
-use std::{collections::HashMap, fs::read_to_string};
+use std::{collections::{HashMap, HashSet}, fs::read_to_string};
 
 pub fn run_test(input: &'static str) -> Option<()> {
     register_leak_checker();
@@ -41,6 +41,7 @@ pub fn run_test(input: &'static str) -> Option<()> {
         config: Config {
             ..Default::default()
         },
+        decorated_members: HashSet::new(),
     };
 
     transformer.transform();

@@ -60,7 +60,9 @@ class App {
         "),
       );
       _$insertNode(_el$, _el$1);
-      _$insert(_el$, this.count);
+      _$effect(() => {
+        _$insert(_el$, this.count);
+      });
       let _el$2 = _$createElement("button");
       _$setProp(
         _el$2,

@@ -90,21 +90,38 @@ impl SaplingTransformer {
     ) -> Option<AnyJsExpression> {
         let expression = node.expression()?;
         let parent_id = transform_options.parent_id?;
-        let call_expr = if let AnyJsExpression::JsCallExpression(_) = &expression {
-            make_effect(AnyJsExpression::JsArrowFunctionExpression(
-                make_arrow_function_from_statement(
-                    biome_js_syntax::AnyJsStatement::JsExpressionStatement(
-                        js_expression_statement(AnyJsExpression::JsCallExpression(make_insert(
-                            parent_id.as_str(),
-                            expression,
-                        )))
-                        .build(),
-                    ),
-                ),
-            ))
-        } else {
-            make_insert(parent_id.as_str(), expression)
+
+        let call_expr = match expression {
+            AnyJsExpression::JsStaticMemberExpression(expr) => {
+                let member = expr.member().ok()?;
+                let name = member.as_js_name().cloned()?;
+                let token = name.value_token().ok()?;
+                let token_text = token.text().to_string();
+                let call_expr = if self.decorated_members.contains(&token_text) {
+                    make_effect(AnyJsExpression::JsArrowFunctionExpression(
+                        make_arrow_function_from_statement(
+                            biome_js_syntax::AnyJsStatement::JsExpressionStatement(
+                                js_expression_statement(AnyJsExpression::JsCallExpression(
+                                    make_insert(
+                                        parent_id.as_str(),
+                                        AnyJsExpression::JsStaticMemberExpression(expr),
+                                    ),
+                                ))
+                                .build(),
+                            ),
+                        ),
+                    ))
+                } else {
+                    make_insert(
+                        parent_id.as_str(),
+                        AnyJsExpression::JsStaticMemberExpression(expr),
+                    )
+                };
+                call_expr
+            }
+            _ => make_insert(parent_id.as_str(), expression),
         };
+
         Some(AnyJsExpression::JsCallExpression(call_expr))
     }
 

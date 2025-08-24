@@ -54,6 +54,7 @@ pub struct SaplingTransformer {
     pub semantic_model: SemanticModel,
     pub scope_generated_identifiers: HashMap<TextRange, HashSet<String>>,
     pub config: Config,
+    pub decorated_members: HashSet<String>, // 记录被 State/Derive 装饰的成员变量名
 }
 
 impl SaplingTransformer {
