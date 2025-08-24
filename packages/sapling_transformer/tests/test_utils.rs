@@ -5,14 +5,11 @@ use biome_js_parser::{JsParserOptions, parse};
 use biome_js_semantic::{SemanticModelOptions, semantic_model};
 use biome_js_syntax::JsFileSource;
 use biome_rowan::BatchMutationExt;
-use biome_test_utils::register_leak_checker;
 use camino::Utf8Path;
 use sapling_transformer::{Config, SaplingTransformer, write_transformation_snapshot};
 use std::{collections::{HashMap, HashSet}, fs::read_to_string};
 
 pub fn run_test(input: &'static str) -> Option<()> {
-    register_leak_checker();
-
     let input_file = Utf8Path::new(input);
     let file_name = input_file.file_name().unwrap();
 

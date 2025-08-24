@@ -5922,6 +5922,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"sapling_transformer@workspace:packages/sapling_transformer":
+  version: 0.0.0-use.local
+  resolution: "sapling_transformer@workspace:packages/sapling_transformer"
+  languageName: unknown
+  linkType: soft
+
 "saxes@npm:^6.0.0":
   version: 6.0.0
   resolution: "saxes@npm:6.0.0"

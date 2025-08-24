@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2024"
 publish = false
 
+[lib]
+crate-type = ["cdylib", "rlib"]
+
 [dependencies]
 sapling_macros = { path = "../sapling_macros" }
 sapling_shared = { path = "../sapling_shared" }
@@ -11,13 +14,8 @@ biome_js_syntax = { workspace = true }
 biome_js_parser = { workspace = true }
 biome_rowan.workspace = true
 insta = { workspace = true }
-biome_analyze = { workspace = true }
-biome_js_transform = { workspace = true }
-biome_diagnostics = { workspace = true }
 camino = { workspace = true }
 biome_js_formatter = { workspace = true }
-biome_test_utils = { workspace = true }
-tests_macros = { workspace = true }
 biome_js_factory.workspace = true
 biome_formatter = { workspace = true }
 biome_js_semantic = { workspace = true }
