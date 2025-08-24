@@ -16,11 +16,11 @@ impl SaplingTransformer {
         }
     }
 
-    pub fn transform_js_import(&mut self, _node: &JsImport) -> Option<AnyJsModuleItem> {
-        todo!()
+    pub fn transform_js_import(&mut self, node: &JsImport) -> Option<AnyJsModuleItem> {
+        Some(AnyJsModuleItem::JsImport(node.clone()))
     }
 
-    pub fn transform_js_export(&mut self, _node: &JsExport) -> Option<AnyJsModuleItem> {
-        todo!()
+    pub fn transform_js_export(&mut self, node: &JsExport) -> Option<AnyJsModuleItem> {
+        Some(AnyJsModuleItem::JsExport(node.clone()))
     }
 }

@@ -1,0 +1,87 @@
+---
+source: packages/sapling_transformer/tests/test_utils.rs
+expression: counter.tsx
+---
+# Input
+```tsx
+import { State } from "@idealjs/sapling";
+
+class App {
+  @State accessor count: number = 0;
+  public render() {
+    return (
+      <div>
+        <button
+          onClick={() => {
+            this.count++;
+          }}
+        >
+          +
+        </button>
+        {this.count}
+        <button
+          onClick={() => {
+            this.count--;
+          }}
+        >
+          -
+        </button>
+      </div>
+    );
+  }
+}
+
+export default App;
+
+```
+
+# Transformations
+```tsx
+import { State } from "@idealjs/sapling";
+
+class App {
+  @State accessor count: number = 0;
+  public render() {
+    return _$createJsxTagElement(() => {
+      let _el$ = _$createElement("div");
+      let _el$1 = _$createElement("button");
+      _$setProp(
+        _el$1,
+        "
+          onClick",
+        () => {
+          this.count++;
+        },
+      );
+      _$insertNode(
+        _el$1,
+        _$createTextNode("
+          +
+        "),
+      );
+      _$insertNode(_el$, _el$1);
+      _$insert(_el$, this.count);
+      let _el$2 = _$createElement("button");
+      _$setProp(
+        _el$2,
+        "
+          onClick",
+        () => {
+          this.count--;
+        },
+      );
+      _$insertNode(
+        _el$2,
+        _$createTextNode("
+          -
+        "),
+      );
+      _$insertNode(_el$, _el$2);
+      return _el$;
+    });
+  }
+}
+
+export default App;
+
+```

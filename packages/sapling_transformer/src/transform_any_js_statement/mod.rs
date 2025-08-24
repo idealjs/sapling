@@ -1,11 +1,11 @@
 use biome_js_factory::make::{
-    js_function_declaration, js_variable_declaration, js_variable_declarator_list,
-    js_variable_statement, token,
+    js_class_member_list, js_function_declaration, js_variable_declaration,
+    js_variable_declarator_list, js_variable_statement, token,
 };
 use biome_js_syntax::{
-    AnyJsStatement, JsBlockStatement, JsBogusStatement, JsBreakStatement, JsClassDeclaration,
-    JsContinueStatement, JsDebuggerStatement, JsDoWhileStatement, JsEmptyStatement,
-    JsExpressionStatement, JsForInStatement, JsForOfStatement, JsForStatement,
+    AnyJsClassMember, AnyJsStatement, JsBlockStatement, JsBogusStatement, JsBreakStatement,
+    JsClassDeclaration, JsContinueStatement, JsDebuggerStatement, JsDoWhileStatement,
+    JsEmptyStatement, JsExpressionStatement, JsForInStatement, JsForOfStatement, JsForStatement,
     JsFunctionDeclaration, JsIfStatement, JsLabeledStatement, JsMetavariable, JsReturnStatement,
     JsSwitchStatement, JsThrowStatement, JsTryFinallyStatement, JsTryStatement,
     JsVariableDeclarator, JsVariableStatement, JsWhileStatement, JsWithStatement, T,
@@ -150,10 +150,35 @@ impl SaplingTransformer {
         todo!()
     }
     pub fn transform_js_class_declaration(
-        &self,
-        _node: &JsClassDeclaration,
+        &mut self,
+        node: &JsClassDeclaration,
     ) -> Option<AnyJsStatement> {
-        todo!()
+        let mut new_members = vec![];
+        for member in node.members() {
+            let method = match member.as_js_method_class_member() {
+                Some(m) => m,
+                None => {
+                    new_members.push(member);
+                    continue;
+                }
+            };
+
+            match method.body().ok() {
+                Some(body) => {
+                    let new_body = self.transform_js_function_body(&body);
+                    new_members.push(AnyJsClassMember::JsMethodClassMember(
+                        method.clone().with_body(new_body?),
+                    ));
+                }
+                None => {
+                    new_members.push(member);
+                    continue;
+                }
+            };
+        }
+        Some(AnyJsStatement::JsClassDeclaration(
+            node.clone().with_members(js_class_member_list(new_members)),
+        ))
     }
     pub fn transform_js_continue_statement(
         &self,
