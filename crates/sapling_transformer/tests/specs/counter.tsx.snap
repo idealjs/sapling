@@ -50,12 +50,7 @@ class App {
       _$setProp(_el$1, "onClick", () => {
         this.count++;
       });
-      _$insertNode(
-        _el$1,
-        _$createTextNode("
-          +
-        "),
-      );
+      _$insertNode(_el$1, _$createTextNode("+"));
       _$insertNode(_el$, _el$1);
       _$effect(() => {
         _$insert(_el$, this.count);
@@ -64,12 +59,7 @@ class App {
       _$setProp(_el$2, "onClick", () => {
         this.count--;
       });
-      _$insertNode(
-        _el$2,
-        _$createTextNode("
-          -
-        "),
-      );
+      _$insertNode(_el$2, _$createTextNode("-"));
       _$insertNode(_el$, _el$2);
       return _el$;
     });

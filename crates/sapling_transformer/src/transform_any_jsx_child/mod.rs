@@ -65,10 +65,10 @@ impl SaplingTransformer<'_> {
     ) -> Option<AnyJsExpression> {
         // _$insertNode(_el$, _$createTextNode(`template`));
         let binding = node.to_string();
-        let node_value = binding.as_str();
+        let node_value = binding.as_str().trim();
         // due to new line between JSX_CHILD_LIST
         // if node is new line return None
-        if node_value.trim().is_empty() {
+        if node_value.is_empty() {
             return None;
         }
         let inner_call_expression = make_create_text_node(node_value);
