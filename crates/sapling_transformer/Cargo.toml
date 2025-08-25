@@ -8,8 +8,6 @@ publish = false
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-sapling_macros = { path = "../sapling_macros" }
-sapling_shared = { path = "../sapling_shared" }
 biome_js_syntax = { workspace = true }
 biome_js_parser = { workspace = true }
 biome_rowan.workspace = true
@@ -19,6 +17,4 @@ biome_js_formatter = { workspace = true }
 biome_js_factory.workspace = true
 biome_formatter = { workspace = true }
 biome_js_semantic = { workspace = true }
-
-[build-dependencies]
 wasm-bindgen = "0.2.100"

@@ -1,10 +1,6 @@
 [workspace]
 resolver = "2"
-members = [
-    "packages/sapling_macros",
-    "packages/sapling_shared",
-    "packages/sapling_transformer",
-]
+members = ["crates/sapling_transformer"]
 
 [workspace.package]
 version = "0.1.0"

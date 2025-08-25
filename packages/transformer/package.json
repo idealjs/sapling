@@ -1,0 +1,18 @@
+{
+  "name": "@idealjs/sapling-transformer",
+  "main": "sapling_transformer.js",
+  "types": "sapling_transformer.d.ts",
+  "files": [
+    "sapling_transformer_bg.wasm",
+    "sapling_transformer_bg.wasm.d.ts",
+    "sapling_transformer.d.ts",
+    "sapling_transformer.js"
+  ],
+  "scripts": {
+    "build:wasm-dev": "cargo build --target wasm32-unknown-unknown && yarn run bindgen:wasm-dev",
+    "build:wasm": "cargo build --target wasm32-unknown-unknown --release && yarn run bindgen:wasm",
+    "bindgen:wasm-dev": "wasm-bindgen --out-dir ./ --target web ../../target/wasm32-unknown-unknown/debug/sapling_transformer.wasm",
+    "bindgen:wasm": "wasm-bindgen --out-dir ./ --target web ../../target/wasm32-unknown-unknown/release/sapling_transformer.wasm"
+  },
+  "packageManager": "yarn@4.0.1"
+}

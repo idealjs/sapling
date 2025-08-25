@@ -1,8 +1,14 @@
-import { createRoot } from "@idealjs/sapling";
+// import { createRoot } from "@idealjs/sapling";
 
-import App from "./App.tsx";
+// import App from "./App.tsx";
 
-const domNode = document.getElementById("root");
-const root = createRoot(domNode!);
+// const domNode = document.getElementById("root");
+// const root = createRoot(domNode!);
 
-root.render(<App />);
+// root.render(<App />);
+
+import init, { transfrom } from "@idealjs/sapling-transformer";
+
+await init();
+let code = transfrom("const a = <div/>");
+console.log(code);

@@ -8,7 +8,8 @@
     "jsxImportSource": "@idealjs/sapling",
     "paths": {
       "@idealjs/sapling/*": ["../../packages/core/src/*"],
-      "@idealjs/sapling-reactive/*": ["../../packages/reactive/src/*"]
+      "@idealjs/sapling-reactive/*": ["../../packages/reactive/src/*"],
+      "@idealjs/sapling-transformer/*": ["../../packages/transformer/src/*"]
     }
   },
   "include": ["tests"],

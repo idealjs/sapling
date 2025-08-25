@@ -1163,6 +1163,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@idealjs/sapling-transformer@workspace:^, @idealjs/sapling-transformer@workspace:packages/transformer":
+  version: 0.0.0-use.local
+  resolution: "@idealjs/sapling-transformer@workspace:packages/transformer"
+  languageName: unknown
+  linkType: soft
+
 "@idealjs/sapling@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@idealjs/sapling@workspace:packages/core"
@@ -3139,6 +3145,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "counter@workspace:examples/counter"
   dependencies:
+    "@idealjs/sapling-transformer": "workspace:^"
     tslib: "npm:^2.8.1"
     typescript: "npm:~5.8.3"
     vite: "npm:^7.1.2"
@@ -5919,12 +5926,6 @@ __metadata:
     vitest: "npm:^3.0.8"
   peerDependencies:
     rollup: "*"
-  languageName: unknown
-  linkType: soft
-
-"sapling_transformer@workspace:packages/sapling_transformer":
-  version: 0.0.0-use.local
-  resolution: "sapling_transformer@workspace:packages/sapling_transformer"
   languageName: unknown
   linkType: soft
 

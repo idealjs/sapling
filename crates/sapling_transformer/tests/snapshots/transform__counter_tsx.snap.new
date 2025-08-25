@@ -1,0 +1,6 @@
+---
+source: crates/sapling_transformer/tests/transform.rs
+assertion_line: 8
+expression: "format!(\"{:?}\", transformed)"
+---
+Some("const a = _$createJsxTagElement(() => {\n  let _el$ = _$createElement(\"div\");\n  return _el$;\n});\n")

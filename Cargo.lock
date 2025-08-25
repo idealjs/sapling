@@ -711,18 +711,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "28d3b2b1366ec20994f1fd18c3c594f05c5dd4bc44d8bb0c1c632c8d6829481f"
 
 [[package]]
-name = "sapling_macros"
-version = "0.1.0"
-
-[[package]]
-name = "sapling_shared"
-version = "0.1.0"
-dependencies = [
- "insta",
- "sapling_macros",
-]
-
-[[package]]
 name = "sapling_transformer"
 version = "0.1.0"
 dependencies = [
@@ -735,8 +723,6 @@ dependencies = [
  "biome_rowan",
  "camino",
  "insta",
- "sapling_macros",
- "sapling_shared",
  "wasm-bindgen",
 ]
 

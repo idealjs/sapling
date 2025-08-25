@@ -40,7 +40,10 @@ use biome_js_formatter::context::JsFormatOptions;
 use biome_js_formatter::format_node;
 use biome_rowan::BatchMutationExt;
 
-pub fn transfrom(input_code: String) -> Option<String> {
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen]
+pub fn transform(input_code: String) -> Option<String> {
     let parsed_root = parse(
         input_code.as_str(),
         JsFileSource::tsx(),
