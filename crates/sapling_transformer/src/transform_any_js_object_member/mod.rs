@@ -6,7 +6,7 @@ use biome_js_syntax::AnyJsObjectMember;
 
 use crate::SaplingTransformer;
 
-impl SaplingTransformer {
+impl SaplingTransformer<'_> {
     pub fn transform_any_js_object_member(
         &mut self,
         node: &AnyJsObjectMember,

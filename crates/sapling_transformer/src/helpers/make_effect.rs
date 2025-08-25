@@ -1,7 +1,7 @@
 use biome_js_factory::make::{
-    js_call_expression, js_identifier_expression, js_reference_identifier, token,
+    js_call_expression, js_identifier_expression, js_reference_identifier,
 };
-use biome_js_syntax::{AnyJsCallArgument, AnyJsExpression, JsCallExpression, T};
+use biome_js_syntax::{AnyJsCallArgument, AnyJsExpression, JsCallExpression};
 
 use crate::make_js_call_arguments;
 

@@ -21,7 +21,7 @@ use crate::{
     make_insert, make_insert_node, transfrom_jsx_tag_expression::TransformAnyJsxFragmentOptions,
 };
 
-impl SaplingTransformer {
+impl SaplingTransformer<'_> {
     // main entry
     pub fn transform_any_jsx_child(
         &mut self,

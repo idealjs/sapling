@@ -1,10 +1,3 @@
-use std::collections::{HashMap, HashSet};
-
-use biome_js_parser::{JsParserOptions, parse};
-use biome_js_semantic::{SemanticModelOptions, semantic_model};
-use biome_js_syntax::{JsFileSource, JsLanguage};
-use biome_rowan::BatchMutation;
-
 pub mod helpers;
 pub mod scope;
 pub mod transform_any_js_expression;
@@ -21,25 +14,26 @@ pub mod transfrom_jsx_tag_expression;
 pub mod write_transformation_snapshot;
 
 pub use helpers::*;
-pub use scope::*;
-pub use transform_any_js_expression::*;
-pub use transform_any_js_function_body::*;
-pub use transform_any_js_module_item::*;
-pub use transform_any_js_object_member::*;
-pub use transform_any_js_statement::*;
 pub use transform_any_jsx_child::*;
-pub use transform_js_function_body::*;
-pub use transform_js_variable_declarator::*;
 pub use transform_jsx_tag_expression_to_statements::*;
-pub use transformer::*;
-pub use write_transformation_snapshot::*;
-pub type JsBatchMutation = BatchMutation<JsLanguage>;
 
+use crate::transformer::{Config, SaplingTransformer};
+use crate::transfrom_jsx_tag_expression::TransformAnyJsxTagExpressionOptions;
 use biome_formatter::IndentStyle;
 use biome_js_formatter::context::JsFormatOptions;
 use biome_js_formatter::format_node;
+use biome_js_parser::{JsParserOptions, parse};
+use biome_js_semantic::{BindingExtensions, SemanticModelOptions, semantic_model};
+use biome_js_syntax::JsFileSource;
+use biome_js_syntax::{
+    AnyJsClassMember, AnyJsDecorator, AnyJsExpression, AnyJsPropertyModifier, JsClassDeclaration,
+    JsSyntaxKind, JsxTagExpression,
+};
+use biome_rowan::AstNode;
 use biome_rowan::BatchMutationExt;
-
+use biome_rowan::SyntaxNodeCast;
+use biome_rowan::WalkEvent;
+use std::collections::{HashMap, HashSet};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -53,23 +47,96 @@ pub fn transform(input_code: String) -> Option<String> {
 
     let semantic_model = semantic_model(&js_tree, SemanticModelOptions::default());
 
-    let js_module = js_tree.as_js_module()?.clone();
+    let mut decorated_members: HashSet<String> = HashSet::new();
 
     let mut transformer = SaplingTransformer {
-        mutation: js_module.clone().begin(),
-        js_module,
-        semantic_model,
+        semantic_model: semantic_model.clone(),
         scope_generated_identifiers: HashMap::new(),
-        config: Config {
-            ..Default::default()
-        },
-        decorated_members: HashSet::new(),
+        config: Config::default(),
+        decorated_members: &mut decorated_members,
     };
-    transformer.transform();
-    let node = transformer.mutation.commit();
+
+    let mut mutation = js_tree.clone().begin();
+
+    js_tree
+        .into_syntax()
+        .preorder()
+        .try_for_each(|event| match event {
+            WalkEvent::Enter(syntax_node) => match syntax_node.kind() {
+                JsSyntaxKind::JS_CLASS_DECLARATION => {
+                    let node = syntax_node.cast::<JsClassDeclaration>()?;
+                    for member in node.members() {
+                        match member {
+                            AnyJsClassMember::JsPropertyClassMember(member) => {
+                                for modifer in member.modifiers() {
+                                    match modifer {
+                                        AnyJsPropertyModifier::JsDecorator(modifer) => {
+                                            let expr = modifer.expression().ok()?;
+                                            let binding = match expr {
+                                                AnyJsDecorator::JsIdentifierExpression(expr) => {
+                                                    expr.name().ok()?.binding(&semantic_model)
+                                                }
+                                                AnyJsDecorator::JsStaticMemberExpression(expr) => {
+                                                    expr.object()
+                                                        .ok()?
+                                                        .as_js_identifier_expression()?
+                                                        .name()
+                                                        .ok()?
+                                                        .binding(&semantic_model)
+                                                }
+                                                _ => None,
+                                            }?;
+                                            let js_module_source =
+                                                get_js_module_source_from_binding(
+                                                    &semantic_model,
+                                                    &binding,
+                                                )?;
+                                            if js_module_source == "@idealjs/sapling" {
+                                                transformer.decorated_members.insert(
+                                                    member
+                                                        .name()
+                                                        .ok()?
+                                                        .as_js_literal_member_name()?
+                                                        .name()
+                                                        .ok()?
+                                                        .text()
+                                                        .into(),
+                                                );
+                                            }
+                                        }
+                                        _ => {}
+                                    }
+                                }
+                            }
+                            _ => {}
+                        }
+                    }
+                    Some(())
+                }
+                JsSyntaxKind::JSX_TAG_EXPRESSION => {
+                    let node = syntax_node.cast::<JsxTagExpression>()?;
+                    let next_node = transformer.transform_jsx_tag_expression(
+                        &node,
+                        TransformAnyJsxTagExpressionOptions { parent_id: None },
+                    )?;
+                    mutation.replace_node(AnyJsExpression::JsxTagExpression(node), next_node);
+                    Some(())
+                }
+                _ => Some(()),
+            },
+            WalkEvent::Leave(syntax_node) => match syntax_node.kind() {
+                JsSyntaxKind::JS_CLASS_DECLARATION => {
+                    transformer.decorated_members.clear();
+                    Some(())
+                }
+                _ => Some(()),
+            },
+        });
+
+    let syntax_node = mutation.commit();
     let formatted = format_node(
         JsFormatOptions::new(JsFileSource::default()).with_indent_style(IndentStyle::Space),
-        &node,
+        &syntax_node,
     )
     .ok()?
     .print()

@@ -2,7 +2,7 @@ use biome_js_syntax::AnyJsFunctionBody;
 
 use crate::SaplingTransformer;
 
-impl SaplingTransformer {
+impl SaplingTransformer<'_> {
     pub fn transform_any_js_function_body(
         &mut self,
         node: &AnyJsFunctionBody,

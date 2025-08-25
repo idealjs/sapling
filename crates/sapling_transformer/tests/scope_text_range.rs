@@ -31,7 +31,6 @@ fn test_scope_text_range_for_two_vars() {
     }
     let a_node = a_node.expect("a node not found");
     let b_node = b_node.expect("b node not found");
-    println!("a_node: {:?}, b_node: {:?}", a_node, b_node);
     // 2. 使用 model 获取 scope
     let a_scope = model.scope(&a_node);
     let b_scope = model.scope(&b_node);
@@ -39,7 +38,6 @@ fn test_scope_text_range_for_two_vars() {
     // 3. 判断 text range 是否相同
     let a_range = a_scope.range();
     let b_range = b_scope.range();
-    println!("a_scope range: {:?}, b_scope range: {:?}", a_range, b_range);
     assert_eq!(
         a_range, b_range,
         "a 和 b 应该在同一个作用域，text range 应该相同"

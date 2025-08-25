@@ -1,16 +1,8 @@
-use biome_formatter::IndentStyle;
-use biome_js_formatter::context::JsFormatOptions;
-use biome_js_formatter::format_node;
-use biome_js_parser::{JsParserOptions, parse};
-use biome_js_semantic::{SemanticModelOptions, semantic_model};
-use biome_js_syntax::JsFileSource;
-use biome_rowan::BatchMutationExt;
 use camino::Utf8Path;
-use sapling_transformer::{Config, SaplingTransformer, transform, write_transformation_snapshot};
-use std::{
-    collections::{HashMap, HashSet},
-    fs::read_to_string,
+use sapling_transformer::{
+    transform, write_transformation_snapshot::write_transformation_snapshot,
 };
+use std::fs::read_to_string;
 
 pub fn run_test(input: &'static str) -> Option<()> {
     let input_file = Utf8Path::new(input);
@@ -21,49 +13,13 @@ pub fn run_test(input: &'static str) -> Option<()> {
     let input_code = read_to_string(input_file)
         .unwrap_or_else(|err| panic!("failed to read {input_file:?}: {err:?}"));
 
-    let parsed_root = parse(
-        input_code.as_str(),
-        JsFileSource::tsx(),
-        JsParserOptions::default(),
-    );
-
-    let js_tree = parsed_root.try_tree()?;
-
-    let semantic_model = semantic_model(&js_tree, SemanticModelOptions::default());
-
-    let js_module = js_tree.as_js_module()?.clone();
-
-    let mut transformer = SaplingTransformer {
-        mutation: js_module.clone().begin(),
-        js_module,
-        semantic_model,
-        scope_generated_identifiers: HashMap::new(),
-        config: Config {
-            ..Default::default()
-        },
-        decorated_members: HashSet::new(),
-    };
-
-    transformer.transform();
-
-    let node = transformer.mutation.commit();
-
-    let source_type = input_file.try_into().ok()?;
-    let formatted = format_node(
-        JsFormatOptions::new(source_type).with_indent_style(IndentStyle::Space),
-        &node,
-    )
-    .ok()?
-    .print()
-    .ok()?
-    .as_code()
-    .to_string();
+    let formatted = transform(input_code.clone())?;
 
     write_transformation_snapshot(
         &mut snapshot,
-        input_code.as_str(),
+        input_code.clone().as_str(),
         formatted.as_str(),
-        source_type.file_extension(),
+        input_file.extension()?,
     );
 
     insta::with_settings!({

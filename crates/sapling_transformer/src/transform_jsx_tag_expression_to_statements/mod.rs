@@ -37,7 +37,7 @@ pub struct TransformJsxExpressionChildToStatementsOptions {
 }
 
 // todo none used
-impl SaplingTransformer {
+impl SaplingTransformer<'_> {
     pub fn transform_jsx_element_to_statements(
         &mut self,
         node: &JsxElement,

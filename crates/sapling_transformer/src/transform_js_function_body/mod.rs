@@ -3,7 +3,7 @@ use biome_js_syntax::{AnyJsStatement, JsFunctionBody, T};
 
 use crate::SaplingTransformer;
 
-impl SaplingTransformer {
+impl SaplingTransformer<'_> {
     pub fn transform_js_function_body(&mut self, node: &JsFunctionBody) -> Option<JsFunctionBody> {
         let new_statements: Vec<AnyJsStatement> = node
             .statements()

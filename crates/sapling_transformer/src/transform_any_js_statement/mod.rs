@@ -17,7 +17,7 @@ use biome_js_syntax::{
 
 use crate::{SaplingTransformer, get_js_module_source_from_binding, make_js_return_statement};
 
-impl SaplingTransformer {
+impl SaplingTransformer<'_> {
     // main entry
     pub fn transform_any_js_statement(&mut self, node: &AnyJsStatement) -> Option<AnyJsStatement> {
         match node {

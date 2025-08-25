@@ -3,7 +3,7 @@ use biome_js_syntax::{JsVariableDeclarator, T};
 
 use crate::SaplingTransformer;
 
-impl SaplingTransformer {
+impl SaplingTransformer<'_> {
     // main entry
     pub fn transform_js_variable_declarator(
         &mut self,

@@ -20,7 +20,7 @@ use crate::{
     SaplingTransformer, transfrom_jsx_tag_expression::TransformAnyJsxTagExpressionOptions,
 };
 
-impl SaplingTransformer {
+impl SaplingTransformer<'_> {
     // main entry
     pub fn transform_any_js_expression(
         &mut self,

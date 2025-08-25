@@ -4,7 +4,7 @@ use biome_js_semantic::Scope;
 
 use std::collections::HashSet;
 
-impl SaplingTransformer {
+impl SaplingTransformer<'_> {
     pub fn generate_unique_identifier(&mut self, scope: &Scope, base: &str) -> String {
         let mut name = base.to_string();
         let mut counter = 0;
