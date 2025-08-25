@@ -13,7 +13,7 @@
     "vite": "^7.1.2"
   },
   "dependencies": {
-    "@idealjs/sapling-transformer": "workspace:^",
+    "@idealjs/sapling-transformer-web": "workspace:^",
     "tslib": "^2.8.1"
   }
 }

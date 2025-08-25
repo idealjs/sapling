@@ -1,13 +1,13 @@
-import { transformSync } from "@babel/core";
 import { parse } from "@babel/parser";
 import traverse from "@babel/traverse";
+import { transform } from "@idealjs/sapling-transformer-nodejs";
 import { Plugin } from "rollup";
 
 const virtualExtractFilter = /\.virtual\.file\?source=.*$/;
 
-const saplingRolldownPlugin = (): Plugin => {
+const saplingRollupPlugin = (): Plugin => {
   return {
-    name: "sapling-rolldown-plugin",
+    name: "sapling-rollup-plugin",
     resolveId(id) {
       if (!virtualExtractFilter.test(id)) {
         return;
@@ -25,17 +25,12 @@ const saplingRolldownPlugin = (): Plugin => {
       }
       return null; // other ids should be handled as usually
     },
-    transform(code, id) {
-      const babelFileResult = transformSync(code, {
-        presets: ["@babel/preset-typescript", "@babel/preset-react"],
-        filename: id,
-        ast: true,
-      });
-      console.log("test test", babelFileResult);
+    async transform(code, id) {
+      const result = transform(code);
 
-      return babelFileResult?.code;
+      return result;
     },
   };
 };
 
-export default saplingRolldownPlugin;
+export default saplingRollupPlugin;

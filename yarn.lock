@@ -1163,13 +1163,25 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@idealjs/sapling-transformer@workspace:^, @idealjs/sapling-transformer@workspace:packages/transformer":
+"@idealjs/sapling-transformer-bundler@workspace:packages/transformer-bundler":
   version: 0.0.0-use.local
-  resolution: "@idealjs/sapling-transformer@workspace:packages/transformer"
+  resolution: "@idealjs/sapling-transformer-bundler@workspace:packages/transformer-bundler"
   languageName: unknown
   linkType: soft
 
-"@idealjs/sapling@workspace:packages/core":
+"@idealjs/sapling-transformer-nodejs@workspace:^, @idealjs/sapling-transformer-nodejs@workspace:packages/transformer-nodejs":
+  version: 0.0.0-use.local
+  resolution: "@idealjs/sapling-transformer-nodejs@workspace:packages/transformer-nodejs"
+  languageName: unknown
+  linkType: soft
+
+"@idealjs/sapling-transformer-web@workspace:^, @idealjs/sapling-transformer-web@workspace:packages/transformer-web":
+  version: 0.0.0-use.local
+  resolution: "@idealjs/sapling-transformer-web@workspace:packages/transformer-web"
+  languageName: unknown
+  linkType: soft
+
+"@idealjs/sapling@workspace:^, @idealjs/sapling@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@idealjs/sapling@workspace:packages/core"
   dependencies:
@@ -3145,7 +3157,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "counter@workspace:examples/counter"
   dependencies:
-    "@idealjs/sapling-transformer": "workspace:^"
+    "@idealjs/sapling-transformer-web": "workspace:^"
     tslib: "npm:^2.8.1"
     typescript: "npm:~5.8.3"
     vite: "npm:^7.1.2"
@@ -5912,6 +5924,8 @@ __metadata:
     "@babel/preset-react": "npm:^7.26.3"
     "@babel/preset-typescript": "npm:^7.26.0"
     "@babel/traverse": "npm:^7.26.9"
+    "@idealjs/sapling": "workspace:^"
+    "@idealjs/sapling-transformer-nodejs": "workspace:^"
     "@rollup/plugin-babel": "npm:^6.0.4"
     "@swc/core": "npm:^1.11.8"
     "@types/babel__core": "npm:^7.20.5"

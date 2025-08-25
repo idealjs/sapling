@@ -7,8 +7,8 @@
 
 // root.render(<App />);
 
-import init, { transfrom } from "@idealjs/sapling-transformer";
+import init, { transform } from "@idealjs/sapling-transformer-web";
 
 await init();
-let code = transfrom("const a = <div/>");
+let code = transform("const a = <div/>");
 console.log(code);

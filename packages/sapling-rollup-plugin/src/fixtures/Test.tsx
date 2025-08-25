@@ -1,11 +1,28 @@
-"use client";
+import { State } from "@idealjs/sapling";
 
-const style = (values: unknown): string => {
-  return "";
-};
-
-const Test = () => {
-  return <div className={style({})}>Test</div>;
-};
+class Test {
+  @State accessor count: number = 0;
+  public render() {
+    return (
+      <div>
+        <button
+          onClick={() => {
+            this.count++;
+          }}
+        >
+          +
+        </button>
+        {this.count}
+        <button
+          onClick={() => {
+            this.count--;
+          }}
+        >
+          -
+        </button>
+      </div>
+    );
+  }
+}
 
 export default Test;
