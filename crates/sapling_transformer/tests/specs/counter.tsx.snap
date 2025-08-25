@@ -1,5 +1,5 @@
 ---
-source: packages/sapling_transformer/tests/test_utils.rs
+source: crates/sapling_transformer/tests/test_utils.rs
 expression: counter.tsx
 ---
 # Input

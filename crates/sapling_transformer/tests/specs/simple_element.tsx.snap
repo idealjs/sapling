@@ -1,0 +1,18 @@
+---
+source: crates/sapling_transformer/tests/test_utils.rs
+expression: simple_element.tsx
+---
+# Input
+```tsx
+const a = <div />;
+
+```
+
+# Transformations
+```tsx
+const a = _$createJsxTagElement(() => {
+  let _el$ = _$createElement("div");
+  return _el$;
+});
+
+```

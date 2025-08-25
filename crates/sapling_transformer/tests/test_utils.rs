@@ -27,7 +27,7 @@ pub fn run_test(input: &'static str) -> Option<()> {
         snapshot_path => {
             let path = input_file.parent().unwrap();
             let path_str = path.as_str();
-            if let Some(idx) = path_str.find("specs/") {
+            if let Some(idx) = path_str.find("specs") {
                 Utf8Path::new(&path_str[idx..])
             } else {
                 path
