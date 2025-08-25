@@ -1,0 +1,72 @@
+---
+source: crates/sapling_transformer/tests/test_utils.rs
+assertion_line: 38
+expression: counter.tsx
+---
+# Input
+```tsx
+import { State } from "@idealjs/sapling";
+
+class App {
+  @State
+  accessor obj: { count: number } = { count: 0 };
+  public render() {
+    let { count } = this.obj;
+    return (
+      <div>
+        <button
+          onClick={() => {
+            count++;
+          }}
+        >
+          +
+        </button>
+        {count}
+        <button
+          onClick={() => {
+            count--;
+          }}
+        >
+          -
+        </button>
+      </div>
+    );
+  }
+}
+
+export default App;
+
+```
+
+# Transformations
+```tsx
+import { State } from "@idealjs/sapling";
+
+class App {
+  @State
+  accessor obj: { count: number } = { count: 0 };
+  public render() {
+    let { count } = this.obj;
+    return _$createJsxTagElement(() => {
+      let _el$ = _$createElement("div");
+      let _el$1 = _$createElement("button");
+      _$setProp(_el$1, "onClick", () => {
+        count++;
+      });
+      _$insertNode(_el$1, _$createTextNode("+"));
+      _$insertNode(_el$, _el$1);
+      _$insert(_el$, count);
+      let _el$2 = _$createElement("button");
+      _$setProp(_el$2, "onClick", () => {
+        count--;
+      });
+      _$insertNode(_el$2, _$createTextNode("-"));
+      _$insertNode(_el$, _el$2);
+      return _el$;
+    });
+  }
+}
+
+export default App;
+
+```

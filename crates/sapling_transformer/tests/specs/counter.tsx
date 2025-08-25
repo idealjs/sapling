@@ -1,22 +1,23 @@
 import { State } from "@idealjs/sapling";
 
 class App {
-  @State 
-  accessor count: number = 0;
+  @State
+  accessor obj: { count: number } = { count: 0 };
   public render() {
+    let { count } = this.obj;
     return (
       <div>
         <button
           onClick={() => {
-            this.count++;
+            count++;
           }}
         >
           +
         </button>
-        {this.count}
+        {count}
         <button
           onClick={() => {
-            this.count--;
+            count--;
           }}
         >
           -

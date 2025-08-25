@@ -36,3 +36,9 @@ pub fn simple_element() {
     let test_file = "tests/specs/simple_element.tsx";
     run_test(test_file);
 }
+
+#[test]
+pub fn todo_list() {
+    let test_file = "tests/specs/todo_list.tsx";
+    run_test(test_file);
+}
