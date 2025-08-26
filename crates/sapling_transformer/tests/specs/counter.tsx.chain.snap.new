@@ -1,3 +1,10 @@
+---
+source: crates/sapling_transformer/tests/expr_chain.rs
+assertion_line: 82
+expression: counter.tsx.chain
+---
+# Input
+```tsx
 import { State } from "@idealjs/sapling";
 
 class App {
@@ -10,7 +17,6 @@ class App {
     let { counter } = obj;
     let { a } = counter;
     let key: "a" | "b" = "a";
-    let xxx: "obj" | "" = "obj";
     return (
       <div>
         <button
@@ -25,7 +31,6 @@ class App {
         {obj.counter.a}
         {this.obj.counter.a}
         {this.obj.counter[key]}
-        {this[xxx].counter[key]}
         <button
           onClick={() => {
             a--;
@@ -39,3 +44,14 @@ class App {
 }
 
 export default App;
+
+```
+
+# Transformations
+```tsx
+obj,counter,a
+obj,counter,a
+obj,counter,a
+obj,counter,a
+obj,counter
+```

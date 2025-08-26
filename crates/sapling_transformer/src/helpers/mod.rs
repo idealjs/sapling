@@ -11,6 +11,7 @@ use biome_js_syntax::{
     JsParameterList, JsParameters, JsReturnStatement, JsStatementList, JsSyntaxToken, T,
 };
 
+pub mod expr_chain;
 pub mod get_js_module_source_from_binding;
 pub mod jsx_element_name_to_string;
 pub mod make_array;
@@ -23,6 +24,7 @@ pub mod make_insert;
 pub mod make_insert_node;
 pub mod make_set_prop;
 
+pub use expr_chain::*;
 pub use get_js_module_source_from_binding::*;
 pub use jsx_element_name_to_string::*;
 pub use make_array::*;

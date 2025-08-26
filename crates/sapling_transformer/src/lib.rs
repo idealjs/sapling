@@ -1,3 +1,4 @@
+pub mod bit_mask;
 pub mod helpers;
 pub mod scope;
 pub mod transform_any_js_expression;
@@ -13,6 +14,7 @@ pub mod transformer;
 pub mod transfrom_jsx_tag_expression;
 pub mod write_transformation_snapshot;
 
+pub use bit_mask::*;
 pub use helpers::*;
 pub use transform_any_jsx_child::*;
 pub use transform_jsx_tag_expression_to_statements::*;
@@ -48,12 +50,14 @@ pub fn transform(input_code: String) -> Option<String> {
     let semantic_model = semantic_model(&js_tree, SemanticModelOptions::default());
 
     let mut decorated_members: HashSet<String> = HashSet::new();
+    let mut bit_map = BitMask::new();
 
     let mut transformer = SaplingTransformer {
         semantic_model: semantic_model.clone(),
         scope_generated_identifiers: HashMap::new(),
         config: Config::default(),
         decorated_members: &mut decorated_members,
+        bit_map: &mut bit_map,
     };
 
     let mut mutation = js_tree.clone().begin();
@@ -92,16 +96,18 @@ pub fn transform(input_code: String) -> Option<String> {
                                                     &binding,
                                                 )?;
                                             if js_module_source == "@idealjs/sapling" {
-                                                transformer.decorated_members.insert(
-                                                    member
-                                                        .name()
-                                                        .ok()?
-                                                        .as_js_literal_member_name()?
-                                                        .name()
-                                                        .ok()?
-                                                        .text()
-                                                        .into(),
-                                                );
+                                                let member_key: String = member
+                                                    .name()
+                                                    .ok()?
+                                                    .as_js_literal_member_name()?
+                                                    .name()
+                                                    .ok()?
+                                                    .text()
+                                                    .into();
+                                                transformer
+                                                    .decorated_members
+                                                    .insert(member_key.clone());
+                                                transformer.bit_map.add_key(member_key);
                                             }
                                         }
                                         _ => {}
@@ -122,6 +128,9 @@ pub fn transform(input_code: String) -> Option<String> {
                     mutation.replace_node(AnyJsExpression::JsxTagExpression(node), next_node);
                     Some(())
                 }
+                JsSyntaxKind::JS_EXPRESSION_STATEMENT => Some(()),
+                JsSyntaxKind::JSX_EXPRESSION_CHILD => Some(()),
+                JsSyntaxKind::JSX_EXPRESSION_ATTRIBUTE_VALUE => Some(()),
                 _ => Some(()),
             },
             WalkEvent::Leave(syntax_node) => match syntax_node.kind() {

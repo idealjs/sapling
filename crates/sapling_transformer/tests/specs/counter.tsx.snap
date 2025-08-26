@@ -7,22 +7,28 @@ expression: counter.tsx
 import { State } from "@idealjs/sapling";
 
 class App {
-  @State 
-  accessor count: number = 0;
+  @State
+  accessor obj: { counter: { a: number } } = { counter: { a: 0 } };
   public render() {
+    let { obj } = this;
+    let { counter } = obj;
+    let { a } = counter;
     return (
       <div>
         <button
           onClick={() => {
-            this.count++;
+            a++;
           }}
         >
           +
         </button>
-        {this.count}
+        {a}
+        {counter.a}
+        {obj.counter.a}
+        {this.obj.counter.a}
         <button
           onClick={() => {
-            this.count--;
+            a--;
           }}
         >
           -
@@ -42,22 +48,26 @@ import { State } from "@idealjs/sapling";
 
 class App {
   @State
-  accessor count: number = 0;
+  accessor obj: { counter: { a: number } } = { counter: { a: 0 } };
   public render() {
+    let { obj } = this;
+    let { counter } = obj;
+    let { a } = counter;
     return _$createJsxTagElement(() => {
       let _el$ = _$createElement("div");
       let _el$1 = _$createElement("button");
       _$setProp(_el$1, "onClick", () => {
-        this.count++;
+        a++;
       });
       _$insertNode(_el$1, _$createTextNode("+"));
       _$insertNode(_el$, _el$1);
-      _$effect(() => {
-        _$insert(_el$, this.count);
-      });
+      _$insert(_el$, a);
+      _$insert(_el$, counter.a);
+      _$insert(_el$, obj.counter.a);
+      _$insert(_el$, this.obj.counter.a);
       let _el$2 = _$createElement("button");
       _$setProp(_el$2, "onClick", () => {
-        this.count--;
+        a--;
       });
       _$insertNode(_el$2, _$createTextNode("-"));
       _$insertNode(_el$, _el$2);
