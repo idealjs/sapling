@@ -167,6 +167,40 @@ class Example {
 }
 ```
 
+## 基于用户代码的追踪
+
+```tsx
+import { State } from "@idealjs/sapling";
+
+class App {
+  @State
+  accessor obj: { count: number } = { count: 0 };
+  public render() {
+    let { count } = this.obj;
+    return _$createJsxTagElement(() => {
+      let _el$ = _$createElement("div");
+      let _el$1 = _$createElement("button");
+      _$setProp(_el$1, "onClick", () => {
+        count++;
+        update(0b01/* this.obj */ + 0b10 /* count */);
+      });
+      _$insertNode(_el$1, _$createTextNode("+"));
+      _$insertNode(_el$, _el$1);
+      // 追踪 count 来源，生成依赖 `0b01/* this.obj */ + 0b10 /* count */`
+      effect(
+        () => {
+          _$insert(_el$, count);
+        },
+        0b01/* this.obj */ + 0b10 /* count */,
+      );
+      return _el$;
+    });
+  }
+}
+
+export default App;
+```
+
 # 非用户代码
 
 如，为提供响应式能力而添加的非用户代码 ———— get 函数。
