@@ -66,6 +66,31 @@ class App {
         <button
           onClick={() => {
             aa--;
+            ab--;
+            ba--;
+            bb--;
+            nestedAA--;
+            counterA.a--;
+            counterA.b--;
+            counterB.a--;
+            counterB.b--;
+            obj.counterA.a--;
+            obj.counterA.b--;
+            obj.counterB.a--;
+            obj.counterB.b--;
+            this.obj.counterA.a--;
+            this.obj.counterA.b--;
+            this.obj.counterB.a--;
+            this.obj.counterB.b--;
+            this.obj.counterA[key]--;
+            this.obj.counterB[key]--;
+            this.obj[counterKey].a--;
+            this.obj[counterKey].b--;
+            this.obj[counterKey].a--;
+            this.obj[counterKey].b--;
+            this.obj[counterKey][key]--;
+            this.obj[counterKey][key]--;
+            this[xxx].counterA[key]--;
           }}
         >
           -
