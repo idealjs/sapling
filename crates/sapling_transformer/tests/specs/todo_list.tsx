@@ -4,13 +4,15 @@ import For from "./for";
 
 class App {
   @State accessor todos: ITodo[] = [];
-  render = (
-    <div>
-      <For each={this.todos} fallback={<div>Loading...</div>}>
-        {(item) => <Todo todo={item} />}
-      </For>
-    </div>
-  );
+  render() {
+    return (
+      <div>
+        <For each={this.todos} fallback={<div>Loading...</div>}>
+          {(item) => <Todo todo={item} />}
+        </For>
+      </div>
+    );
+  }
 }
 
 export interface ITodo {

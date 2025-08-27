@@ -8,33 +8,64 @@ import { State } from "@idealjs/sapling";
 
 class App {
   @State
-  accessor obj: { counter: { a: number; b: number } } = {
-    counter: { a: 0, b: 0 },
+  accessor obj: {
+    counterA: { a: number; b: number };
+    counterB: { a: number; b: number };
+  } = {
+    counterA: { a: 0, b: 0 },
+    counterB: { a: 0, b: 0 },
   };
   public render() {
     let { obj } = this;
-    let { counter } = obj;
-    let { a } = counter;
+    let { counterA, counterB } = obj;
+    let { a: aa } = counterA;
+    let { b: ab } = counterA;
+    let { a: ba } = counterB;
+    let { b: bb } = counterB;
     let key: "a" | "b" = "a";
     let xxx: "obj" | "" = "obj";
+    let counterKey: "counterA" | "counterB" = "counterA";
+    let {
+      counterA: { a: nestedAA },
+    } = this.obj;
     return (
       <div>
         <button
           onClick={() => {
-            a++;
+            aa++;
           }}
         >
           +
         </button>
-        {a}
-        {counter.a}
-        {obj.counter.a}
-        {this.obj.counter.a}
-        {this.obj.counter[key]}
-        {this[xxx].counter[key]}
+        {aa}
+        {ab}
+        {ba}
+        {bb}
+        {nestedAA}
+        {counterA.a}
+        {counterA.b}
+        {counterB.a}
+        {counterB.b}
+        {obj.counterA.a}
+        {obj.counterA.b}
+        {obj.counterB.a}
+        {obj.counterB.b}
+        {this.obj.counterA.a}
+        {this.obj.counterA.b}
+        {this.obj.counterB.a}
+        {this.obj.counterB.b}
+        {this.obj.counterA[key]}
+        {this.obj.counterB[key]}
+        {this.obj[counterKey].a}
+        {this.obj[counterKey].b}
+        {this.obj[counterKey].a}
+        {this.obj[counterKey].b}
+        {this.obj[counterKey][key]}
+        {this.obj[counterKey][key]}
+        {this[xxx].counterA[key]}
         <button
           onClick={() => {
-            a--;
+            aa--;
           }}
         >
           -
@@ -54,32 +85,115 @@ import { State } from "@idealjs/sapling";
 
 class App {
   @State
-  accessor obj: { counter: { a: number; b: number } } = {
-    counter: { a: 0, b: 0 },
+  accessor obj: {
+    counterA: { a: number; b: number };
+    counterB: { a: number; b: number };
+  } = {
+    counterA: { a: 0, b: 0 },
+    counterB: { a: 0, b: 0 },
   };
   public render() {
     let { obj } = this;
-    let { counter } = obj;
-    let { a } = counter;
+    let { counterA, counterB } = obj;
+    let { a: aa } = counterA;
+    let { b: ab } = counterA;
+    let { a: ba } = counterB;
+    let { b: bb } = counterB;
     let key: "a" | "b" = "a";
     let xxx: "obj" | "" = "obj";
+    let counterKey: "counterA" | "counterB" = "counterA";
+    let {
+      counterA: { a: nestedAA },
+    } = this.obj;
     return _$createJsxTagElement(() => {
       let _el$ = _$createElement("div");
       let _el$1 = _$createElement("button");
       _$setProp(_el$1, "onClick", () => {
-        a++;
+        aa++;
       });
       _$insertNode(_el$1, _$createTextNode("+"));
       _$insertNode(_el$, _el$1);
-      _$insert(_el$, a);
-      _$insert(_el$, counter.a);
-      _$insert(_el$, obj.counter.a);
-      _$insert(_el$, this.obj.counter.a);
-      _$insert(_el$, this.obj.counter[key]);
-      _$insert(_el$, this[xxx].counter[key]);
+      _$effect(() => {
+        _$insert(_el$, aa);
+      }, [0, 0, 0]);
+      _$effect(() => {
+        _$insert(_el$, ab);
+      }, [0, 0, 1]);
+      _$effect(() => {
+        _$insert(_el$, ba);
+      }, [0, 1, 0]);
+      _$effect(() => {
+        _$insert(_el$, bb);
+      }, [0, 1, 1]);
+      _$effect(() => {
+        _$insert(_el$, nestedAA);
+      }, [0, 0, 0]);
+      _$effect(() => {
+        _$insert(_el$, counterA.a);
+      }, [0, 0, 0]);
+      _$effect(() => {
+        _$insert(_el$, counterA.b);
+      }, [0, 0, 1]);
+      _$effect(() => {
+        _$insert(_el$, counterB.a);
+      }, [0, 1, 0]);
+      _$effect(() => {
+        _$insert(_el$, counterB.b);
+      }, [0, 1, 1]);
+      _$effect(() => {
+        _$insert(_el$, obj.counterA.a);
+      }, [0, 0, 0]);
+      _$effect(() => {
+        _$insert(_el$, obj.counterA.b);
+      }, [0, 0, 1]);
+      _$effect(() => {
+        _$insert(_el$, obj.counterB.a);
+      }, [0, 1, 0]);
+      _$effect(() => {
+        _$insert(_el$, obj.counterB.b);
+      }, [0, 1, 1]);
+      _$effect(() => {
+        _$insert(_el$, this.obj.counterA.a);
+      }, [0, 0, 0]);
+      _$effect(() => {
+        _$insert(_el$, this.obj.counterA.b);
+      }, [0, 0, 1]);
+      _$effect(() => {
+        _$insert(_el$, this.obj.counterB.a);
+      }, [0, 1, 0]);
+      _$effect(() => {
+        _$insert(_el$, this.obj.counterB.b);
+      }, [0, 1, 1]);
+      _$effect(() => {
+        _$insert(_el$, this.obj.counterA[key]);
+      }, [0, 0]);
+      _$effect(() => {
+        _$insert(_el$, this.obj.counterB[key]);
+      }, [0, 1]);
+      _$effect(() => {
+        _$insert(_el$, this.obj[counterKey].a);
+      }, [0]);
+      _$effect(() => {
+        _$insert(_el$, this.obj[counterKey].b);
+      }, [0]);
+      _$effect(() => {
+        _$insert(_el$, this.obj[counterKey].a);
+      }, [0]);
+      _$effect(() => {
+        _$insert(_el$, this.obj[counterKey].b);
+      }, [0]);
+      _$effect(() => {
+        _$insert(_el$, this.obj[counterKey][key]);
+      }, [0]);
+      _$effect(() => {
+        _$insert(_el$, this.obj[counterKey][key]);
+      }, [0]);
+      _$effect(() => {
+        _$insert(_el$, this[xxx].counterA[key]);
+      }, []);
       let _el$2 = _$createElement("button");
       _$setProp(_el$2, "onClick", () => {
-        a--;
+        aa--;
       });
       _$insertNode(_el$2, _$createTextNode("-"));
       _$insertNode(_el$, _el$2);

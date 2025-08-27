@@ -162,7 +162,7 @@ impl SaplingTransformer<'_> {
         todo!()
     }
     pub fn transform_jsx_expression_child_to_statements(
-        &self,
+        &mut self,
         node: &JsxExpressionChild,
         transform_options: TransformJsxExpressionChildToStatementsOptions,
     ) -> Option<Vec<AnyJsStatement>> {
@@ -235,9 +235,12 @@ impl SaplingTransformer<'_> {
                     if is_call_expr {
                         statments.push(AnyJsStatement::JsExpressionStatement(
                             js_expression_statement(AnyJsExpression::JsCallExpression(
-                                make_effect(AnyJsExpression::JsArrowFunctionExpression(
-                                    make_arrow_function_from_statement(set_prop_statement),
-                                )),
+                                make_effect(
+                                    AnyJsExpression::JsArrowFunctionExpression(
+                                        make_arrow_function_from_statement(set_prop_statement),
+                                    ),
+                                    Vec::new(),
+                                ),
                             ))
                             .build(),
                         ));

@@ -64,7 +64,7 @@ function Attr4() {
     let _el$ = _$createElement("div");
     _$effect(() => {
       _$setProp(_el$, "style", getSomeStyle());
-    });
+    }, []);
     return _el$;
   });
 }

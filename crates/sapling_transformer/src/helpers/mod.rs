@@ -23,6 +23,7 @@ pub mod make_effect;
 pub mod make_insert;
 pub mod make_insert_node;
 pub mod make_set_prop;
+pub mod string_tree;
 
 pub use expr_chain::*;
 pub use get_js_module_source_from_binding::*;
@@ -36,6 +37,7 @@ pub use make_effect::*;
 pub use make_insert::*;
 pub use make_insert_node::*;
 pub use make_set_prop::*;
+pub use string_tree::*;
 
 pub fn make_js_call_expression(
     arrow_function_expression: JsArrowFunctionExpression,

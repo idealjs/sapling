@@ -17,8 +17,9 @@ pub struct TransformJsxExpressionChildOptions {
 }
 
 use crate::{
-    SaplingTransformer, make_arrow_function_from_statement, make_create_text_node, make_effect,
-    make_insert, make_insert_node, transfrom_jsx_tag_expression::TransformAnyJsxFragmentOptions,
+    SaplingTransformer, get_expr_chain_from_any_js_expression, make_arrow_function_from_statement,
+    make_create_text_node, make_effect, make_insert, make_insert_node,
+    transfrom_jsx_tag_expression::TransformAnyJsxFragmentOptions,
 };
 
 impl SaplingTransformer<'_> {
@@ -84,42 +85,48 @@ impl SaplingTransformer<'_> {
     }
 
     pub fn transform_jsx_expression_child(
-        &self,
+        &mut self,
         node: &JsxExpressionChild,
         transform_options: TransformJsxExpressionChildOptions,
     ) -> Option<AnyJsExpression> {
         let expression = node.expression()?;
         let parent_id = transform_options.parent_id?;
 
-        let call_expr = match expression {
-            AnyJsExpression::JsStaticMemberExpression(expr) => {
-                let member = expr.member().ok()?;
-                let name = member.as_js_name().cloned()?;
-                let token = name.value_token().ok()?;
-                let token_text = token.text_trimmed().to_string();
-                let call_expr = if self.decorated_members.contains(&token_text) {
-                    make_effect(AnyJsExpression::JsArrowFunctionExpression(
-                        make_arrow_function_from_statement(
-                            biome_js_syntax::AnyJsStatement::JsExpressionStatement(
-                                js_expression_statement(AnyJsExpression::JsCallExpression(
-                                    make_insert(
-                                        parent_id.as_str(),
-                                        AnyJsExpression::JsStaticMemberExpression(expr),
-                                    ),
-                                ))
-                                .build(),
-                            ),
-                        ),
-                    ))
-                } else {
-                    make_insert(
-                        parent_id.as_str(),
-                        AnyJsExpression::JsStaticMemberExpression(expr),
-                    )
-                };
-                call_expr
-            }
-            _ => make_insert(parent_id.as_str(), expression),
+        let expr_chain = if let Some(expr_chain) = get_expr_chain_from_any_js_expression(
+            &self.semantic_model,
+            self.decorated_members,
+            &expression,
+        ) {
+            expr_chain
+        } else {
+            return Some(AnyJsExpression::JsCallExpression(make_insert(
+                parent_id.as_str(),
+                expression,
+            )));
+        };
+
+        let should_effect = match expr_chain.first() {
+            Some(None) => true,
+            Some(Some(val)) => self.decorated_members.contains(val),
+            _ => false,
+        };
+        
+        let call_expr = if should_effect {
+            let bit: Vec<usize> = self.string_tree.process_path(&expr_chain);
+            make_effect(
+                AnyJsExpression::JsArrowFunctionExpression(make_arrow_function_from_statement(
+                    biome_js_syntax::AnyJsStatement::JsExpressionStatement(
+                        js_expression_statement(AnyJsExpression::JsCallExpression(make_insert(
+                            parent_id.as_str(),
+                            expression,
+                        )))
+                        .build(),
+                    ),
+                )),
+                bit,
+            )
+        } else {
+            make_insert(parent_id.as_str(), expression)
         };
 
         Some(AnyJsExpression::JsCallExpression(call_expr))

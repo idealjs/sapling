@@ -51,6 +51,7 @@ pub fn transform(input_code: String) -> Option<String> {
 
     let mut decorated_members: HashSet<String> = HashSet::new();
     let mut bit_map = BitMask::new();
+    let mut string_tree = StringTree::default();
 
     let mut transformer = SaplingTransformer {
         semantic_model: semantic_model.clone(),
@@ -58,6 +59,7 @@ pub fn transform(input_code: String) -> Option<String> {
         config: Config::default(),
         decorated_members: &mut decorated_members,
         bit_map: &mut bit_map,
+        string_tree: &mut string_tree,
     };
 
     let mut mutation = js_tree.clone().begin();
@@ -136,6 +138,7 @@ pub fn transform(input_code: String) -> Option<String> {
             WalkEvent::Leave(syntax_node) => match syntax_node.kind() {
                 JsSyntaxKind::JS_CLASS_DECLARATION => {
                     transformer.decorated_members.clear();
+                    transformer.string_tree.clear();
                     Some(())
                 }
                 _ => Some(()),

@@ -2,33 +2,64 @@ import { State } from "@idealjs/sapling";
 
 class App {
   @State
-  accessor obj: { counter: { a: number; b: number } } = {
-    counter: { a: 0, b: 0 },
+  accessor obj: {
+    counterA: { a: number; b: number };
+    counterB: { a: number; b: number };
+  } = {
+    counterA: { a: 0, b: 0 },
+    counterB: { a: 0, b: 0 },
   };
   public render() {
     let { obj } = this;
-    let { counter } = obj;
-    let { a } = counter;
+    let { counterA, counterB } = obj;
+    let { a: aa } = counterA;
+    let { b: ab } = counterA;
+    let { a: ba } = counterB;
+    let { b: bb } = counterB;
     let key: "a" | "b" = "a";
     let xxx: "obj" | "" = "obj";
+    let counterKey: "counterA" | "counterB" = "counterA";
+    let {
+      counterA: { a: nestedAA },
+    } = this.obj;
     return (
       <div>
         <button
           onClick={() => {
-            a++;
+            aa++;
           }}
         >
           +
         </button>
-        {a}
-        {counter.a}
-        {obj.counter.a}
-        {this.obj.counter.a}
-        {this.obj.counter[key]}
-        {this[xxx].counter[key]}
+        {aa}
+        {ab}
+        {ba}
+        {bb}
+        {nestedAA}
+        {counterA.a}
+        {counterA.b}
+        {counterB.a}
+        {counterB.b}
+        {obj.counterA.a}
+        {obj.counterA.b}
+        {obj.counterB.a}
+        {obj.counterB.b}
+        {this.obj.counterA.a}
+        {this.obj.counterA.b}
+        {this.obj.counterB.a}
+        {this.obj.counterB.b}
+        {this.obj.counterA[key]}
+        {this.obj.counterB[key]}
+        {this.obj[counterKey].a}
+        {this.obj[counterKey].b}
+        {this.obj[counterKey].a}
+        {this.obj[counterKey].b}
+        {this.obj[counterKey][key]}
+        {this.obj[counterKey][key]}
+        {this[xxx].counterA[key]}
         <button
           onClick={() => {
-            a--;
+            aa--;
           }}
         >
           -
