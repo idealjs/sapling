@@ -8,11 +8,15 @@ import { State } from "@idealjs/sapling";
 
 class App {
   @State
-  accessor obj: { counter: { a: number } } = { counter: { a: 0 } };
+  accessor obj: { counter: { a: number; b: number } } = {
+    counter: { a: 0, b: 0 },
+  };
   public render() {
     let { obj } = this;
     let { counter } = obj;
     let { a } = counter;
+    let key: "a" | "b" = "a";
+    let xxx: "obj" | "" = "obj";
     return (
       <div>
         <button
@@ -26,6 +30,8 @@ class App {
         {counter.a}
         {obj.counter.a}
         {this.obj.counter.a}
+        {this.obj.counter[key]}
+        {this[xxx].counter[key]}
         <button
           onClick={() => {
             a--;
@@ -48,11 +54,15 @@ import { State } from "@idealjs/sapling";
 
 class App {
   @State
-  accessor obj: { counter: { a: number } } = { counter: { a: 0 } };
+  accessor obj: { counter: { a: number; b: number } } = {
+    counter: { a: 0, b: 0 },
+  };
   public render() {
     let { obj } = this;
     let { counter } = obj;
     let { a } = counter;
+    let key: "a" | "b" = "a";
+    let xxx: "obj" | "" = "obj";
     return _$createJsxTagElement(() => {
       let _el$ = _$createElement("div");
       let _el$1 = _$createElement("button");
@@ -65,6 +75,8 @@ class App {
       _$insert(_el$, counter.a);
       _$insert(_el$, obj.counter.a);
       _$insert(_el$, this.obj.counter.a);
+      _$insert(_el$, this.obj.counter[key]);
+      _$insert(_el$, this[xxx].counter[key]);
       let _el$2 = _$createElement("button");
       _$setProp(_el$2, "onClick", () => {
         a--;

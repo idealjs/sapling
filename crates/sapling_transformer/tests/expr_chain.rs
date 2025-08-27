@@ -55,7 +55,13 @@ fn run_test(input: &'static str) -> Option<()> {
     // 格式化输出到 snapshot
     let formatted = all_chains
         .into_iter()
-        .map(|chain| chain.join(","))
+        .map(|chain| {
+            chain
+                .iter()
+                .map(|x| x.clone().unwrap_or("None".to_string()))
+                .collect::<Vec<_>>()
+                .join(",")
+        })
         .collect::<Vec<_>>()
         .join("\n");
 

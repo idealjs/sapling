@@ -8,7 +8,7 @@ pub fn get_expr_chain_from_any_js_expression(
     semantic_model: &SemanticModel,
     decorated_members: &HashSet<String>,
     node: &AnyJsExpression,
-) -> Option<Vec<String>> {
+) -> Option<Vec<Option<String>>> {
     match node {
         AnyJsExpression::JsComputedMemberExpression(expr) => {
             let object = expr.object().ok()?;
@@ -17,14 +17,7 @@ pub fn get_expr_chain_from_any_js_expression(
             println!("test test object {:?}", member);
             let mut chain =
                 get_expr_chain_from_any_js_expression(semantic_model, decorated_members, &object)?;
-            let member_chain =
-                get_expr_chain_from_any_js_expression(semantic_model, decorated_members, &member)?;
-
-            if let Some(first) = member_chain.first() {
-                if decorated_members.contains(first) {
-                    chain.extend(member_chain);
-                }
-            }
+            chain.push(None);
             Some(chain)
         }
         AnyJsExpression::JsStaticMemberExpression(expr) => {
@@ -32,7 +25,12 @@ pub fn get_expr_chain_from_any_js_expression(
             let member = expr.member().ok()?;
             let mut chain =
                 get_expr_chain_from_any_js_expression(semantic_model, decorated_members, &object)?;
-            chain.push(member.value_token().ok()?.text_trimmed().to_string());
+            chain.push(
+                member
+                    .value_token()
+                    .ok()
+                    .map(|t| t.text_trimmed().to_string()),
+            );
             Some(chain)
         }
         AnyJsExpression::JsIdentifierExpression(expr) => {
@@ -43,7 +41,11 @@ pub fn get_expr_chain_from_any_js_expression(
                     Some(value) => value,
                     None => vec![],
                 };
-            result.push(name.value_token().ok()?.text_trimmed().to_string());
+            result.push(
+                name.value_token()
+                    .ok()
+                    .map(|t| t.text_trimmed().to_string()),
+            );
             Some(result)
         }
         _ => Some(vec![]),
@@ -54,7 +56,7 @@ pub fn get_expr_chain_from_binding(
     semantic_model: &SemanticModel,
     decorated_members: &HashSet<String>,
     binding: &Binding,
-) -> Option<Vec<String>> {
+) -> Option<Vec<Option<String>>> {
     let node = binding.syntax();
     for ancestor in node.ancestors() {
         if ancestor.kind() == JsSyntaxKind::JS_VARIABLE_DECLARATOR {

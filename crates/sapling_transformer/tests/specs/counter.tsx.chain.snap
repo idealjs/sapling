@@ -1,6 +1,5 @@
 ---
 source: crates/sapling_transformer/tests/expr_chain.rs
-assertion_line: 82
 expression: counter.tsx.chain
 ---
 # Input
@@ -17,6 +16,7 @@ class App {
     let { counter } = obj;
     let { a } = counter;
     let key: "a" | "b" = "a";
+    let xxx: "obj" | "" = "obj";
     return (
       <div>
         <button
@@ -31,6 +31,7 @@ class App {
         {obj.counter.a}
         {this.obj.counter.a}
         {this.obj.counter[key]}
+        {this[xxx].counter[key]}
         <button
           onClick={() => {
             a--;
@@ -53,5 +54,6 @@ obj,counter,a
 obj,counter,a
 obj,counter,a
 obj,counter,a
-obj,counter
+obj,counter,None
+None,counter,None
 ```
