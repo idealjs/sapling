@@ -22,26 +22,22 @@ root.render(<App />);
 App.tsx
 
 ```tsx
-class App {
+import { Component } from "@idealjs/sapling";
+
+class App extends Component {
   @State accessor count: number = 0;
+  @Mutate plusOne() {
+    return this.value++;
+  }
+  @Mutate minusOne() {
+    return this.value++;
+  }
   public render() {
     return (
       <div>
-        <button
-          onClick={() => {
-            this.count++;
-          }}
-        >
-          +
-        </button>
+        <button onClick={this.plusOne}>+</button>
         {this.count}
-        <button
-          onClick={() => {
-            this.count--;
-          }}
-        >
-          -
-        </button>
+        <button onClick={this.minusOne}>-</button>
       </div>
     );
   }
@@ -66,16 +62,15 @@ root.render(<App />);
 App.tsx
 
 ```tsx
+import { Component } from "@idealjs/sapling";
 import Todo, { type ITodo } from "./Todo.tsx";
 
-class App {
+class App extends Component {
   @State accessor todos: ITodo[] = [];
   public render() {
     return (
       <div>
-        <For each={state.list} fallback={<div>Loading...</div>}>
-          {(item) => <Todo todo={item} />}
-        </For>
+        <For each={state.list}>{(item) => <Todo todo={item} />}</For>
       </div>
     );
   }
@@ -85,6 +80,8 @@ class App {
 Todo.tsx
 
 ```tsx
+import { Component } from "@idealjs/sapling";
+
 export interface ITodo {
   name: string;
   done: boolean;
@@ -94,8 +91,10 @@ interface IProps {
   todo: ITodo;
 }
 
-class Todo {
-  constructor(props: IProps) {}
+class Todo extends Component {
+  constructor(props: IProps) {
+    super(props);
+  }
 }
 export default Todo;
 ```
@@ -107,7 +106,9 @@ export default Todo;
 ## State 定义
 
 ```tsx
-class Example {
+import { Component } from "@idealjs/sapling";
+
+class Example extends Component {
   @State accessor value: number = 0;
 }
 ```
@@ -115,9 +116,23 @@ class Example {
 ## Derive 定义
 
 ```tsx
-class Example {
+import { Component } from "@idealjs/sapling";
+
+class Example extends Component {
   @Derive get doubleValue() {
     return this.value * 2;
+  }
+}
+```
+
+## Mutate 定义
+
+```tsx
+import { Component } from "@idealjs/sapling";
+
+class Example extends Component {
+  @Mutate plusOne() {
+    return this.value++;
   }
 }
 ```
@@ -125,12 +140,43 @@ class Example {
 ## effect 使用
 
 ```ts
-class Example {
+import { Component } from "@idealjs/sapling";
+
+class Example extends Component {
+  @State accessor inputValue = "";
+  @Mutate updateValue(value) {}
   constructor() {
-    effect(() => {
-      getData(this.inputValue).then((value) => {
-        this.value = value;
-      });
+    super();
+    this.effect(() => {
+      getData(this.inputValue).then(updateValue);
+      // AUTO_INFER will be compiled and replaced by [this.inputValue]
+    }, AUTO_INFER);
+
+    this.effect(() => {
+      console.log("log if component trigger any mutate");
+    }, EACH_TIME);
+
+    this.effect(() => {
+      console.log(
+        "Although the this.inputValue variable is not used, the log will be printed after this.inputValue is updated",
+      );
+    }, [this.inputValue]);
+  }
+}
+```
+
+## dispose 使用
+
+🚧
+
+```ts
+import { Component } from "@idealjs/sapling";
+
+class Example extends Component {
+  constructor() {
+    super();
+    this.addEventListener("dispose", () => {
+      console.log("component dispose");
     });
   }
 }
@@ -139,8 +185,16 @@ class Example {
 ## render 定义
 
 ```tsx
-class Example {
+import { Component } from "@idealjs/sapling";
+
+class Example extends Component {
+  @State accessor value: number = 0;
   public render() {
+    // 将会被编译为
+    // let el = createElement("div");
+    // effect(() => {
+    //   insertOrUpdate(el, this.value);
+    // }, [this.value]);
     return <div>{this.value}</div>;
   }
 }
@@ -149,13 +203,15 @@ class Example {
 ## batch update
 
 ```tsx
-class Example {
+import { Component } from "@idealjs/sapling";
+
+class Example extends Component {
   public render() {
     return (
       <div
         onClick={() => {
           // 仅触发一次更新
-          batch(() => {
+          this.batch(() => {
             this.value++;
             this.value++;
             this.value++;
@@ -170,29 +226,26 @@ class Example {
 ## 基于用户代码的追踪
 
 ```tsx
-import { State } from "@idealjs/sapling";
+import { State, Component } from "@idealjs/sapling";
 
-class App {
+class App extends Component {
   @State
   accessor obj: { count: number } = { count: 0 };
-  public render() {
+  @Mutate plusOne() {
     let { count } = this.obj;
+    return count++;
+  }
+  public render() {
     return _$createJsxTagElement(() => {
       let _el$ = _$createElement("div");
       let _el$1 = _$createElement("button");
-      _$setProp(_el$1, "onClick", () => {
-        count++;
-        update(0b01/* this.obj */ + 0b10 /* count */);
-      });
+      _$setProp(_el$1, "onClick", plusOne);
       _$insertNode(_el$1, _$createTextNode("+"));
       _$insertNode(_el$, _el$1);
-      // 追踪 count 来源，生成依赖 `0b01/* this.obj */ + 0b10 /* count */`
-      effect(
-        () => {
-          _$insert(_el$, count);
-        },
-        0b01/* this.obj */ + 0b10 /* count */,
-      );
+      // 追踪 count, 如果是 State 或者 Derive
+      effect(() => {
+        _$insert(_el$, count);
+      }, [count]);
       return _el$;
     });
   }
