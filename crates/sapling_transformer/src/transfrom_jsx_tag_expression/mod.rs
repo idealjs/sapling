@@ -1,9 +1,7 @@
 use crate::{
     SaplingTransformer, TransformAnyJsxChildOptions, make_array, make_create_jsx_tag_element,
 };
-use biome_js_factory::make::{
-    ident, js_identifier_expression, js_reference_identifier, js_return_statement, token,
-};
+
 use biome_js_syntax::{
     AnyJsArrayElement, AnyJsExpression, AnyJsxTag, JsxElement, JsxFragment, JsxSelfClosingElement,
     JsxTagExpression,
