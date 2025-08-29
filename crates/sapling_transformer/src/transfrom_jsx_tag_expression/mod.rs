@@ -5,8 +5,8 @@ use biome_js_factory::make::{
     ident, js_identifier_expression, js_reference_identifier, js_return_statement, token,
 };
 use biome_js_syntax::{
-    AnyJsArrayElement, AnyJsExpression, AnyJsStatement, AnyJsxTag, JsxElement, JsxFragment,
-    JsxSelfClosingElement, JsxTagExpression, T,
+    AnyJsArrayElement, AnyJsExpression, AnyJsxTag, JsxElement, JsxFragment, JsxSelfClosingElement,
+    JsxTagExpression,
 };
 
 pub struct TransformAnyJsxFragmentOptions {
@@ -44,16 +44,8 @@ impl SaplingTransformer<'_> {
         &mut self,
         node: &JsxSelfClosingElement,
     ) -> Option<AnyJsExpression> {
-        let (mut statements, id) = self.transform_jsx_self_closing_element_to_statements(node)?;
-        let return_stmt = AnyJsStatement::JsReturnStatement(
-            js_return_statement(token(T![return]))
-                .with_argument(js_identifier_expression(js_reference_identifier(ident(&id))).into())
-                .with_semicolon_token(token(T![;]))
-                .build(),
-        );
-        statements.push(return_stmt);
-
-        let call = make_create_jsx_tag_element(vec![], statements);
+        let (statements, id) = self.transform_jsx_self_closing_element_to_statements(node)?;
+        let call = make_create_jsx_tag_element(&vec![], &statements, id);
 
         Some(AnyJsExpression::JsCallExpression(call))
     }
@@ -62,17 +54,8 @@ impl SaplingTransformer<'_> {
         &mut self,
         node: &JsxElement,
     ) -> Option<AnyJsExpression> {
-        let (mut statements, id) = self.transform_jsx_element_to_statements(node)?;
-
-        let return_stmt = AnyJsStatement::JsReturnStatement(
-            js_return_statement(token(T![return]))
-                .with_argument(js_identifier_expression(js_reference_identifier(ident(&id))).into())
-                .with_semicolon_token(token(T![;]))
-                .build(),
-        );
-        statements.push(return_stmt);
-
-        let call = make_create_jsx_tag_element(vec![], statements);
+        let (statements, id) = self.transform_jsx_element_to_statements(node)?;
+        let call = make_create_jsx_tag_element(&vec![], &statements, id);
 
         Some(AnyJsExpression::JsCallExpression(call))
     }
@@ -95,8 +78,7 @@ impl SaplingTransformer<'_> {
         });
         match elements.len() {
             1 => {
-                if let AnyJsArrayElement::AnyJsExpression(expr) =
-                    elements.into_iter().next().unwrap()
+                if let Some(AnyJsArrayElement::AnyJsExpression(expr)) = elements.into_iter().next()
                 {
                     Some(expr)
                 } else {
