@@ -19,7 +19,6 @@ pub struct SaplingTransformer<'a> {
     pub scope_generated_identifiers: HashMap<TextRange, HashSet<String>>,
     pub config: Config,
     pub decorated_members: &'a mut HashSet<String>,
-    pub bit_map: &'a mut BitMask,
     pub string_tree: &'a mut StringTree,
 }
 

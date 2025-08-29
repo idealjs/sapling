@@ -54,26 +54,15 @@ import For from "./for";
 class App {
   @State accessor todos: ITodo[] = [];
   render() {
-    return (
-      <div>
-        <For
-          each={this.todos}
-          fallback={_$createJsxTagElement(() => {
-            let _el$2 = _$createElement("div");
-            _$insertNode(_el$2, _$createTextNode("Loading..."));
-            return _el$2;
-          })}
-        >
-          {(item) =>
-            _$createJsxTagElement(() => {
-              let _el$ = _$createElement("Todo");
-              _$setProp(_el$, "todo", item);
-              return _el$;
-            })
-          }
-        </For>
-      </div>
-    );
+    return _$createJsxTagElement(() => {
+      let _el$ = _$createElement("div");
+      let _el$1 = _$createElement("For");
+      _$setProp(_el$1, "each", this.todos);
+      _$setProp(_el$1, "fallback", <div>Loading...</div>);
+      _$insert(_el$1, (item) => <Todo todo={item} />);
+      _$insertNode(_el$, _el$1);
+      return _el$;
+    });
   }
 }
 
