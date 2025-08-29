@@ -43,14 +43,13 @@ impl SaplingTransformer<'_> {
         node: &biome_js_syntax::JsGetterObjectMember,
     ) -> Option<AnyJsObjectMember> {
         let body = node.body().ok()?;
-        let new_body = self.transform_js_function_body(&body);
         Some(AnyJsObjectMember::JsGetterObjectMember(
             js_getter_object_member(
                 node.get_token().ok()?,
                 node.name().ok()?,
                 node.l_paren_token().ok()?,
                 node.r_paren_token().ok()?,
-                new_body?,
+                body.clone(),
             )
             .build(),
         ))
@@ -60,9 +59,9 @@ impl SaplingTransformer<'_> {
         node: &biome_js_syntax::JsMethodObjectMember,
     ) -> Option<AnyJsObjectMember> {
         let body = node.body().ok()?;
-        let new_body = self.transform_js_function_body(&body);
         Some(AnyJsObjectMember::JsMethodObjectMember(
-            js_method_object_member(node.name().ok()?, node.parameters().ok()?, new_body?).build(),
+            js_method_object_member(node.name().ok()?, node.parameters().ok()?, body.clone())
+                .build(),
         ))
     }
     fn transform_js_property_object_member(
@@ -80,7 +79,6 @@ impl SaplingTransformer<'_> {
         node: &biome_js_syntax::JsSetterObjectMember,
     ) -> Option<AnyJsObjectMember> {
         let body = node.body().ok()?;
-        let new_body = self.transform_js_function_body(&body);
         Some(AnyJsObjectMember::JsSetterObjectMember(
             js_setter_object_member(
                 node.set_token().ok()?,
@@ -88,7 +86,7 @@ impl SaplingTransformer<'_> {
                 node.l_paren_token().ok()?,
                 node.parameter().ok()?,
                 node.r_paren_token().ok()?,
-                new_body?,
+                body.clone(),
             )
             .build(),
         ))

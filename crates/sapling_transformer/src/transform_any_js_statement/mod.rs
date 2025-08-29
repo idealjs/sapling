@@ -90,13 +90,11 @@ impl SaplingTransformer<'_> {
         &mut self,
         node: &JsFunctionDeclaration,
     ) -> Option<AnyJsStatement> {
-        let new_body = self.transform_js_function_body(&node.body().ok()?)?;
-
         let new_func = js_function_declaration(
             node.function_token().ok()?,
             node.id().ok()?,
             node.parameters().ok()?,
-            new_body,
+            node.body().ok()?.clone(),
         )
         .build();
 
@@ -205,9 +203,8 @@ impl SaplingTransformer<'_> {
             match member {
                 AnyJsClassMember::JsMethodClassMember(member) => {
                     let body = member.body().ok()?;
-                    let new_body = self.transform_js_function_body(&body)?;
                     new_members.push(AnyJsClassMember::JsMethodClassMember(
-                        member.clone().with_body(new_body),
+                        member.clone().with_body(body.clone()),
                     ));
                 }
                 _ => {

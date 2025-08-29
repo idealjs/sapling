@@ -16,9 +16,7 @@ use biome_js_syntax::{
 };
 use biome_rowan::TriviaPieceKind;
 
-use crate::{
-    SaplingTransformer, transfrom_jsx_tag_expression::TransformAnyJsxTagExpressionOptions,
-};
+use crate::SaplingTransformer;
 
 impl SaplingTransformer<'_> {
     // main entry
@@ -97,10 +95,6 @@ impl SaplingTransformer<'_> {
             AnyJsExpression::JsThisExpression(node) => self.transform_js_this_expression(node),
             AnyJsExpression::JsUnaryExpression(node) => self.transform_js_unary_expression(node),
             AnyJsExpression::JsYieldExpression(node) => self.transform_js_yield_expression(node),
-            AnyJsExpression::JsxTagExpression(node) => self.transform_jsx_tag_expression(
-                node,
-                TransformAnyJsxTagExpressionOptions { parent_id: None },
-            ),
             AnyJsExpression::TsAsExpression(node) => self.transform_ts_as_expression(node),
             AnyJsExpression::TsInstantiationExpression(node) => {
                 self.transform_ts_instantiation_expression(node)
@@ -113,6 +107,9 @@ impl SaplingTransformer<'_> {
             }
             AnyJsExpression::TsTypeAssertionExpression(node) => {
                 self.transform_ts_type_assertion_expression(node)
+            }
+            _ => {
+                unreachable!()
             }
         }
     }
@@ -127,12 +124,11 @@ impl SaplingTransformer<'_> {
         &mut self,
         node: &JsArrowFunctionExpression,
     ) -> Option<AnyJsExpression> {
-        let new_body = self.transform_any_js_function_body(&node.body().ok()?)?;
         Some(AnyJsExpression::JsArrowFunctionExpression(
             js_arrow_function_expression(
                 node.parameters().ok()?,
                 node.fat_arrow_token().ok()?,
-                new_body,
+                node.body().ok().clone()?,
             )
             .build(),
         ))
@@ -142,12 +138,11 @@ impl SaplingTransformer<'_> {
         &mut self,
         node: &JsFunctionExpression,
     ) -> Option<AnyJsExpression> {
-        let new_body = self.transform_js_function_body(&node.body().ok()?)?;
         Some(AnyJsExpression::JsFunctionExpression(
             js_function_expression(
                 node.function_token().ok()?,
                 node.parameters().ok()?,
-                new_body,
+                node.body().ok().clone()?,
             )
             .build(),
         ))
