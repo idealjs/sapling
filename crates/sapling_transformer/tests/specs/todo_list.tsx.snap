@@ -4,7 +4,7 @@ expression: todo_list.tsx
 ---
 # Input
 ```tsx
-import { State } from "@idealjs/sapling-reactive";
+import { State } from "@idealjs/sapling";
 
 import For from "./for";
 
@@ -47,7 +47,7 @@ export default App;
 
 # Transformations
 ```tsx
-import { State } from "@idealjs/sapling-reactive";
+import { State } from "@idealjs/sapling";
 
 import For from "./for";
 
@@ -84,7 +84,9 @@ class Todo {
     const { todo } = this.props;
     return _$createJsxTagElement(() => {
       let _el$ = _$createElement("div");
-      _$insert(_el$, todo.name);
+      _$effect(() => {
+        _$insert(_el$, todo.name);
+      }, [0, 0, 0]);
       return _el$;
     });
   }

@@ -27,10 +27,7 @@ use biome_js_formatter::format_node;
 use biome_js_parser::{JsParserOptions, parse};
 use biome_js_semantic::{BindingExtensions, SemanticModelOptions, semantic_model};
 use biome_js_syntax::JsFileSource;
-use biome_js_syntax::{
-    AnyJsClassMember, AnyJsDecorator, AnyJsPropertyModifier, JsClassDeclaration, JsSyntaxKind,
-    JsxTagExpression,
-};
+use biome_js_syntax::{AnyJsDecorator, JsClassDeclaration, JsSyntaxKind, JsxTagExpression};
 use biome_rowan::AstNode;
 use biome_rowan::SyntaxNodeCast;
 use biome_rowan::SyntaxRewriter;
@@ -74,73 +71,90 @@ pub fn transform(input_code: String) -> Option<String> {
             match node.kind() {
                 JsSyntaxKind::JS_CLASS_DECLARATION => {
                     if let Some(class_node) = node.clone().cast::<JsClassDeclaration>() {
-                        for member in class_node.members() {
-                            if let AnyJsClassMember::JsPropertyClassMember(member) = member {
-                                for modifer in member.modifiers() {
-                                    if let AnyJsPropertyModifier::JsDecorator(modifer) = modifer {
-                                        if let Some(expr) = modifer.expression().ok() {
-                                            // resolve binding stepwise to avoid returning references to temporaries
+                        let _ =
+                            class_node
+                                .members()
+                                .into_iter()
+                                .try_for_each(|member| -> Option<()> {
+                                    let member = match member.as_js_property_class_member() {
+                                        Some(v) => v,
+                                        None => return Some(()),
+                                    };
+
+                                    let is_reactive =
+                                        member.modifiers().into_iter().any(|modifier| {
+                                            let modifier = match modifier.as_js_decorator() {
+                                                Some(v) => v,
+                                                None => return false,
+                                            };
+                                            let expr = match modifier.expression().ok() {
+                                                Some(v) => v,
+                                                None => return false,
+                                            };
+
                                             let binding = match expr {
                                                 AnyJsDecorator::JsIdentifierExpression(expr) => {
-                                                    if let Some(name_node) = expr.name().ok() {
-                                                        name_node.binding(&self.semantic_model)
-                                                    } else {
-                                                        None
+                                                    match expr.name().ok() {
+                                                        Some(name_node) => {
+                                                            name_node.binding(&self.semantic_model)
+                                                        }
+                                                        None => return false,
                                                     }
                                                 }
                                                 AnyJsDecorator::JsStaticMemberExpression(expr) => {
-                                                    if let Some(obj) = expr.object().ok() {
-                                                        if let Some(ident_expr) =
-                                                            obj.as_js_identifier_expression()
-                                                        {
-                                                            if let Some(name_node) =
-                                                                ident_expr.name().ok()
+                                                    match expr.object().ok() {
+                                                        Some(obj) => {
+                                                            if let Some(ident_expr) =
+                                                                obj.as_js_identifier_expression()
                                                             {
-                                                                name_node
-                                                                    .binding(&self.semantic_model)
+                                                                match ident_expr.name().ok() {
+                                                                    Some(name_node) => name_node
+                                                                        .binding(
+                                                                            &self.semantic_model,
+                                                                        ),
+                                                                    None => return false,
+                                                                }
                                                             } else {
                                                                 None
                                                             }
-                                                        } else {
-                                                            None
                                                         }
-                                                    } else {
-                                                        None
+                                                        None => return false,
                                                     }
                                                 }
                                                 _ => None,
                                             };
-                                            let binding = match binding {
-                                                Some(b) => b,
-                                                None => continue,
+
+                                            let binding = if let Some(binding) = binding {
+                                                binding
+                                            } else {
+                                                return false;
                                             };
 
-                                            if let Some(js_module_source) =
-                                                get_js_module_source_from_binding(
-                                                    &self.semantic_model,
-                                                    &binding,
-                                                )
+                                            if get_js_module_source_from_binding(
+                                                &self.semantic_model,
+                                                &binding,
+                                            )
+                                            .as_deref()
+                                                == Some("@idealjs/sapling")
                                             {
-                                                if js_module_source == "@idealjs/sapling" {
-                                                    if let Some(name_node) = member.name().ok() {
-                                                        if let Some(lit) =
-                                                            name_node.as_js_literal_member_name()
-                                                        {
-                                                            if let Ok(id) = lit.name() {
-                                                                let member_key: String =
-                                                                    id.text().into();
-                                                                self.decorated_members
-                                                                    .insert(member_key.clone());
-                                                            }
-                                                        }
-                                                    }
-                                                }
+                                                return true;
                                             }
-                                        }
+                                            return false;
+                                        });
+
+                                    let member_key = member
+                                        .name()
+                                        .ok()?
+                                        .as_js_literal_member_name()?
+                                        .name()
+                                        .ok()?
+                                        .text()
+                                        .to_string();
+                                    if is_reactive {
+                                        self.decorated_members.insert(member_key);
                                     }
-                                }
-                            }
-                        }
+                                    Some(())
+                                });
                     }
                     VisitNodeSignal::Traverse(node)
                 }
