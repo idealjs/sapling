@@ -62,16 +62,16 @@ class App {
         _el$1,
         "fallback",
         _$createJsxTagElement(() => {
-          let _el$ = _$createElement("div");
-          _$insertNode(_el$, _$createTextNode("Loading..."));
-          return _el$;
+          let _el$2 = _$createElement("div");
+          _$insertNode(_el$2, _$createTextNode("Loading..."));
+          return _el$2;
         }),
       );
       _$insert(_el$1, (item) =>
         _$createJsxTagElement(() => {
-          let _el$ = _$createElement("Todo");
-          _$setProp(_el$, "todo", item);
-          return _el$;
+          let _el$3 = _$createElement("Todo");
+          _$setProp(_el$3, "todo", item);
+          return _el$3;
         }),
       );
       _$insertNode(_el$, _el$1);
