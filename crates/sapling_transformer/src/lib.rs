@@ -172,7 +172,7 @@ pub fn transform(input_code: String) -> Option<String> {
                             TransformAnyJsxTagExpressionOptions { parent_id: None },
                         ) {
                             let new_syntax = new_expr.syntax().clone();
-                            return VisitNodeSignal::Replace(new_syntax);
+                            return VisitNodeSignal::Traverse(new_syntax);
                         }
                     }
                     VisitNodeSignal::Traverse(node)

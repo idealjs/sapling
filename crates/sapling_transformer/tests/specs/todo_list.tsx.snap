@@ -58,8 +58,22 @@ class App {
       let _el$ = _$createElement("div");
       let _el$1 = _$createElement("For");
       _$setProp(_el$1, "each", this.todos);
-      _$setProp(_el$1, "fallback", <div>Loading...</div>);
-      _$insert(_el$1, (item) => <Todo todo={item} />);
+      _$setProp(
+        _el$1,
+        "fallback",
+        _$createJsxTagElement(() => {
+          let _el$ = _$createElement("div");
+          _$insertNode(_el$, _$createTextNode("Loading..."));
+          return _el$;
+        }),
+      );
+      _$insert(_el$1, (item) =>
+        _$createJsxTagElement(() => {
+          let _el$ = _$createElement("Todo");
+          _$setProp(_el$, "todo", item);
+          return _el$;
+        }),
+      );
       _$insertNode(_el$, _el$1);
       return _el$;
     });
