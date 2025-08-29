@@ -1,7 +1,6 @@
 pub mod helpers;
 pub mod scope;
 pub mod transform_any_js_expression;
-pub mod transform_any_js_object_member;
 pub mod transform_any_js_statement;
 pub mod transform_any_jsx_child;
 pub mod transform_jsx_tag_expression_to_statements;

@@ -11,8 +11,7 @@ use crate::{
 use biome_js_factory::make::js_expression_statement;
 use biome_js_syntax::{
     AnyJsExpression, AnyJsStatement, AnyJsxAttribute, AnyJsxAttributeValue, AnyJsxChild,
-    JsMetavariable, JsxElement, JsxExpressionChild, JsxFragment, JsxSelfClosingElement,
-    JsxSpreadChild, JsxText,
+    JsxElement, JsxExpressionChild, JsxFragment, JsxSelfClosingElement, JsxText,
 };
 use biome_rowan::AstNode;
 
@@ -36,7 +35,6 @@ pub struct TransformJsxExpressionChildToStatementsOptions {
     pub parent_id: Option<String>,
 }
 
-// todo none used
 impl SaplingTransformer<'_> {
     pub fn transform_jsx_element_to_statements(
         &mut self,
@@ -111,10 +109,6 @@ impl SaplingTransformer<'_> {
         transform_options: TransformAnyJsxChildToStatementsOptions,
     ) -> Option<(Vec<AnyJsStatement>, Option<String>)> {
         match node {
-            AnyJsxChild::JsMetavariable(node) => {
-                let statements = self.transform_js_metavariable_to_statements(node)?;
-                Some((statements, None))
-            }
             AnyJsxChild::JsxElement(node) => {
                 let (statements, id) = self.transform_jsx_element_to_statements(node)?;
                 Some((statements, Some(id)))
@@ -140,10 +134,7 @@ impl SaplingTransformer<'_> {
             AnyJsxChild::JsxSelfClosingElement(node) => self
                 .transform_jsx_self_closing_element_to_statements(node)
                 .map(|(stmts, id)| (stmts, Some(id))),
-            AnyJsxChild::JsxSpreadChild(node) => {
-                let statements = self.transform_jsx_spread_child_to_statements(node)?;
-                Some((statements, None))
-            }
+
             AnyJsxChild::JsxText(node) => {
                 let statements = self.transform_jsx_text_to_statements(
                     node,
@@ -153,14 +144,12 @@ impl SaplingTransformer<'_> {
                 )?;
                 Some((statements, None))
             }
+            _ => {
+                unreachable!()
+            }
         }
     }
-    pub fn transform_js_metavariable_to_statements(
-        &self,
-        _node: &JsMetavariable,
-    ) -> Option<Vec<AnyJsStatement>> {
-        todo!()
-    }
+
     pub fn transform_jsx_expression_child_to_statements(
         &mut self,
         node: &JsxExpressionChild,
@@ -178,12 +167,6 @@ impl SaplingTransformer<'_> {
         )])
     }
 
-    pub fn transform_jsx_spread_child_to_statements(
-        &self,
-        _node: &JsxSpreadChild,
-    ) -> Option<Vec<AnyJsStatement>> {
-        todo!()
-    }
     pub fn transform_jsx_text_to_statements(
         &self,
         node: &JsxText,

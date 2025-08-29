@@ -2,8 +2,7 @@ use biome_js_factory::make::{js_class_member_list, js_function_declaration};
 use biome_js_semantic::BindingExtensions;
 use biome_js_syntax::{
     AnyJsClassMember, AnyJsDecorator, AnyJsPropertyModifier, AnyJsStatement, JsClassDeclaration,
-    JsFunctionDeclaration, JsReturnStatement, TsExternalModuleDeclaration, TsGlobalDeclaration,
-    TsImportEqualsDeclaration, TsInterfaceDeclaration, TsModuleDeclaration, TsTypeAliasDeclaration,
+    JsFunctionDeclaration, JsReturnStatement,
 };
 
 use crate::{SaplingTransformer, get_js_module_source_from_binding, make_js_return_statement};
@@ -17,24 +16,6 @@ impl SaplingTransformer<'_> {
                 self.transform_js_function_declaration(inner)
             }
             AnyJsStatement::JsReturnStatement(inner) => self.transform_js_return_statement(inner),
-            AnyJsStatement::TsExternalModuleDeclaration(inner) => {
-                self.transform_ts_external_module_declaration(inner)
-            }
-            AnyJsStatement::TsGlobalDeclaration(inner) => {
-                self.transform_ts_global_declaration(inner)
-            }
-            AnyJsStatement::TsImportEqualsDeclaration(inner) => {
-                self.transform_ts_import_equals_declaration(inner)
-            }
-            AnyJsStatement::TsInterfaceDeclaration(inner) => {
-                self.transform_ts_interface_declaration(inner)
-            }
-            AnyJsStatement::TsModuleDeclaration(inner) => {
-                self.transform_ts_module_declaration(inner)
-            }
-            AnyJsStatement::TsTypeAliasDeclaration(inner) => {
-                self.transform_ts_type_alias_declaration(inner)
-            }
             _ => {
                 unreachable!()
             }
@@ -131,42 +112,5 @@ impl SaplingTransformer<'_> {
         Some(AnyJsStatement::JsClassDeclaration(
             node.clone().with_members(js_class_member_list(new_members)),
         ))
-    }
-
-    pub fn transform_ts_external_module_declaration(
-        &self,
-        _node: &TsExternalModuleDeclaration,
-    ) -> Option<AnyJsStatement> {
-        todo!()
-    }
-    pub fn transform_ts_global_declaration(
-        &self,
-        _node: &TsGlobalDeclaration,
-    ) -> Option<AnyJsStatement> {
-        todo!()
-    }
-    pub fn transform_ts_import_equals_declaration(
-        &self,
-        _node: &TsImportEqualsDeclaration,
-    ) -> Option<AnyJsStatement> {
-        todo!()
-    }
-    pub fn transform_ts_interface_declaration(
-        &self,
-        _node: &TsInterfaceDeclaration,
-    ) -> Option<AnyJsStatement> {
-        todo!()
-    }
-    pub fn transform_ts_module_declaration(
-        &self,
-        _node: &TsModuleDeclaration,
-    ) -> Option<AnyJsStatement> {
-        todo!()
-    }
-    pub fn transform_ts_type_alias_declaration(
-        &self,
-        _node: &TsTypeAliasDeclaration,
-    ) -> Option<AnyJsStatement> {
-        todo!()
     }
 }

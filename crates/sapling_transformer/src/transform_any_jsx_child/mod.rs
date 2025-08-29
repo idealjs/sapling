@@ -1,7 +1,5 @@
 use biome_js_factory::make::js_expression_statement;
-use biome_js_syntax::{
-    AnyJsExpression, AnyJsxChild, JsMetavariable, JsxExpressionChild, JsxSpreadChild, JsxText,
-};
+use biome_js_syntax::{AnyJsExpression, AnyJsxChild, JsxExpressionChild, JsxSpreadChild, JsxText};
 
 #[derive(Debug)]
 pub struct TransformAnyJsxTextOptions {
@@ -30,7 +28,6 @@ impl SaplingTransformer<'_> {
         transform_options: TransformAnyJsxChildOptions,
     ) -> Option<AnyJsExpression> {
         match node {
-            AnyJsxChild::JsMetavariable(node) => self.transform_js_metavariable(node),
             AnyJsxChild::JsxElement(node) => {
                 self.transform_jsx_element_to_create_jsx_tag_element(node)
             }
@@ -56,6 +53,9 @@ impl SaplingTransformer<'_> {
                     parent_id: transform_options.parent_id,
                 },
             ),
+            _ => {
+                unreachable!()
+            }
         }
     }
 
@@ -78,10 +78,6 @@ impl SaplingTransformer<'_> {
             parent_id.as_str(),
             &inner_call_expression.to_string(),
         )))
-    }
-
-    pub fn transform_js_metavariable(&self, _node: &JsMetavariable) -> Option<AnyJsExpression> {
-        todo!()
     }
 
     pub fn transform_jsx_expression_child(
@@ -110,7 +106,7 @@ impl SaplingTransformer<'_> {
             Some(Some(val)) => self.decorated_members.contains(val),
             _ => false,
         };
-        
+
         let call_expr = if should_effect {
             let bit: Vec<usize> = self.string_tree.process_path(&expr_chain);
             make_effect(
