@@ -1,4 +1,3 @@
-pub mod bit_mask;
 pub mod helpers;
 pub mod scope;
 pub mod transform_any_js_expression;
@@ -14,7 +13,6 @@ pub mod transformer;
 pub mod transfrom_jsx_tag_expression;
 pub mod write_transformation_snapshot;
 
-pub use bit_mask::*;
 pub use helpers::*;
 pub use transform_any_jsx_child::*;
 pub use transform_jsx_tag_expression_to_statements::*;

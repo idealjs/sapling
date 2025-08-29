@@ -3,7 +3,7 @@ use biome_js_syntax::TextRange;
 
 use std::collections::{HashMap, HashSet};
 
-use crate::{BitMask, StringTree};
+use crate::StringTree;
 
 #[derive(Debug, Clone)]
 pub struct Config {}
