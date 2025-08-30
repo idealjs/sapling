@@ -15,8 +15,9 @@ pub struct TransformJsxExpressionChildOptions {
 }
 
 use crate::{
-    SaplingTransformer, make_arrow_function_from_statement, make_create_text_node, make_effect,
-    make_insert, make_insert_node, transfrom_jsx_tag_expression::TransformAnyJsxFragmentOptions,
+    SaplingTransformer, make_arrow_function_from_statement, make_create_jsx_tag_element,
+    make_create_text_node, make_effect, make_insert, make_insert_node,
+    transfrom_jsx_tag_expression::TransformAnyJsxFragmentOptions,
 };
 
 impl SaplingTransformer<'_> {
@@ -28,7 +29,10 @@ impl SaplingTransformer<'_> {
     ) -> Option<AnyJsExpression> {
         match node {
             AnyJsxChild::JsxElement(node) => {
-                self.transform_jsx_element_to_create_jsx_tag_element(node)
+                let (statements, id) = self.transform_jsx_element(node)?;
+                let call = make_create_jsx_tag_element(&vec![], &statements, id);
+
+                Some(AnyJsExpression::JsCallExpression(call))
             }
             AnyJsxChild::JsxExpressionChild(node) => self.transform_jsx_expression_child(
                 node,
@@ -43,7 +47,11 @@ impl SaplingTransformer<'_> {
                 },
             ),
             AnyJsxChild::JsxSelfClosingElement(node) => {
-                self.transform_jsx_self_closing_element_to_create_jsx_tag_element(node)
+                let (statements, id) =
+                    self.transform_jsx_self_closing_element_to_statements(node)?;
+                let call = make_create_jsx_tag_element(&vec![], &statements, id);
+
+                Some(AnyJsExpression::JsCallExpression(call))
             }
             AnyJsxChild::JsxSpreadChild(node) => self.transform_jsx_spread_child(node),
             AnyJsxChild::JsxText(node) => self.transform_jsx_text(
@@ -87,18 +95,23 @@ impl SaplingTransformer<'_> {
         let expression = node.expression()?;
         let parent_id = transform_options.parent_id?;
 
-        let call_expr = make_effect(
-            AnyJsExpression::JsArrowFunctionExpression(make_arrow_function_from_statement(
-                biome_js_syntax::AnyJsStatement::JsExpressionStatement(
-                    js_expression_statement(AnyJsExpression::JsCallExpression(make_insert(
-                        parent_id.as_str(),
-                        expression.clone(),
-                    )))
-                    .build(),
-                ),
-            )),
-            vec![expression.clone()],
-        );
+        let call_expr = match expression {
+            AnyJsExpression::JsxTagExpression(_) => {
+                make_insert(parent_id.as_str(), expression.clone())
+            }
+            _ => make_effect(
+                AnyJsExpression::JsArrowFunctionExpression(make_arrow_function_from_statement(
+                    biome_js_syntax::AnyJsStatement::JsExpressionStatement(
+                        js_expression_statement(AnyJsExpression::JsCallExpression(make_insert(
+                            parent_id.as_str(),
+                            expression.clone(),
+                        )))
+                        .build(),
+                    ),
+                )),
+                vec![expression.clone()],
+            ),
+        };
 
         Some(AnyJsExpression::JsCallExpression(call_expr))
     }

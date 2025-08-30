@@ -42,7 +42,14 @@ let someStyle = { color: "red", fontSize: "16px" };
 function Attr2() {
   return _$createJsxTagElement(() => {
     let _el$ = _$createElement("div");
-    _$setProp(_el$, "style", someStyle);
+    _$effect(
+      () => {
+        _$setProp(_el$, "style", someStyle);
+      },
+      () => {
+        return [someStyle];
+      },
+    );
     _$insertNode(_el$, _$createTextNode("attr"));
     return _el$;
   });
@@ -53,7 +60,14 @@ let getSomeStyle = () => someStyle;
 function Attr3() {
   return _$createJsxTagElement(() => {
     let _el$ = _$createElement("div");
-    _$setProp(_el$, "style", getSomeStyle());
+    _$effect(
+      () => {
+        _$setProp(_el$, "style", getSomeStyle());
+      },
+      () => {
+        return [getSomeStyle()];
+      },
+    );
     _$insertNode(_el$, _$createTextNode("attr"));
     return _el$;
   });

@@ -23,14 +23,7 @@ function SelfClose2() {
 function SelfClose() {
   return _$createJsxTagElement(() => {
     let _el$ = _$createElement("button");
-    _$effect(
-      () => {
-        _$setProp(_el$, "type", "button");
-      },
-      () => {
-        return [];
-      },
-    );
+    _$setProp(_el$, "type", "button");
     return _el$;
   });
 }
@@ -39,14 +32,7 @@ function SelfClose2() {
   return _$createJsxTagElement(() => {
     let _el$ = _$createElement("div");
     let _el$1 = _$createElement("button");
-    _$effect(
-      () => {
-        _$setProp(_el$1, "type", "button");
-      },
-      () => {
-        return [];
-      },
-    );
+    _$setProp(_el$1, "type", "button");
     _$insertNode(_el$, _el$1);
     return _el$;
   });

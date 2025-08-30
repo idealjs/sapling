@@ -1,0 +1,6 @@
+---
+source: crates/sapling_transformer/src/helpers/make_create_component.rs
+expression: "format!(\"{}\\n{}\", stmt1.to_string(), stmt2.to_string())"
+---
+let _el1$ = _$createComponent(Comp);
+let _el2$ = _$createComponent(Comp);

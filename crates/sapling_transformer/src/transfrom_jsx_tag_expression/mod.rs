@@ -3,8 +3,7 @@ use crate::{
 };
 
 use biome_js_syntax::{
-    AnyJsArrayElement, AnyJsExpression, AnyJsxTag, JsxElement, JsxFragment, JsxSelfClosingElement,
-    JsxTagExpression,
+    AnyJsArrayElement, AnyJsExpression, AnyJsxTag, JsxFragment, JsxTagExpression,
 };
 
 pub struct TransformAnyJsxFragmentOptions {
@@ -25,7 +24,10 @@ impl SaplingTransformer<'_> {
         let tag = node.tag().ok()?;
         match tag {
             AnyJsxTag::JsxElement(node) => {
-                self.transform_jsx_element_to_create_jsx_tag_element(&node)
+                let (statements, id) = self.transform_jsx_element(&node)?;
+                let call = make_create_jsx_tag_element(&vec![], &statements, id);
+
+                Some(AnyJsExpression::JsCallExpression(call))
             }
             AnyJsxTag::JsxFragment(node) => self.transform_jsx_fragment(
                 &node,
@@ -34,29 +36,15 @@ impl SaplingTransformer<'_> {
                 },
             ),
             AnyJsxTag::JsxSelfClosingElement(node) => {
-                self.transform_jsx_self_closing_element_to_create_jsx_tag_element(&node)
+                let (statements, id) =
+                    self.transform_jsx_self_closing_element_to_statements(&node)?;
+                let call = make_create_jsx_tag_element(&vec![], &statements, id);
+
+                Some(AnyJsExpression::JsCallExpression(call))
             }
         }
     }
-    pub fn transform_jsx_self_closing_element_to_create_jsx_tag_element(
-        &mut self,
-        node: &JsxSelfClosingElement,
-    ) -> Option<AnyJsExpression> {
-        let (statements, id) = self.transform_jsx_self_closing_element_to_statements(node)?;
-        let call = make_create_jsx_tag_element(&vec![], &statements, id);
 
-        Some(AnyJsExpression::JsCallExpression(call))
-    }
-
-    pub fn transform_jsx_element_to_create_jsx_tag_element(
-        &mut self,
-        node: &JsxElement,
-    ) -> Option<AnyJsExpression> {
-        let (statements, id) = self.transform_jsx_element_to_statements(node)?;
-        let call = make_create_jsx_tag_element(&vec![], &statements, id);
-
-        Some(AnyJsExpression::JsCallExpression(call))
-    }
     pub fn transform_jsx_fragment(
         &mut self,
         node: &JsxFragment,
