@@ -12,13 +12,19 @@ use std::str::FromStr;
 use crate::make_js_call_arguments;
 
 /// 生成 _$setProp(el, name, value) 的表达式语句
-pub fn make_set_prop(id: &str, any_js_attribute: &AnyJsxAttribute) -> Option<AnyJsStatement> {
+pub fn make_set_prop(
+    id: &str,
+    any_js_attribute: &AnyJsxAttribute,
+) -> Option<(AnyJsStatement, Vec<AnyJsExpression>)> {
     let callee = js_identifier_expression(js_reference_identifier(ident("_$setProp")));
 
     // 1. 第一个参数：id 转为 AST 表达式节点
     let el_ident = js_identifier_expression(js_reference_identifier(ident(id)));
     let mut args = vec![AnyJsCallArgument::AnyJsExpression(el_ident.into())];
     let mut separators = vec![];
+    // 收集作为 listener_key 的表达式
+    let mut listeners: Vec<AnyJsExpression> = vec![];
+
     // 2. 处理属性名和属性值
     if let AnyJsxAttribute::JsxAttribute(attr) = any_js_attribute {
         let name = attr.name().ok()?;
@@ -47,14 +53,17 @@ pub fn make_set_prop(id: &str, any_js_attribute: &AnyJsxAttribute) -> Option<Any
             ),
         ));
 
-        let value = attr.initializer().and_then(|init| init.value().ok())?;
+        let value = attr.initializer()?.value().ok()?;
 
         let value_expr = match value {
             AnyJsxAttributeValue::JsxString(str_val) => AnyJsExpression::AnyJsLiteralExpression(
                 js_string_literal_expression(str_val.value_token().ok()?).into(),
             ),
             AnyJsxAttributeValue::JsxExpressionAttributeValue(expr_val) => {
-                expr_val.expression().ok()?
+                let expr = expr_val.expression().ok()?;
+                // 将表达式加入 listeners，以便 caller 可以把它作为 effect 的依赖
+                listeners.push(expr.clone());
+                expr
             }
             AnyJsxAttributeValue::AnyJsxTag(_) => {
                 todo!()
@@ -67,9 +76,11 @@ pub fn make_set_prop(id: &str, any_js_attribute: &AnyJsxAttribute) -> Option<Any
     let call_expr =
         js_call_expression(callee.into(), make_js_call_arguments(args, separators)).build();
 
-    Some(AnyJsStatement::JsExpressionStatement(
+    let stmt = AnyJsStatement::JsExpressionStatement(
         js_expression_statement(AnyJsExpression::JsCallExpression(call_expr)).build(),
-    ))
+    );
+
+    Some((stmt, listeners))
 }
 
 #[test]
@@ -146,9 +157,9 @@ fn test_make_set_prop() {
         .build(),
     );
 
-    let stmt1 = make_set_prop("_el$", &id_attr).expect("stmt1 is None");
-    let stmt2 = make_set_prop("_el$", &title_attr).expect("stmt2 is None");
-    let stmt3 = make_set_prop("_el$", &foo_attr).expect("stmt3 is None");
+    let (stmt1, _listeners1) = make_set_prop("_el$", &id_attr).expect("stmt1 is None");
+    let (stmt2, _listeners2) = make_set_prop("_el$", &title_attr).expect("stmt2 is None");
+    let (stmt3, _listeners3) = make_set_prop("_el$", &foo_attr).expect("stmt3 is None");
 
     insta::assert_snapshot!(format!(
         "{}\n{}\n{}",

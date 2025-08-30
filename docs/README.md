@@ -156,11 +156,14 @@ class Example extends Component {
       console.log("log if component trigger any mutate");
     }, EACH_TIME);
 
-    this.effect(() => {
-      console.log(
-        "Although the this.inputValue variable is not used, the log will be printed after this.inputValue is updated",
-      );
-    }, [this.inputValue]);
+    this.effect(
+      () => {
+        console.log(
+          "Although the this.inputValue variable is not used, the log will be printed after this.inputValue is updated",
+        );
+      },
+      () => [this.inputValue],
+    );
   }
 }
 ```
@@ -243,9 +246,12 @@ class App extends Component {
       _$insertNode(_el$1, _$createTextNode("+"));
       _$insertNode(_el$, _el$1);
       // 追踪 count, 如果是 State 或者 Derive
-      effect(() => {
-        _$insert(_el$, count);
-      }, [count]);
+      effect(
+        () => {
+          _$insert(_el$, count);
+        },
+        () => [count],
+      );
       return _el$;
     });
   }

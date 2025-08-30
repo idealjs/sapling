@@ -138,84 +138,214 @@ class App {
       });
       _$insertNode(_el$1, _$createTextNode("+"));
       _$insertNode(_el$, _el$1);
-      _$effect(() => {
-        _$insert(_el$, aa);
-      }, [0, 0, 0]);
-      _$effect(() => {
-        _$insert(_el$, ab);
-      }, [0, 0, 1]);
-      _$effect(() => {
-        _$insert(_el$, ba);
-      }, [0, 1, 0]);
-      _$effect(() => {
-        _$insert(_el$, bb);
-      }, [0, 1, 1]);
-      _$effect(() => {
-        _$insert(_el$, nestedAA);
-      }, [0, 0, 0]);
-      _$effect(() => {
-        _$insert(_el$, counterA.a);
-      }, [0, 0, 0]);
-      _$effect(() => {
-        _$insert(_el$, counterA.b);
-      }, [0, 0, 1]);
-      _$effect(() => {
-        _$insert(_el$, counterB.a);
-      }, [0, 1, 0]);
-      _$effect(() => {
-        _$insert(_el$, counterB.b);
-      }, [0, 1, 1]);
-      _$effect(() => {
-        _$insert(_el$, obj.counterA.a);
-      }, [0, 0, 0]);
-      _$effect(() => {
-        _$insert(_el$, obj.counterA.b);
-      }, [0, 0, 1]);
-      _$effect(() => {
-        _$insert(_el$, obj.counterB.a);
-      }, [0, 1, 0]);
-      _$effect(() => {
-        _$insert(_el$, obj.counterB.b);
-      }, [0, 1, 1]);
-      _$effect(() => {
-        _$insert(_el$, this.obj.counterA.a);
-      }, [0, 0, 0]);
-      _$effect(() => {
-        _$insert(_el$, this.obj.counterA.b);
-      }, [0, 0, 1]);
-      _$effect(() => {
-        _$insert(_el$, this.obj.counterB.a);
-      }, [0, 1, 0]);
-      _$effect(() => {
-        _$insert(_el$, this.obj.counterB.b);
-      }, [0, 1, 1]);
-      _$effect(() => {
-        _$insert(_el$, this.obj.counterA[key]);
-      }, [0, 0]);
-      _$effect(() => {
-        _$insert(_el$, this.obj.counterB[key]);
-      }, [0, 1]);
-      _$effect(() => {
-        _$insert(_el$, this.obj[counterKey].a);
-      }, [0]);
-      _$effect(() => {
-        _$insert(_el$, this.obj[counterKey].b);
-      }, [0]);
-      _$effect(() => {
-        _$insert(_el$, this.obj[counterKey].a);
-      }, [0]);
-      _$effect(() => {
-        _$insert(_el$, this.obj[counterKey].b);
-      }, [0]);
-      _$effect(() => {
-        _$insert(_el$, this.obj[counterKey][key]);
-      }, [0]);
-      _$effect(() => {
-        _$insert(_el$, this.obj[counterKey][key]);
-      }, [0]);
-      _$effect(() => {
-        _$insert(_el$, this[xxx].counterA[key]);
-      }, []);
+      _$effect(
+        () => {
+          _$insert(_el$, aa);
+        },
+        () => {
+          return [aa];
+        },
+      );
+      _$effect(
+        () => {
+          _$insert(_el$, ab);
+        },
+        () => {
+          return [ab];
+        },
+      );
+      _$effect(
+        () => {
+          _$insert(_el$, ba);
+        },
+        () => {
+          return [ba];
+        },
+      );
+      _$effect(
+        () => {
+          _$insert(_el$, bb);
+        },
+        () => {
+          return [bb];
+        },
+      );
+      _$effect(
+        () => {
+          _$insert(_el$, nestedAA);
+        },
+        () => {
+          return [nestedAA];
+        },
+      );
+      _$effect(
+        () => {
+          _$insert(_el$, counterA.a);
+        },
+        () => {
+          return [counterA.a];
+        },
+      );
+      _$effect(
+        () => {
+          _$insert(_el$, counterA.b);
+        },
+        () => {
+          return [counterA.b];
+        },
+      );
+      _$effect(
+        () => {
+          _$insert(_el$, counterB.a);
+        },
+        () => {
+          return [counterB.a];
+        },
+      );
+      _$effect(
+        () => {
+          _$insert(_el$, counterB.b);
+        },
+        () => {
+          return [counterB.b];
+        },
+      );
+      _$effect(
+        () => {
+          _$insert(_el$, obj.counterA.a);
+        },
+        () => {
+          return [obj.counterA.a];
+        },
+      );
+      _$effect(
+        () => {
+          _$insert(_el$, obj.counterA.b);
+        },
+        () => {
+          return [obj.counterA.b];
+        },
+      );
+      _$effect(
+        () => {
+          _$insert(_el$, obj.counterB.a);
+        },
+        () => {
+          return [obj.counterB.a];
+        },
+      );
+      _$effect(
+        () => {
+          _$insert(_el$, obj.counterB.b);
+        },
+        () => {
+          return [obj.counterB.b];
+        },
+      );
+      _$effect(
+        () => {
+          _$insert(_el$, this.obj.counterA.a);
+        },
+        () => {
+          return [this.obj.counterA.a];
+        },
+      );
+      _$effect(
+        () => {
+          _$insert(_el$, this.obj.counterA.b);
+        },
+        () => {
+          return [this.obj.counterA.b];
+        },
+      );
+      _$effect(
+        () => {
+          _$insert(_el$, this.obj.counterB.a);
+        },
+        () => {
+          return [this.obj.counterB.a];
+        },
+      );
+      _$effect(
+        () => {
+          _$insert(_el$, this.obj.counterB.b);
+        },
+        () => {
+          return [this.obj.counterB.b];
+        },
+      );
+      _$effect(
+        () => {
+          _$insert(_el$, this.obj.counterA[key]);
+        },
+        () => {
+          return [this.obj.counterA[key]];
+        },
+      );
+      _$effect(
+        () => {
+          _$insert(_el$, this.obj.counterB[key]);
+        },
+        () => {
+          return [this.obj.counterB[key]];
+        },
+      );
+      _$effect(
+        () => {
+          _$insert(_el$, this.obj[counterKey].a);
+        },
+        () => {
+          return [this.obj[counterKey].a];
+        },
+      );
+      _$effect(
+        () => {
+          _$insert(_el$, this.obj[counterKey].b);
+        },
+        () => {
+          return [this.obj[counterKey].b];
+        },
+      );
+      _$effect(
+        () => {
+          _$insert(_el$, this.obj[counterKey].a);
+        },
+        () => {
+          return [this.obj[counterKey].a];
+        },
+      );
+      _$effect(
+        () => {
+          _$insert(_el$, this.obj[counterKey].b);
+        },
+        () => {
+          return [this.obj[counterKey].b];
+        },
+      );
+      _$effect(
+        () => {
+          _$insert(_el$, this.obj[counterKey][key]);
+        },
+        () => {
+          return [this.obj[counterKey][key]];
+        },
+      );
+      _$effect(
+        () => {
+          _$insert(_el$, this.obj[counterKey][key]);
+        },
+        () => {
+          return [this.obj[counterKey][key]];
+        },
+      );
+      _$effect(
+        () => {
+          _$insert(_el$, this[xxx].counterA[key]);
+        },
+        () => {
+          return [this[xxx].counterA[key]];
+        },
+      );
       let _el$2 = _$createElement("button");
       _$setProp(_el$2, "onClick", () => {
         aa--;

@@ -7,4 +7,4 @@
 
 # bug 修复
 
-1. 存在 render 没有被 transform
+1. children 元素没有被转化

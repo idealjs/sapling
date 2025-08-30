@@ -67,12 +67,40 @@ class App {
           return _el$2;
         }),
       );
-      _$insert(_el$1, (item) =>
-        _$createJsxTagElement(() => {
-          let _el$3 = _$createElement("Todo");
-          _$setProp(_el$3, "todo", item);
-          return _el$3;
-        }),
+      _$effect(
+        () => {
+          _$insert(_el$1, (item) =>
+            _$createJsxTagElement(() => {
+              let _el$3 = _$createElement("Todo");
+              _$effect(
+                () => {
+                  _$setProp(_el$3, "todo", item);
+                },
+                () => {
+                  return [item];
+                },
+              );
+              return _el$3;
+            }),
+          );
+        },
+        () => {
+          return [
+            (item) =>
+              _$createJsxTagElement(() => {
+                let _el$4 = _$createElement("Todo");
+                _$effect(
+                  () => {
+                    _$setProp(_el$4, "todo", item);
+                  },
+                  () => {
+                    return [item];
+                  },
+                );
+                return _el$4;
+              }),
+          ];
+        },
       );
       _$insertNode(_el$, _el$1);
       return _el$;
@@ -98,9 +126,14 @@ class Todo {
     const { todo } = this.props;
     return _$createJsxTagElement(() => {
       let _el$ = _$createElement("div");
-      _$effect(() => {
-        _$insert(_el$, todo.name);
-      }, [0, 0, 0]);
+      _$effect(
+        () => {
+          _$insert(_el$, todo.name);
+        },
+        () => {
+          return [todo.name];
+        },
+      );
       return _el$;
     });
   }

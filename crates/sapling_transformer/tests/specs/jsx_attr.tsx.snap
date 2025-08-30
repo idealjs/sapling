@@ -62,9 +62,14 @@ function Attr3() {
 function Attr4() {
   return _$createJsxTagElement(() => {
     let _el$ = _$createElement("div");
-    _$effect(() => {
-      _$setProp(_el$, "style", getSomeStyle());
-    }, []);
+    _$effect(
+      () => {
+        _$setProp(_el$, "style", getSomeStyle());
+      },
+      () => {
+        return [getSomeStyle()];
+      },
+    );
     return _el$;
   });
 }
