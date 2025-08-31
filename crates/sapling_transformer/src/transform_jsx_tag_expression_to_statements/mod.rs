@@ -9,14 +9,12 @@ use crate::{
     make_effect, make_insert, make_props_obj, make_set_prop,
 };
 use biome_js_factory::make::{
-    ident, js_expression_statement, js_string_literal, js_string_literal_expression, jsx_attribute,
-    jsx_attribute_initializer_clause, jsx_expression_attribute_value, jsx_name, jsx_tag_expression,
-    token,
+    js_expression_statement, js_string_literal_expression, jsx_tag_expression,
 };
 use biome_js_syntax::{
     AnyJsArrayElement, AnyJsExpression, AnyJsStatement, AnyJsxAttribute, AnyJsxAttributeName,
     AnyJsxAttributeValue, AnyJsxChild, AnyJsxTag, JsxAttributeList, JsxChildList, JsxElement,
-    JsxExpressionChild, JsxFragment, JsxSelfClosingElement, JsxTagExpression, JsxText, T,
+    JsxExpressionChild, JsxFragment, JsxSelfClosingElement, JsxText,
 };
 use biome_rowan::AstNode;
 
@@ -363,15 +361,15 @@ impl SaplingTransformer<'_> {
             let mut elements: Vec<AnyJsArrayElement> = vec![];
             node.into_iter().for_each(|node| {
                 let el = match node {
-                    AnyJsxChild::JsMetavariable(node) => None,
+                    AnyJsxChild::JsMetavariable(_node) => None,
                     AnyJsxChild::JsxElement(node) => Some(AnyJsExpression::JsxTagExpression(
                         jsx_tag_expression(AnyJsxTag::JsxElement(node)),
                     )),
                     AnyJsxChild::JsxExpressionChild(node) => node.expression(),
-                    AnyJsxChild::JsxFragment(node) => None,
-                    AnyJsxChild::JsxSelfClosingElement(node) => None,
-                    AnyJsxChild::JsxSpreadChild(node) => None,
-                    AnyJsxChild::JsxText(node) => None,
+                    AnyJsxChild::JsxFragment(_node) => None,
+                    AnyJsxChild::JsxSelfClosingElement(_node) => None,
+                    AnyJsxChild::JsxSpreadChild(_node) => None,
+                    AnyJsxChild::JsxText(_node) => None,
                 };
                 if let Some(el) = el {
                     elements.push(AnyJsArrayElement::AnyJsExpression(el));

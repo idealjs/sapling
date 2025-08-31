@@ -3,11 +3,9 @@ use biome_js_factory::make::{
     js_reference_identifier, js_string_literal, js_string_literal_expression, token,
 };
 use biome_js_syntax::{
-    AnyJsCallArgument, AnyJsExpression, AnyJsLiteralExpression, AnyJsStatement, AnyJsxAttribute,
-    AnyJsxAttributeName, AnyJsxAttributeValue, T,
+    AnyJsCallArgument, AnyJsExpression, AnyJsLiteralExpression, AnyJsStatement, T,
 };
 use biome_rowan::TriviaPieceKind;
-use std::str::FromStr;
 
 use crate::make_js_call_arguments;
 
@@ -60,8 +58,9 @@ fn test_make_set_prop() {
     use biome_js_syntax::AnyJsExpression;
     use biome_js_syntax::AnyJsLiteralExpression;
     use biome_js_syntax::AnyJsxAttribute;
+    use biome_js_syntax::AnyJsxAttributeValue;
     use biome_js_syntax::T;
-
+    
     let id_attr = AnyJsxAttribute::from(
         jsx_attribute(jsx_name(ident("id")).into())
             .with_initializer(jsx_attribute_initializer_clause(
