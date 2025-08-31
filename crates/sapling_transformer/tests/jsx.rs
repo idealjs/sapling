@@ -2,6 +2,12 @@ mod test_utils;
 use crate::test_utils::run_test;
 
 #[test]
+pub fn benchmark() {
+    let test_file = "tests/specs/benchmark.tsx";
+    run_test(test_file);
+}
+
+#[test]
 pub fn counter_tsx() {
     let test_file = "tests/specs/counter.tsx";
     run_test(test_file);
