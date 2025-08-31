@@ -9,7 +9,7 @@ use crate::{
     make_effect, make_insert, make_props_obj, make_set_prop,
 };
 use biome_js_factory::make::{
-    js_expression_statement, js_string_literal_expression, jsx_tag_expression,
+    js_expression_statement, js_string_literal_expression, jsx_tag_expression, jsx_child_list,
 };
 use biome_js_syntax::{
     AnyJsArrayElement, AnyJsExpression, AnyJsStatement, AnyJsxAttribute, AnyJsxAttributeName,
@@ -198,17 +198,28 @@ impl SaplingTransformer<'_> {
         let tag_name = jsx_element_name_to_string(&node.name().ok()?)?;
         let scope = self.semantic_model.scope(node.syntax());
         let id = self.generate_unique_identifier(&scope, "_el$");
-        let js_tag_statement = make_create_element(id.as_str(), tag_name.as_str());
-        statments.push(js_tag_statement);
-
-        let attributes = node.attributes();
-        let attr_stmts = self.transform_jsx_attribute_list(
-            &attributes,
-            TransformJsxAttributeListOptions {
-                parent_id: Some(id.clone()),
-            },
-        )?;
-        statments.extend(attr_stmts);
+        let is_component = tag_name.chars().next()?.is_uppercase();
+    
+        if is_component {
+            let attributes = node.attributes();
+            let jsx_child_list = jsx_child_list(vec![]);
+            let props_obj = make_props_obj(attributes, jsx_child_list);
+            let js_tag_statement = make_create_component(id.as_str(), tag_name.as_str(), props_obj);
+            statments.push(js_tag_statement);
+        } else {
+            let js_tag_statement = make_create_element(id.as_str(), tag_name.as_str());
+            statments.push(js_tag_statement);
+    
+            let attributes = node.attributes();
+            let attr_stmts = self.transform_jsx_attribute_list(
+                &attributes,
+                TransformJsxAttributeListOptions {
+                    parent_id: Some(id.clone()),
+                },
+            )?;
+            statments.extend(attr_stmts);
+        }
+    
         Some((statments, id))
     }
 

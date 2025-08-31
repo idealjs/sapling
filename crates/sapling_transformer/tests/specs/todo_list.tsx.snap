@@ -66,15 +66,7 @@ class App {
         children: [
           (item) =>
             _$createJsxTagElement(() => {
-              let _el$2 = _$createElement("Todo");
-              _$effect(
-                () => {
-                  _$setProp(_el$2, "todo", item);
-                },
-                () => {
-                  return [item];
-                },
-              );
+              let _el$2 = _$createComponent(Todo, { todo: item });
               return _el$2;
             }),
         ],

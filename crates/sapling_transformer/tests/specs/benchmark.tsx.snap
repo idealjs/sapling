@@ -1,6 +1,5 @@
 ---
 source: crates/sapling_transformer/tests/test_utils.rs
-assertion_line: 38
 expression: benchmark.tsx
 ---
 # Input
@@ -602,25 +601,12 @@ class App {
         children: [
           (item) =>
             _$createJsxTagElement(() => {
-              let _el$24 = _$createElement("Row");
-              _$effect(
-                () => {
-                  _$setProp(_el$24, "item", item);
-                },
-                () => {
-                  return [item];
-                },
-              );
-              _$effect(
-                () => {
-                  _$setProp(_el$24, "selected", selected);
-                },
-                () => {
-                  return [selected];
-                },
-              );
-              _$setProp(_el$24, "onSelect", (id) => this.select(id));
-              _$setProp(_el$24, "onRemove", (id) => this.remove(id));
+              let _el$24 = _$createComponent(Row, {
+                item: item,
+                selected: selected,
+                onSelect: (id) => this.select(id),
+                onRemove: (id) => this.remove(id),
+              });
               return _el$24;
             }),
         ],
