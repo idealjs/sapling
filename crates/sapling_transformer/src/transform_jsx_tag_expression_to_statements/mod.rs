@@ -305,6 +305,7 @@ impl SaplingTransformer<'_> {
                             match value.expression().ok() {
                                 Some(AnyJsExpression::JsArrowFunctionExpression(_)) => false,
                                 Some(AnyJsExpression::AnyJsLiteralExpression(_)) => false,
+                                Some(AnyJsExpression::JsxTagExpression(_)) => false,
                                 _ => true,
                             }
                         }

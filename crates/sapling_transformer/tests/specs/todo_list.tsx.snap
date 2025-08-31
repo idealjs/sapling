@@ -65,41 +65,28 @@ class App {
           return [this.todos];
         },
       );
-      _$effect(
-        () => {
-          _$setProp(
-            _el$1,
-            "fallback",
-            _$createJsxTagElement(() => {
-              let _el$2 = _$createElement("div");
-              _$insertNode(_el$2, _$createTextNode("Loading..."));
-              return _el$2;
-            }),
-          );
-        },
-        () => {
-          return [
-            _$createJsxTagElement(() => {
-              let _el$3 = _$createElement("div");
-              _$insertNode(_el$3, _$createTextNode("Loading..."));
-              return _el$3;
-            }),
-          ];
-        },
+      _$setProp(
+        _el$1,
+        "fallback",
+        _$createJsxTagElement(() => {
+          let _el$2 = _$createElement("div");
+          _$insertNode(_el$2, _$createTextNode("Loading..."));
+          return _el$2;
+        }),
       );
       _$setProp(_el$1, "children", [
         (item) =>
           _$createJsxTagElement(() => {
-            let _el$ = _$createElement("Todo");
+            let _el$3 = _$createElement("Todo");
             _$effect(
               () => {
-                _$setProp(_el$, "todo", item);
+                _$setProp(_el$3, "todo", item);
               },
               () => {
                 return [item];
               },
             );
-            return _el$;
+            return _el$3;
           }),
       ]);
       _$insertNode(_el$, _el$1);
