@@ -223,10 +223,8 @@ impl SaplingTransformer<'_> {
         let parent_id = transform_options.parent_id?;
 
         for attribute in node.into_iter() {
-            // 先从属性节点提取 prop_key 与 prop_value，如果不是 JsxAttribute 则跳过
             let set_prop_result = match &attribute {
                 AnyJsxAttribute::JsxAttribute(attr) => {
-                    // 提取属性名字符串（支持 namespace)
                     let name_node = match attr.name().ok() {
                         Some(n) => n,
                         None => continue,
@@ -237,7 +235,7 @@ impl SaplingTransformer<'_> {
                                 Some(t) => t,
                                 None => continue,
                             };
-                            // 直接转换为 String
+
                             tok.text_trimmed().to_string()
                         }
                         AnyJsxAttributeName::JsxNamespaceName(name) => {
@@ -263,7 +261,6 @@ impl SaplingTransformer<'_> {
                         }
                     };
 
-                    // 提取属性值（attr 是 &JsxAttribute），并将 AnyJsxAttributeValue 转为 AnyJsExpression 再传给 make_set_prop
                     if let Some(value) = attr.initializer().and_then(|init| init.value().ok()) {
                         let expr_opt: Option<AnyJsExpression> = match value {
                             AnyJsxAttributeValue::JsxString(str_val) => {
@@ -278,10 +275,7 @@ impl SaplingTransformer<'_> {
                             AnyJsxAttributeValue::JsxExpressionAttributeValue(expr_val) => {
                                 expr_val.expression().ok()
                             }
-                            AnyJsxAttributeValue::AnyJsxTag(_) => {
-                                // 保持原有 TODO 行为：无法转换则跳过
-                                None
-                            }
+                            AnyJsxAttributeValue::AnyJsxTag(_) => None,
                         };
 
                         match expr_opt {
@@ -321,7 +315,6 @@ impl SaplingTransformer<'_> {
             match set_prop_result {
                 Some(set_prop_statement) => {
                     if should_effect {
-                        // 从 attribute 中提取 listener 表达式（如果是表达式属性）
                         let mut listeners: Vec<AnyJsExpression> = vec![];
                         if let AnyJsxAttribute::JsxAttribute(attr) = &attribute {
                             if let Some(value) =
@@ -367,8 +360,6 @@ impl SaplingTransformer<'_> {
         let parent_id = transform_options.parent_id?;
         let is_component = transform_options.is_component;
         if is_component {
-            // For component parents, collect children as expressions and set as a "children" prop:
-            // set_prop(_el$, "children", [ childExpr1, childExpr2 ])
             let mut elements: Vec<AnyJsArrayElement> = vec![];
             node.into_iter().for_each(|node| {
                 let el = match node {
@@ -396,7 +387,6 @@ impl SaplingTransformer<'_> {
                 statements.push(set_stmt);
             }
         } else {
-            // Handle children
             node.into_iter().for_each(|node| {
                 let Some((child_stmts, child_id)) = self.transform_any_jsx_child_to_statements(
                     &node,

@@ -28,7 +28,6 @@ fn run_test(input: &'static str) -> Option<()> {
     let js_tree = parsed_root.try_tree()?;
     let semantic_model = semantic_model(&js_tree, SemanticModelOptions::default());
 
-    // 收集所有表达式链
     let mut all_chains = Vec::new();
     js_tree.into_syntax().preorder().try_for_each(|event| {
         if let WalkEvent::Enter(syntax_node) = event {
@@ -52,7 +51,6 @@ fn run_test(input: &'static str) -> Option<()> {
         Some(())
     });
 
-    // 格式化输出到 snapshot
     let formatted = all_chains
         .into_iter()
         .map(|chain| {

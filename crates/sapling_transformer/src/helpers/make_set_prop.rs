@@ -11,7 +11,6 @@ use std::str::FromStr;
 
 use crate::make_js_call_arguments;
 
-/// 生成 _$setProp(el, name, value) 的表达式语句
 pub fn make_set_prop(
     id: &str,
     prop_key: &str,
@@ -19,23 +18,17 @@ pub fn make_set_prop(
 ) -> Option<AnyJsStatement> {
     let callee = js_identifier_expression(js_reference_identifier(ident("_$setProp")));
 
-    // 1. 第一个参数：id 转为 AST 表达式节点
     let el_ident = js_identifier_expression(js_reference_identifier(ident(id)));
     let mut args = vec![AnyJsCallArgument::AnyJsExpression(el_ident.into())];
     let mut separators = vec![];
 
-    // 2. 属性名作为第二个参数（字符串）
     separators.push(token(T!(,)).with_trailing_trivia([(TriviaPieceKind::Whitespace, " ")]));
     args.push(AnyJsCallArgument::AnyJsExpression(
-        AnyJsExpression::AnyJsLiteralExpression(
-            AnyJsLiteralExpression::JsStringLiteralExpression(js_string_literal_expression(
-                js_string_literal(prop_key),
-            )),
-        ),
+        AnyJsExpression::AnyJsLiteralExpression(AnyJsLiteralExpression::JsStringLiteralExpression(
+            js_string_literal_expression(js_string_literal(prop_key)),
+        )),
     ));
 
-    // 3. 处理属性值（作为第三个参数）
-    // 现在 prop_value 已经是 AnyJsExpression，直接使用即可
     let value_expr = prop_value;
     separators.push(token(T!(,)).with_trailing_trivia([(TriviaPieceKind::Whitespace, " ")]));
     args.push(AnyJsCallArgument::AnyJsExpression(value_expr));
@@ -69,7 +62,6 @@ fn test_make_set_prop() {
     use biome_js_syntax::AnyJsxAttribute;
     use biome_js_syntax::T;
 
-    // id="foo"
     let id_attr = AnyJsxAttribute::from(
         jsx_attribute(jsx_name(ident("id")).into())
             .with_initializer(jsx_attribute_initializer_clause(
@@ -79,7 +71,6 @@ fn test_make_set_prop() {
             .build(),
     );
 
-    // title={"bar"}
     let title_attr = AnyJsxAttribute::from(
         jsx_attribute(jsx_name(ident("title")).into())
             .with_initializer(jsx_attribute_initializer_clause(
@@ -98,7 +89,6 @@ fn test_make_set_prop() {
             .build(),
     );
 
-    // foo:some={0}
     let foo_attr = AnyJsxAttribute::from(
         jsx_attribute(
             jsx_namespace_name(
@@ -124,14 +114,15 @@ fn test_make_set_prop() {
         .build(),
     );
 
-    // 从构造的 AnyJsxAttribute 中提取 value 并调用新的签名（将 AnyJsxAttributeValue 转为 AnyJsExpression）
     let id_value = match &id_attr {
         AnyJsxAttribute::JsxAttribute(a) => {
             let raw = a.initializer().unwrap().value().ok().unwrap();
             match raw {
-                AnyJsxAttributeValue::JsxString(str_val) => AnyJsExpression::AnyJsLiteralExpression(
-                    js_string_literal_expression(str_val.value_token().ok().unwrap()).into(),
-                ),
+                AnyJsxAttributeValue::JsxString(str_val) => {
+                    AnyJsExpression::AnyJsLiteralExpression(
+                        js_string_literal_expression(str_val.value_token().ok().unwrap()).into(),
+                    )
+                }
                 AnyJsxAttributeValue::JsxExpressionAttributeValue(expr_val) => {
                     expr_val.expression().ok().unwrap()
                 }
@@ -141,14 +132,16 @@ fn test_make_set_prop() {
         _ => panic!(),
     };
     let stmt1 = make_set_prop("_el$", "id", id_value).expect("stmt1 is None");
-    
+
     let title_value = match &title_attr {
         AnyJsxAttribute::JsxAttribute(a) => {
             let raw = a.initializer().unwrap().value().ok().unwrap();
             match raw {
-                AnyJsxAttributeValue::JsxString(str_val) => AnyJsExpression::AnyJsLiteralExpression(
-                    js_string_literal_expression(str_val.value_token().ok().unwrap()).into(),
-                ),
+                AnyJsxAttributeValue::JsxString(str_val) => {
+                    AnyJsExpression::AnyJsLiteralExpression(
+                        js_string_literal_expression(str_val.value_token().ok().unwrap()).into(),
+                    )
+                }
                 AnyJsxAttributeValue::JsxExpressionAttributeValue(expr_val) => {
                     expr_val.expression().ok().unwrap()
                 }
@@ -158,14 +151,16 @@ fn test_make_set_prop() {
         _ => panic!(),
     };
     let stmt2 = make_set_prop("_el$", "title", title_value).expect("stmt2 is None");
-    
+
     let foo_value = match &foo_attr {
         AnyJsxAttribute::JsxAttribute(a) => {
             let raw = a.initializer().unwrap().value().ok().unwrap();
             match raw {
-                AnyJsxAttributeValue::JsxString(str_val) => AnyJsExpression::AnyJsLiteralExpression(
-                    js_string_literal_expression(str_val.value_token().ok().unwrap()).into(),
-                ),
+                AnyJsxAttributeValue::JsxString(str_val) => {
+                    AnyJsExpression::AnyJsLiteralExpression(
+                        js_string_literal_expression(str_val.value_token().ok().unwrap()).into(),
+                    )
+                }
                 AnyJsxAttributeValue::JsxExpressionAttributeValue(expr_val) => {
                     expr_val.expression().ok().unwrap()
                 }

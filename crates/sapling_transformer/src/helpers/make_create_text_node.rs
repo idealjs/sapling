@@ -21,6 +21,6 @@ pub fn make_create_text_node(text: &str) -> JsCallExpression {
 #[test]
 fn test_make_create_text_node() {
     let expr = make_create_text_node("hello");
-    // 只做快照测试，确保语法结构正确
+
     insta::assert_snapshot!(expr.to_string());
 }

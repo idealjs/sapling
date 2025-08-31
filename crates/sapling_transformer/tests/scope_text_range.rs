@@ -15,7 +15,6 @@ fn test_scope_text_range_for_two_vars() {
     let tree = parsed.tree();
     let model = semantic_model(&tree, SemanticModelOptions::default());
 
-    // 1. 找到 a、b 两个变量的 node
     let mut a_node = None;
     let mut b_node = None;
     for node in tree.syntax().descendants() {
@@ -31,11 +30,10 @@ fn test_scope_text_range_for_two_vars() {
     }
     let a_node = a_node.expect("a node not found");
     let b_node = b_node.expect("b node not found");
-    // 2. 使用 model 获取 scope
+
     let a_scope = model.scope(&a_node);
     let b_scope = model.scope(&b_node);
 
-    // 3. 判断 text range 是否相同
     let a_range = a_scope.range();
     let b_range = b_scope.range();
     assert_eq!(

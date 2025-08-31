@@ -120,8 +120,6 @@ impl biome_rowan::SyntaxRewriter for SaplingTransformer<'_> {
             }
             JsSyntaxKind::JSX_TAG_EXPRESSION => {
                 if let Some(jsx_node) = node.clone().cast::<JsxTagExpression>() {
-                    // build transformer for this replacement
-
                     if let Some(new_expr) = self.transform_jsx_tag_expression(
                         &jsx_node,
                         TransformAnyJsxTagExpressionOptions { parent_id: None },
@@ -139,7 +137,6 @@ impl biome_rowan::SyntaxRewriter for SaplingTransformer<'_> {
 
 #[wasm_bindgen]
 pub fn transform(input_code: String) -> Option<String> {
-    // parse
     let parsed_root = parse(
         input_code.as_str(),
         JsFileSource::tsx(),
@@ -149,12 +146,9 @@ pub fn transform(input_code: String) -> Option<String> {
 
     let semantic_model = semantic_model(&js_tree, SemanticModelOptions::default());
 
-    // First pass: collect decorated members per class and build the bit map.
-    // We keep a map from class text range -> set of decorated member names.
     let mut decorated_members: HashSet<String> = HashSet::new();
     let mut string_tree = StringTree::default();
 
-    // run rewriter
     let root = js_tree.into_syntax();
     let mut transformer = SaplingTransformer {
         semantic_model: semantic_model,
@@ -166,7 +160,6 @@ pub fn transform(input_code: String) -> Option<String> {
 
     let syntax_node = transformer.transform(root);
 
-    // format and return
     let formatted = format_node(
         JsFormatOptions::new(JsFileSource::default()).with_indent_style(IndentStyle::Space),
         &syntax_node,

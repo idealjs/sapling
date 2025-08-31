@@ -11,9 +11,7 @@ use biome_rowan::TriviaPieceKind;
 
 use crate::make_js_call_arguments;
 
-/// 生成 let id = _$createElement(tag_name); 的语句
 pub fn make_create_element(id: &str, tag_name: &str) -> AnyJsStatement {
-    // 构造 let _el$ = _$createElement("div");
     let callee = js_identifier_expression(js_reference_identifier(ident("_$createElement")));
     let arg = AnyJsCallArgument::AnyJsExpression(AnyJsExpression::AnyJsLiteralExpression(
         js_string_literal_expression(js_string_literal(tag_name)).into(),
@@ -33,7 +31,6 @@ pub fn make_create_element(id: &str, tag_name: &str) -> AnyJsStatement {
     ))
     .build();
 
-    // 让 let 和变量名之间有空格
     let let_token = token(T![let]);
     let let_token_with_space = let_token.with_trailing_trivia([(TriviaPieceKind::Whitespace, " ")]);
 
@@ -43,7 +40,6 @@ pub fn make_create_element(id: &str, tag_name: &str) -> AnyJsStatement {
     )
     .build();
 
-    // 添加分号
     let semicolon_token = token(T![;]);
     let var_stmt = js_variable_statement(var_decl)
         .with_semicolon_token(semicolon_token)

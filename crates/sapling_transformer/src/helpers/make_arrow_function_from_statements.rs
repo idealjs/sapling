@@ -1,4 +1,3 @@
-// 生成单条语句的箭头函数表达式
 use biome_js_factory::make::{
     js_arrow_function_expression, js_directive_list, js_function_body, js_parameter_list,
     js_parameters, js_statement_list, token,

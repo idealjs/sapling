@@ -17,7 +17,6 @@ pub fn make_create_component(
     tag_name: &str,
     props: Option<JsObjectExpression>,
 ) -> AnyJsStatement {
-    // 构造 let _el$ = _$createComponent(Comp);
     let callee = js_identifier_expression(js_reference_identifier(ident("_$createComponent")));
     let arg = AnyJsCallArgument::AnyJsExpression(AnyJsExpression::JsIdentifierExpression(
         js_identifier_expression(js_reference_identifier(ident(tag_name))).into(),
@@ -56,7 +55,6 @@ pub fn make_create_component(
     ))
     .build();
 
-    // 让 let 和变量名之间有空格
     let let_token = token(T![let]);
     let let_token_with_space = let_token.with_trailing_trivia([(TriviaPieceKind::Whitespace, " ")]);
 
@@ -66,7 +64,6 @@ pub fn make_create_component(
     )
     .build();
 
-    // 添加分号
     let semicolon_token = token(T![;]);
     let var_stmt = js_variable_statement(var_decl)
         .with_semicolon_token(semicolon_token)

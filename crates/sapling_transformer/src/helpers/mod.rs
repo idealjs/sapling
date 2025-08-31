@@ -74,10 +74,7 @@ pub fn make_js_call_arguments(
     )
 }
 
-pub fn make_js_parameters(
-    js_parameter_list: JsParameterList, // parameters: Vec<AnyJsParameter>,
-                                        // separators: Vec<JsSyntaxToken>,
-) -> JsParameters {
+pub fn make_js_parameters(js_parameter_list: JsParameterList) -> JsParameters {
     js_parameters(token(T!['(']), js_parameter_list, token(T![')']))
 }
 

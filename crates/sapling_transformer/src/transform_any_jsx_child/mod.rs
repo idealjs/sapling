@@ -21,7 +21,6 @@ use crate::{
 };
 
 impl SaplingTransformer<'_> {
-    // main entry
     pub fn transform_any_jsx_child(
         &mut self,
         node: &AnyJsxChild,
@@ -71,11 +70,9 @@ impl SaplingTransformer<'_> {
         node: &JsxText,
         transform_options: TransformAnyJsxTextOptions,
     ) -> Option<AnyJsExpression> {
-        // _$insertNode(_el$, _$createTextNode(`template`));
         let binding = node.to_string();
         let node_value = binding.as_str().trim();
-        // due to new line between JSX_CHILD_LIST
-        // if node is new line return None
+
         if node_value.is_empty() {
             return None;
         }

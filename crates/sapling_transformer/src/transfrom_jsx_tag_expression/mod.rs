@@ -15,7 +15,6 @@ pub struct TransformAnyJsxTagExpressionOptions {
 }
 
 impl SaplingTransformer<'_> {
-    // main entry
     pub fn transform_jsx_tag_expression(
         &mut self,
         node: &JsxTagExpression,
