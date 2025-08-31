@@ -1,4 +1,4 @@
-import { Mutate, State } from "@idealjs/sapling";
+import { createRoot, Mutate, State } from "@idealjs/sapling";
 
 import For from "./for";
 
@@ -277,4 +277,9 @@ class App {
   }
 }
 
-export default App;
+const el = document.getElementById("app");
+
+if (el) {
+  const root = createRoot(el);
+  root.render(<App />);
+}
