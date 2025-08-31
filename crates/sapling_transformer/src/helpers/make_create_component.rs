@@ -1,23 +1,48 @@
 use biome_js_factory::make::{
     ident, js_call_expression, js_identifier_binding, js_identifier_expression,
-    js_initializer_clause, js_reference_identifier, js_variable_declaration,
-    js_variable_declarator, js_variable_declarator_list, js_variable_statement, token,
+    js_initializer_clause, js_object_expression, js_object_member_list, js_reference_identifier,
+    js_variable_declaration, js_variable_declarator, js_variable_declarator_list,
+    js_variable_statement, token,
 };
 use biome_js_syntax::{
-    AnyJsBinding, AnyJsBindingPattern, AnyJsCallArgument, AnyJsExpression, AnyJsStatement, T,
+    AnyJsBinding, AnyJsBindingPattern, AnyJsCallArgument, AnyJsExpression, AnyJsStatement,
+    JsObjectExpression, T,
 };
 use biome_rowan::TriviaPieceKind;
 
 use crate::make_js_call_arguments;
 
-pub fn make_create_component(id: &str, tag_name: &str) -> AnyJsStatement {
+pub fn make_create_component(
+    id: &str,
+    tag_name: &str,
+    props: Option<JsObjectExpression>,
+) -> AnyJsStatement {
     // 构造 let _el$ = _$createComponent(Comp);
     let callee = js_identifier_expression(js_reference_identifier(ident("_$createComponent")));
     let arg = AnyJsCallArgument::AnyJsExpression(AnyJsExpression::JsIdentifierExpression(
         js_identifier_expression(js_reference_identifier(ident(tag_name))).into(),
     ));
-    let call_expr =
-        js_call_expression(callee.into(), make_js_call_arguments(vec![arg], vec![])).build();
+    let call_expr = {
+        let props_arg = match props {
+            Some(obj) => {
+                AnyJsCallArgument::AnyJsExpression(AnyJsExpression::JsObjectExpression(obj))
+            }
+            None => {
+                let empty_obj = js_object_expression(
+                    token(T!['{']),
+                    js_object_member_list(vec![], vec![]),
+                    token(T!['}']),
+                );
+                AnyJsCallArgument::AnyJsExpression(AnyJsExpression::JsObjectExpression(empty_obj))
+            }
+        };
+
+        js_call_expression(
+            callee.into(),
+            make_js_call_arguments(vec![arg, props_arg], vec![token(T!(,))]),
+        )
+        .build()
+    };
 
     let binding = js_identifier_binding(ident(id));
     let declarator = js_variable_declarator(AnyJsBindingPattern::AnyJsBinding(
@@ -52,7 +77,7 @@ pub fn make_create_component(id: &str, tag_name: &str) -> AnyJsStatement {
 
 #[test]
 fn test_make_create_component() {
-    let stmt1 = make_create_component("_el1$", "Comp");
-    let stmt2 = make_create_component("_el2$", "Comp");
+    let stmt1 = make_create_component("_el1$", "Comp", None);
+    let stmt2 = make_create_component("_el2$", "Comp", None);
     insta::assert_snapshot!(format!("{}\n{}", stmt1.to_string(), stmt2.to_string()));
 }

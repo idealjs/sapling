@@ -23,6 +23,7 @@ pub mod make_create_text_node;
 pub mod make_effect;
 pub mod make_insert;
 pub mod make_insert_node;
+pub mod make_props_obj;
 pub mod make_set_prop;
 pub mod string_tree;
 
@@ -38,6 +39,7 @@ pub use make_create_text_node::*;
 pub use make_effect::*;
 pub use make_insert::*;
 pub use make_insert_node::*;
+pub use make_props_obj::*;
 pub use make_set_prop::*;
 pub use string_tree::*;
 

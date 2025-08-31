@@ -1,0 +1,49 @@
+---
+source: crates/sapling_transformer/src/helpers/make_props_obj.rs
+expression: "format!(\"{:#?}\", props)"
+---
+Some(
+    JsObjectExpression {
+        l_curly_token: L_CURLY@0..1 "{" [] [],
+        members: JsObjectMemberList [
+            JsPropertyObjectMember {
+                name: JsLiteralMemberName {
+                    value: IDENT@1..3 "id" [] [],
+                },
+                colon_token: COLON@3..4 ":" [] [],
+                value: JsStringLiteralExpression {
+                    value_token: JS_STRING_LITERAL@4..7 "\"a\"" [] [],
+                },
+            },
+            COMMA@7..8 "," [] [],
+            JsPropertyObjectMember {
+                name: JsLiteralMemberName {
+                    value: IDENT@8..13 "title" [] [],
+                },
+                colon_token: COLON@13..14 ":" [] [],
+                value: JsStringLiteralExpression {
+                    value_token: JSX_STRING_LITERAL@14..19 "\"bar\"" [] [],
+                },
+            },
+            COMMA@19..20 "," [] [],
+            JsPropertyObjectMember {
+                name: JsLiteralMemberName {
+                    value: IDENT@20..28 "children" [] [],
+                },
+                colon_token: COLON@28..29 ":" [] [],
+                value: JsArrayExpression {
+                    l_brack_token: L_BRACK@29..30 "[" [] [],
+                    elements: JsArrayElementList [
+                        JsIdentifierExpression {
+                            name: JsReferenceIdentifier {
+                                value_token: IDENT@30..31 "a" [] [],
+                            },
+                        },
+                    ],
+                    r_brack_token: R_BRACK@31..32 "]" [] [],
+                },
+            },
+        ],
+        r_curly_token: R_CURLY@32..33 "}" [] [],
+    },
+)

@@ -6,7 +6,7 @@ use crate::{
 };
 use crate::{
     make_array, make_arrow_function_from_statement, make_create_component, make_create_element,
-    make_effect, make_insert, make_set_prop,
+    make_effect, make_insert, make_props_obj, make_set_prop,
 };
 use biome_js_factory::make::{
     ident, js_expression_statement, js_string_literal, js_string_literal_expression, jsx_attribute,
@@ -61,31 +61,34 @@ impl SaplingTransformer<'_> {
         let is_component = tag_name.chars().next()?.is_uppercase();
 
         if is_component {
-            let js_tag_statement = make_create_component(id.as_str(), tag_name.as_str());
+            let attributes = node.opening_element().ok()?.attributes();
+            let jsx_child_list = node.children();
+            let props_obj = make_props_obj(attributes, jsx_child_list);
+            let js_tag_statement = make_create_component(id.as_str(), tag_name.as_str(), props_obj);
             statements.push(js_tag_statement);
         } else {
             let js_tag_statement = make_create_element(id.as_str(), tag_name.as_str());
             statements.push(js_tag_statement);
+            let attributes = node.opening_element().ok()?.attributes();
+            let attr_stmts = self.transform_jsx_attribute_list(
+                &attributes,
+                TransformJsxAttributeListOptions {
+                    parent_id: Some(id.clone()),
+                },
+            )?;
+            statements.extend(attr_stmts);
+
+            let jsx_child_list = node.children();
+
+            let child_stmts = self.transform_jsx_child_list(
+                &jsx_child_list,
+                TransformJsxChildListOptions {
+                    parent_id: Some(id.clone()),
+                    is_component,
+                },
+            )?;
+            statements.extend(child_stmts);
         }
-        let attributes = node.opening_element().ok()?.attributes();
-        let attr_stmts = self.transform_jsx_attribute_list(
-            &attributes,
-            TransformJsxAttributeListOptions {
-                parent_id: Some(id.clone()),
-            },
-        )?;
-        statements.extend(attr_stmts);
-
-        let jsx_child_list = node.children();
-
-        let child_stmts = self.transform_jsx_child_list(
-            &jsx_child_list,
-            TransformJsxChildListOptions {
-                parent_id: Some(id.clone()),
-                is_component,
-            },
-        )?;
-        statements.extend(child_stmts);
 
         Some((statements, id))
     }
