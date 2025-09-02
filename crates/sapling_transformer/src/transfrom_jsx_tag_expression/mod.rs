@@ -23,9 +23,8 @@ impl SaplingTransformer<'_> {
         let tag = node.tag().ok()?;
         match tag {
             AnyJsxTag::JsxElement(node) => {
-                let (statements, id) = self.transform_jsx_element(&node)?;
+                let (statements, id, _is_component) = self.transform_jsx_element(&node)?;
                 let call = make_create_jsx_tag_element(&vec![], &statements, id);
-
                 Some(AnyJsExpression::JsCallExpression(call))
             }
             AnyJsxTag::JsxFragment(node) => self.transform_jsx_fragment(
@@ -35,10 +34,9 @@ impl SaplingTransformer<'_> {
                 },
             ),
             AnyJsxTag::JsxSelfClosingElement(node) => {
-                let (statements, id) =
+                let (statements, id, _) =
                     self.transform_jsx_self_closing_element_to_statements(&node)?;
                 let call = make_create_jsx_tag_element(&vec![], &statements, id);
-
                 Some(AnyJsExpression::JsCallExpression(call))
             }
         }

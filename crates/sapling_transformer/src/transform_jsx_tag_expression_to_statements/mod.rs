@@ -50,7 +50,7 @@ impl SaplingTransformer<'_> {
     pub fn transform_jsx_element(
         &mut self,
         node: &JsxElement,
-    ) -> Option<(Vec<AnyJsStatement>, String)> {
+    ) -> Option<(Vec<AnyJsStatement>, String, bool)> {
         let tag_name = jsx_element_name_to_string(&node.opening_element().ok()?.name().ok()?)?;
         let mut statements: Vec<AnyJsStatement> = vec![];
         let scope = self.semantic_model.scope(node.syntax());
@@ -86,7 +86,7 @@ impl SaplingTransformer<'_> {
             statements.extend(child_stmts);
         }
 
-        Some((statements, id))
+        Some((statements, id, is_component))
     }
     pub fn transform_jsx_fragment_to_insert_statement(
         &mut self,
@@ -111,11 +111,11 @@ impl SaplingTransformer<'_> {
         &mut self,
         node: &AnyJsxChild,
         transform_options: TransformAnyJsxChildToStatementsOptions,
-    ) -> Option<(Vec<AnyJsStatement>, Option<String>)> {
+    ) -> Option<(Vec<AnyJsStatement>, Option<String>, Option<bool>)> {
         match node {
             AnyJsxChild::JsxElement(node) => {
-                let (statements, id) = self.transform_jsx_element(node)?;
-                Some((statements, Some(id)))
+                let (statements, id, is_component) = self.transform_jsx_element(node)?;
+                Some((statements, Some(id), Some(is_component)))
             }
             AnyJsxChild::JsxExpressionChild(node) => {
                 let statements = self.transform_jsx_expression_child_to_statements(
@@ -124,7 +124,7 @@ impl SaplingTransformer<'_> {
                         parent_id: Some(transform_options.parent_id?.clone()),
                     },
                 )?;
-                Some((statements, None))
+                Some((statements, None, Some(false)))
             }
             AnyJsxChild::JsxFragment(node) => {
                 let statements = self.transform_jsx_fragment_to_insert_statement(
@@ -133,11 +133,11 @@ impl SaplingTransformer<'_> {
                         parent_id: transform_options.parent_id.clone(),
                     },
                 )?;
-                Some((statements, None))
+                Some((statements, None, Some(false)))
             }
             AnyJsxChild::JsxSelfClosingElement(node) => self
                 .transform_jsx_self_closing_element_to_statements(node)
-                .map(|(stmts, id)| (stmts, Some(id))),
+                .map(|(stmts, id, is_component)| (stmts, Some(id), Some(is_component))),
 
             AnyJsxChild::JsxText(node) => {
                 let statements = self.transform_jsx_text_to_statements(
@@ -146,7 +146,7 @@ impl SaplingTransformer<'_> {
                         parent_id: transform_options.parent_id.clone(),
                     },
                 )?;
-                Some((statements, None))
+                Some((statements, None, Some(false)))
             }
             _ => {
                 unreachable!()
@@ -191,13 +191,13 @@ impl SaplingTransformer<'_> {
     pub fn transform_jsx_self_closing_element_to_statements(
         &mut self,
         node: &JsxSelfClosingElement,
-    ) -> Option<(Vec<AnyJsStatement>, String)> {
+    ) -> Option<(Vec<AnyJsStatement>, String, bool)> {
         let mut statments: Vec<AnyJsStatement> = vec![];
         let tag_name = jsx_element_name_to_string(&node.name().ok()?)?;
         let scope = self.semantic_model.scope(node.syntax());
         let id = self.generate_unique_identifier(&scope, "_el$");
         let is_component = tag_name.chars().next()?.is_uppercase();
-
+ 
         if is_component {
             let attributes = node.attributes();
             let jsx_child_list = jsx_child_list(vec![]);
@@ -207,7 +207,7 @@ impl SaplingTransformer<'_> {
         } else {
             let js_tag_statement = make_create_element(id.as_str(), tag_name.as_str());
             statments.push(js_tag_statement);
-
+ 
             let attributes = node.attributes();
             let attr_stmts = self.transform_jsx_attribute_list(
                 &attributes,
@@ -217,8 +217,8 @@ impl SaplingTransformer<'_> {
             )?;
             statments.extend(attr_stmts);
         }
-
-        Some((statments, id))
+ 
+        Some((statments, id, is_component))
     }
 
     pub fn transform_jsx_attribute_list(
@@ -365,23 +365,51 @@ impl SaplingTransformer<'_> {
     ) -> Option<Vec<AnyJsStatement>> {
         let mut statements = vec![];
         let parent_id = transform_options.parent_id?;
+        use biome_js_factory::make::{ident, js_identifier_expression, js_reference_identifier};
         node.into_iter().for_each(|node| {
-            let Some((child_stmts, child_id)) = self.transform_any_jsx_child_to_statements(
-                &node,
-                TransformAnyJsxChildToStatementsOptions {
-                    parent_id: Some(parent_id.clone()),
-                },
-            ) else {
+            let Some((child_stmts, child_id, is_component)) = self
+                .transform_any_jsx_child_to_statements(
+                    &node,
+                    TransformAnyJsxChildToStatementsOptions {
+                        parent_id: Some(parent_id.clone()),
+                    },
+                )
+            else {
                 return;
             };
+
+            // extend child statements first (preserve original ordering)
             statements.extend(child_stmts);
+
             if let Some(child_id) = child_id {
-                statements.push(AnyJsStatement::JsExpressionStatement(
-                    js_expression_statement(
-                        make_insert_node(parent_id.as_str(), child_id.as_str()).into(),
-                    )
-                    .build(),
-                ));
+                if let Some(true) = is_component {
+                    // For components, wrap an insert call inside an effect:
+                    // effect(() => { insert(parent, childId) }, [childId])
+                    let child_ident_expr = AnyJsExpression::JsIdentifierExpression(
+                        js_identifier_expression(js_reference_identifier(ident(child_id.as_str())))
+                            .into(),
+                    );
+
+                    let insert_call = make_insert(parent_id.as_str(), child_ident_expr.clone());
+                    let insert_stmt = AnyJsStatement::JsExpressionStatement(
+                        js_expression_statement(insert_call.into()).build(),
+                    );
+                    let arrow_expr = AnyJsExpression::JsArrowFunctionExpression(
+                        make_arrow_function_from_statement(insert_stmt),
+                    );
+
+                    let effect_call = make_effect(arrow_expr, vec![child_ident_expr]);
+                    statements.push(AnyJsStatement::JsExpressionStatement(
+                        js_expression_statement(effect_call.into()).build(),
+                    ));
+                } else {
+                    statements.push(AnyJsStatement::JsExpressionStatement(
+                        js_expression_statement(
+                            make_insert_node(parent_id.as_str(), child_id.as_str()).into(),
+                        )
+                        .build(),
+                    ));
+                }
             }
         });
         Some(statements)

@@ -69,7 +69,14 @@ class App {
             return _el$2;
           }),
       });
-      _$insertNode(_el$, _el$1);
+      _$effect(
+        () => {
+          _$insert(_el$, _el$1);
+        },
+        () => {
+          return [_el$1];
+        },
+      );
       return _el$;
     });
   }

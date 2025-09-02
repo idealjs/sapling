@@ -614,7 +614,14 @@ class App {
             return _el$24;
           }),
       });
-      _$insertNode(_el$20, _el$21);
+      _$effect(
+        () => {
+          _$insert(_el$20, _el$21);
+        },
+        () => {
+          return [_el$21];
+        },
+      );
       _$insertNode(_el$19, _el$20);
       _$insertNode(_el$, _el$19);
       let _el$22 = _$createElement("span");

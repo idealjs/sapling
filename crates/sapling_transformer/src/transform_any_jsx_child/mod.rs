@@ -28,9 +28,9 @@ impl SaplingTransformer<'_> {
     ) -> Option<AnyJsExpression> {
         match node {
             AnyJsxChild::JsxElement(node) => {
-                let (statements, id) = self.transform_jsx_element(node)?;
+                let (statements, id, _is_component) = self.transform_jsx_element(node)?;
                 let call = make_create_jsx_tag_element(&vec![], &statements, id);
-
+ 
                 Some(AnyJsExpression::JsCallExpression(call))
             }
             AnyJsxChild::JsxExpressionChild(node) => self.transform_jsx_expression_child(
@@ -46,10 +46,10 @@ impl SaplingTransformer<'_> {
                 },
             ),
             AnyJsxChild::JsxSelfClosingElement(node) => {
-                let (statements, id) =
+                let (statements, id, _is_component) =
                     self.transform_jsx_self_closing_element_to_statements(node)?;
                 let call = make_create_jsx_tag_element(&vec![], &statements, id);
-
+ 
                 Some(AnyJsExpression::JsCallExpression(call))
             }
             AnyJsxChild::JsxSpreadChild(node) => self.transform_jsx_spread_child(node),
