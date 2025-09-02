@@ -1,13 +1,17 @@
-export type ComponentType<P = Record<string, unknown | undefined>> = new (
-  props: P,
-) => unknown;
-type PropsOf<C> = C extends ComponentType<infer P> ? P : unknown;
+import memo from "./memo";
+import type { ComponentType } from "./types";
 
 export function createComponent<
   C extends ComponentType<P>,
   P = Record<string, unknown | undefined>,
->(comp: C, props: P) {
-  return;
+>(Comp: C, props: P) {
+  return memo(
+    () => {
+      let v = new Comp(props);
+      return v.render();
+    },
+    () => {},
+  );
 }
 
 export default createComponent;
