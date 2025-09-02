@@ -257,12 +257,12 @@ class App {
         <table className="table table-hover table-striped test-data">
           <tbody>
             <For each={data} fallback={<tr />}>
-              {(item) => (
+              {(item: IData) => (
                 <Row
                   item={item}
                   selected={selected}
-                  onSelect={(id) => this.select(id)}
-                  onRemove={(id) => this.remove(id)}
+                  onSelect={(id: number) => this.select(id)}
+                  onRemove={(id: number) => this.remove(id)}
                 />
               )}
             </For>

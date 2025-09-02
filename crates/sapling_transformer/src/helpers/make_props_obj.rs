@@ -153,12 +153,22 @@ pub fn make_props_obj(
     });
 
     if !elements.is_empty() {
-        let arr_expr = AnyJsExpression::JsArrayExpression(make_array(elements));
+        // If there's exactly one child, set props.children to that child expression directly
+        // instead of wrapping it into an array. Otherwise keep the array behavior.
+        let value_expr = if elements.len() == 1 {
+            match elements.into_iter().next().unwrap() {
+                AnyJsArrayElement::AnyJsExpression(expr) => expr,
+                other => AnyJsExpression::JsArrayExpression(make_array(vec![other])),
+            }
+        } else {
+            AnyJsExpression::JsArrayExpression(make_array(elements))
+        };
+
         let name_member = js_literal_member_name(ident("children"));
         let member = js_property_object_member(
             biome_js_syntax::AnyJsObjectMemberName::JsLiteralMemberName(name_member),
             token(T![:]),
-            arr_expr,
+            value_expr,
         );
         members.push(AnyJsObjectMember::JsPropertyObjectMember(member));
     }

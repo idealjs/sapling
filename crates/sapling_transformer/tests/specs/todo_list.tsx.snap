@@ -63,13 +63,11 @@ class App {
           _$insertNode(_el$, _$createTextNode("Loading..."));
           return _el$;
         }),
-        children: [
-          (item) =>
-            _$createJsxTagElement(() => {
-              let _el$2 = _$createComponent(Todo, { todo: item });
-              return _el$2;
-            }),
-        ],
+        children: (item) =>
+          _$createJsxTagElement(() => {
+            let _el$2 = _$createComponent(Todo, { todo: item });
+            return _el$2;
+          }),
       });
       _$insertNode(_el$, _el$1);
       return _el$;

@@ -1,6 +1,7 @@
 import _$createComponent from "./createComponent";
 import _$createElement from "./createElement";
 import _$createJsxTagElement from "./createJsxTagElement";
+import createRoot from "./createRoot";
 import _$createTextNode from "./createTextNode";
 import _$effect from "./effect";
 import For from "./For";
@@ -315,27 +316,14 @@ class App {
           let _el$23 = _$createElement("tr");
           return _el$23;
         }),
-        children: (item) =>
+        children: (item: IData) =>
           _$createJsxTagElement(() => {
-            let _el$24 = _$createElement("Row");
-            _$effect(
-              () => {
-                _$setProp(_el$24, "item", item);
-              },
-              () => {
-                return [item];
-              },
-            );
-            _$effect(
-              () => {
-                _$setProp(_el$24, "selected", selected);
-              },
-              () => {
-                return [selected];
-              },
-            );
-            _$setProp(_el$24, "onSelect", (id: number) => this.select(id));
-            _$setProp(_el$24, "onRemove", (id: number) => this.remove(id));
+            let _el$24 = _$createComponent(Row, {
+              item: item,
+              selected: selected,
+              onSelect: (id: number) => this.select(id),
+              onRemove: (id: number) => this.remove(id),
+            });
             return _el$24;
           }),
       });
@@ -351,4 +339,14 @@ class App {
   }
 }
 
-export default App;
+const el = document.getElementById("app");
+
+if (el) {
+  const root = createRoot(el);
+  root.render(
+    _$createJsxTagElement(() => {
+      let _el$ = _$createComponent(App, {});
+      return _el$;
+    }),
+  );
+}

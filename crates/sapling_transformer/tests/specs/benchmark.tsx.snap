@@ -263,12 +263,12 @@ class App {
         <table className="table table-hover table-striped test-data">
           <tbody>
             <For each={data} fallback={<tr />}>
-              {(item) => (
+              {(item: IData) => (
                 <Row
                   item={item}
                   selected={selected}
-                  onSelect={(id) => this.select(id)}
-                  onRemove={(id) => this.remove(id)}
+                  onSelect={(id: number) => this.select(id)}
+                  onRemove={(id: number) => this.remove(id)}
                 />
               )}
             </For>
@@ -603,18 +603,16 @@ class App {
           let _el$23 = _$createElement("tr");
           return _el$23;
         }),
-        children: [
-          (item) =>
-            _$createJsxTagElement(() => {
-              let _el$24 = _$createComponent(Row, {
-                item: item,
-                selected: selected,
-                onSelect: (id) => this.select(id),
-                onRemove: (id) => this.remove(id),
-              });
-              return _el$24;
-            }),
-        ],
+        children: (item: IData) =>
+          _$createJsxTagElement(() => {
+            let _el$24 = _$createComponent(Row, {
+              item: item,
+              selected: selected,
+              onSelect: (id: number) => this.select(id),
+              onRemove: (id: number) => this.remove(id),
+            });
+            return _el$24;
+          }),
       });
       _$insertNode(_el$20, _el$21);
       _$insertNode(_el$19, _el$20);
