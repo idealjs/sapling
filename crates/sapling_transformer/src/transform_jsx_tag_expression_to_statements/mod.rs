@@ -9,7 +9,7 @@ use crate::{
     make_effect, make_insert, make_props_obj, make_set_prop,
 };
 use biome_js_factory::make::{
-    js_expression_statement, js_string_literal_expression, jsx_tag_expression, jsx_child_list,
+    js_expression_statement, js_string_literal_expression, jsx_child_list, jsx_tag_expression,
 };
 use biome_js_syntax::{
     AnyJsArrayElement, AnyJsExpression, AnyJsStatement, AnyJsxAttribute, AnyJsxAttributeName,
@@ -44,7 +44,6 @@ pub struct TransformJsxAttributeListOptions {
 
 pub struct TransformJsxChildListOptions {
     pub parent_id: Option<String>,
-    pub is_component: bool,
 }
 
 impl SaplingTransformer<'_> {
@@ -82,7 +81,6 @@ impl SaplingTransformer<'_> {
                 &jsx_child_list,
                 TransformJsxChildListOptions {
                     parent_id: Some(id.clone()),
-                    is_component,
                 },
             )?;
             statements.extend(child_stmts);
@@ -199,7 +197,7 @@ impl SaplingTransformer<'_> {
         let scope = self.semantic_model.scope(node.syntax());
         let id = self.generate_unique_identifier(&scope, "_el$");
         let is_component = tag_name.chars().next()?.is_uppercase();
-    
+
         if is_component {
             let attributes = node.attributes();
             let jsx_child_list = jsx_child_list(vec![]);
@@ -209,7 +207,7 @@ impl SaplingTransformer<'_> {
         } else {
             let js_tag_statement = make_create_element(id.as_str(), tag_name.as_str());
             statments.push(js_tag_statement);
-    
+
             let attributes = node.attributes();
             let attr_stmts = self.transform_jsx_attribute_list(
                 &attributes,
@@ -219,7 +217,7 @@ impl SaplingTransformer<'_> {
             )?;
             statments.extend(attr_stmts);
         }
-    
+
         Some((statments, id))
     }
 
@@ -367,55 +365,25 @@ impl SaplingTransformer<'_> {
     ) -> Option<Vec<AnyJsStatement>> {
         let mut statements = vec![];
         let parent_id = transform_options.parent_id?;
-        let is_component = transform_options.is_component;
-        if is_component {
-            let mut elements: Vec<AnyJsArrayElement> = vec![];
-            node.into_iter().for_each(|node| {
-                let el = match node {
-                    AnyJsxChild::JsMetavariable(_node) => None,
-                    AnyJsxChild::JsxElement(node) => Some(AnyJsExpression::JsxTagExpression(
-                        jsx_tag_expression(AnyJsxTag::JsxElement(node)),
-                    )),
-                    AnyJsxChild::JsxExpressionChild(node) => node.expression(),
-                    AnyJsxChild::JsxFragment(_node) => None,
-                    AnyJsxChild::JsxSelfClosingElement(_node) => None,
-                    AnyJsxChild::JsxSpreadChild(_node) => None,
-                    AnyJsxChild::JsxText(_node) => None,
-                };
-                if let Some(el) = el {
-                    elements.push(AnyJsArrayElement::AnyJsExpression(el));
-                }
-            });
-            println!("test test {:?}", node);
-
-            if let Some(set_stmt) = make_set_prop(
-                parent_id.as_str(),
-                "children",
-                AnyJsExpression::JsArrayExpression(make_array(elements)),
-            ) {
-                statements.push(set_stmt);
+        node.into_iter().for_each(|node| {
+            let Some((child_stmts, child_id)) = self.transform_any_jsx_child_to_statements(
+                &node,
+                TransformAnyJsxChildToStatementsOptions {
+                    parent_id: Some(parent_id.clone()),
+                },
+            ) else {
+                return;
+            };
+            statements.extend(child_stmts);
+            if let Some(child_id) = child_id {
+                statements.push(AnyJsStatement::JsExpressionStatement(
+                    js_expression_statement(
+                        make_insert_node(parent_id.as_str(), child_id.as_str()).into(),
+                    )
+                    .build(),
+                ));
             }
-        } else {
-            node.into_iter().for_each(|node| {
-                let Some((child_stmts, child_id)) = self.transform_any_jsx_child_to_statements(
-                    &node,
-                    TransformAnyJsxChildToStatementsOptions {
-                        parent_id: Some(parent_id.clone()),
-                    },
-                ) else {
-                    return;
-                };
-                statements.extend(child_stmts);
-                if let Some(child_id) = child_id {
-                    statements.push(AnyJsStatement::JsExpressionStatement(
-                        js_expression_statement(
-                            make_insert_node(parent_id.as_str(), child_id.as_str()).into(),
-                        )
-                        .build(),
-                    ));
-                }
-            });
-        }
+        });
         Some(statements)
     }
 }
