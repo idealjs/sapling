@@ -1,3 +1,7 @@
 {
-  "editor.codeActionsOnSave": { "source.fixAll.eslint": "explicit" }
+  "js/ts.experimental.useTsgo": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.biome": "explicit",
+    "source.organizeImports.biome": "explicit"
+  }
 }

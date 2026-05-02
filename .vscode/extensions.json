@@ -4,6 +4,7 @@
     "vitest.explorer",
     "dsznajder.es7-react-js-snippets",
     "dbaeumer.vscode-eslint",
-    "mhutchie.git-graph"
+    "mhutchie.git-graph",
+    "biomejs.biome"
   ]
 }
