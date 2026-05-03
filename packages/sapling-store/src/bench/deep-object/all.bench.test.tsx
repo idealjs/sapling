@@ -8,7 +8,6 @@ import { createStore as ourCreateStore } from "../../useSelector";
 import {
   ARRAY_SIZE,
   computeStats,
-  N_SUBSCRIBERS,
   N_UPDATES,
   RUNS,
   removeOutliers,
@@ -20,7 +19,10 @@ type LibName = "redux" | "valtio" | "zustand" | "our";
 
 type BenchResults = Record<
   LibName,
-  { subscribe: StatResult; update: StatResult }
+  {
+    subscribe: StatResult;
+    update: StatResult;
+  }
 >;
 
 type Action = {
@@ -138,20 +140,27 @@ describe("bench - all stores comparison for deep objects", () => {
           return createElement("span", { "data-slot": index }, String(value));
         }
 
-        function App() {
+        function AppInner() {
+          const items = useSyncExternalStore(
+            store.subscribe,
+            () => store.getState().items,
+          );
           return createElement(
             Fragment,
             null,
-            Array.from({ length: N_SUBSCRIBERS }, (_, i) =>
-              createElement(Reader, { key: i, index: i % ARRAY_SIZE }),
+            items.map((_, index) =>
+              createElement(Reader, { key: index, index }),
             ),
           );
+        }
+
+        function App() {
+          return createElement(AppInner);
         }
 
         const subscribeTime = time(() => {
           act(() => root.render(createElement(App)));
         });
-
         expect(container.querySelector('[data-slot="0"]')?.textContent).toBe("0");
 
         const updateStart = performance.now();
@@ -161,7 +170,6 @@ describe("bench - all stores comparison for deep objects", () => {
           }
         });
         const updateTime = performance.now() - updateStart;
-
         expect(container.querySelector('[data-slot="0"]')?.textContent).toBe("1");
         expect(container.querySelector('[data-slot="1"]')?.textContent).toBe("2");
 
@@ -190,20 +198,24 @@ describe("bench - all stores comparison for deep objects", () => {
           return createElement("span", { "data-slot": index }, String(snapshot.value));
         }
 
-        function App() {
+        function AppInner() {
+          const snap = useSnapshot(state);
           return createElement(
             Fragment,
             null,
-            Array.from({ length: N_SUBSCRIBERS }, (_, i) =>
-              createElement(Reader, { key: i, index: i % ARRAY_SIZE }),
+            snap.items.map((_, index) =>
+              createElement(Reader, { key: index, index }),
             ),
           );
+        }
+
+        function App() {
+          return createElement(AppInner);
         }
 
         const subscribeTime = time(() => {
           act(() => root.render(createElement(App)));
         });
-
         expect(container.querySelector('[data-slot="0"]')?.textContent).toBe("0");
 
         const updateStart = performance.now();
@@ -213,7 +225,6 @@ describe("bench - all stores comparison for deep objects", () => {
           }
         });
         const updateTime = performance.now() - updateStart;
-
         expect(container.querySelector('[data-slot="0"]')?.textContent).toBe("1");
         expect(container.querySelector('[data-slot="1"]')?.textContent).toBe("2");
 
@@ -266,20 +277,24 @@ describe("bench - all stores comparison for deep objects", () => {
           return createElement("span", { "data-slot": index }, String(value));
         }
 
-        function App() {
+        function AppInner() {
+          const items = useStore((state) => state.items);
           return createElement(
             Fragment,
             null,
-            Array.from({ length: N_SUBSCRIBERS }, (_, i) =>
-              createElement(Reader, { key: i, index: i % ARRAY_SIZE }),
+            items.map((_, index) =>
+              createElement(Reader, { key: index, index }),
             ),
           );
+        }
+
+        function App() {
+          return createElement(AppInner);
         }
 
         const subscribeTime = time(() => {
           act(() => root.render(createElement(App)));
         });
-
         expect(container.querySelector('[data-slot="0"]')?.textContent).toBe("0");
 
         const updateStart = performance.now();
@@ -289,7 +304,6 @@ describe("bench - all stores comparison for deep objects", () => {
           }
         });
         const updateTime = performance.now() - updateStart;
-
         expect(container.querySelector('[data-slot="0"]')?.textContent).toBe("1");
         expect(container.querySelector('[data-slot="1"]')?.textContent).toBe("2");
 
@@ -318,20 +332,24 @@ describe("bench - all stores comparison for deep objects", () => {
           return createElement("span", { "data-slot": index }, String(value));
         }
 
-        function App() {
+        function AppInner() {
+          const items = useSelector(() => store.items);
           return createElement(
             Fragment,
             null,
-            Array.from({ length: N_SUBSCRIBERS }, (_, i) =>
-              createElement(Reader, { key: i, index: i % ARRAY_SIZE }),
+            items.map((_, index) =>
+              createElement(Reader, { key: index, index }),
             ),
           );
+        }
+
+        function App() {
+          return createElement(AppInner);
         }
 
         const subscribeTime = time(() => {
           act(() => root.render(createElement(App)));
         });
-
         expect(container.querySelector('[data-slot="0"]')?.textContent).toBe("0");
 
         const updateStart = performance.now();
@@ -341,7 +359,6 @@ describe("bench - all stores comparison for deep objects", () => {
           }
         });
         const updateTime = performance.now() - updateStart;
-
         expect(container.querySelector('[data-slot="0"]')?.textContent).toBe("1");
         expect(container.querySelector('[data-slot="1"]')?.textContent).toBe("2");
 
@@ -372,7 +389,7 @@ describe("bench - all stores comparison for deep objects", () => {
     console.table(comparisonTable);
 
     // eslint-disable-next-line no-console
-    console.log("\nDetailed stats (mean | median | min | max):");
+    console.log("\n⏱️  Performance Metrics (mean | median | min | max):");
     for (const lib of LIBRARIES) {
       const s = results[lib].subscribe;
       const u = results[lib].update;

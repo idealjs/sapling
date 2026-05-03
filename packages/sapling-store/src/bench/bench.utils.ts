@@ -5,6 +5,13 @@ export const N_UPDATES = 1000;
 export const ARRAY_SIZE = 1000;
 export const RUNS = 10;
 
+export type MemoryMetrics = {
+  heapUsedBefore: number;
+  heapUsedAfter: number;
+  heapUsedPeak: number;
+  retained: number;
+};
+
 export function makeArrayState() {
   return {
     items: Array.from(
@@ -19,6 +26,27 @@ export function time(fn: () => void) {
   fn();
   const end = performance.now();
   return end - start;
+}
+
+export function getMemoryUsage(): number {
+  try {
+    if (typeof globalThis.gc === "function") {
+      globalThis.gc();
+      return process.memoryUsage().heapUsed / 1024 / 1024;
+    }
+
+    if (typeof process !== "undefined" && process.memoryUsage) {
+      return process.memoryUsage().heapUsed / 1024 / 1024;
+    }
+  } catch {
+    // Memory measurement not available in this runtime.
+  }
+
+  return 0;
+}
+
+export function formatMB(bytes: number): string {
+  return (bytes / 1024 / 1024).toFixed(2);
 }
 
 export interface BenchResult {

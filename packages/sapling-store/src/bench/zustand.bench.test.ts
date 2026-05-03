@@ -1,8 +1,11 @@
-import { create } from "zustand";
 import { describe, it } from "vitest";
+import { create } from "zustand";
 import {
   ARRAY_SIZE,
   computeStats,
+  formatMB,
+  getMemoryUsage,
+  type MemoryMetrics,
   makeArrayState,
   N_SUBSCRIBERS,
   N_UPDATES,
@@ -21,8 +24,10 @@ describe("bench - zustand", () => {
   it("measures subscribe and updates for array workload", () => {
     const subscribeTimings: number[] = [];
     const updateTimings: number[] = [];
+    const memoryMetrics: MemoryMetrics[] = [];
 
     for (let run = 0; run < RUNS; run++) {
+      const heapUsedBefore = getMemoryUsage();
       const initial = makeArrayState();
 
       const useStore = create<ArrayState>((set) => ({
@@ -50,6 +55,9 @@ describe("bench - zustand", () => {
         }
       });
 
+      const heapUsedAfter = getMemoryUsage();
+      let heapUsedPeak = heapUsedAfter;
+
       const updateTime = time(() => {
         for (let u = 0; u < N_UPDATES; u++) {
           const idx = Math.floor(Math.random() * ARRAY_SIZE);
@@ -57,10 +65,20 @@ describe("bench - zustand", () => {
         }
       });
 
+      heapUsedPeak = Math.max(heapUsedPeak, getMemoryUsage());
+
       for (const u of unsubscribeFns) u();
+
+      const retained = getMemoryUsage();
 
       subscribeTimings.push(subscribeTime);
       updateTimings.push(updateTime);
+      memoryMetrics.push({
+        heapUsedBefore,
+        heapUsedAfter,
+        heapUsedPeak,
+        retained,
+      });
     }
 
     const subClean = removeOutliers(subscribeTimings);
@@ -68,6 +86,12 @@ describe("bench - zustand", () => {
 
     const subStats = computeStats(subClean);
     const updStats = computeStats(updClean);
+    const memoryStats = {
+      heapUsedBefore: memoryMetrics[0]?.heapUsedBefore || 0,
+      heapUsedAfter: memoryMetrics[0]?.heapUsedAfter || 0,
+      heapUsedPeak: Math.max(...memoryMetrics.map((m) => m.heapUsedPeak)),
+      retained: memoryMetrics[memoryMetrics.length - 1]?.retained || 0,
+    };
 
     // eslint-disable-next-line no-console
     console.table({
@@ -82,6 +106,12 @@ describe("bench - zustand", () => {
         median: updStats.median.toFixed(2),
         min: updStats.min.toFixed(2),
         max: updStats.max.toFixed(2),
+      },
+      "zustand-memory": {
+        before: `${formatMB(memoryStats.heapUsedBefore * 1024 * 1024)} MB`,
+        after: `${formatMB(memoryStats.heapUsedAfter * 1024 * 1024)} MB`,
+        peak: `${formatMB(memoryStats.heapUsedPeak * 1024 * 1024)} MB`,
+        retained: `${formatMB(memoryStats.retained * 1024 * 1024)} MB`,
       },
     });
   });
