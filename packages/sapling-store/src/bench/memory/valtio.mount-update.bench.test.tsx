@@ -1,4 +1,6 @@
-import { proxy, subscribe as valtioSubscribe } from "valtio";
+import { act, createElement, Fragment } from "react";
+import { createRoot } from "react-dom/client";
+import { proxy, useSnapshot } from "valtio";
 import { describe, it } from "vitest";
 import {
   ARRAY_SIZE,
@@ -12,49 +14,71 @@ import {
   RUNS,
   removeOutliers,
   time,
-} from "./bench.utils";
+} from "../bench.utils";
 
 describe("bench - valtio", () => {
-  it("measures subscribe and updates for array workload", () => {
-    const subscribeTimings: number[] = [];
+  it("measures mount and update for array workload", { timeout: 30000 }, () => {
+    const mountTimings: number[] = [];
     const updateTimings: number[] = [];
     const memoryMetrics: MemoryMetrics[] = [];
 
+    (
+      globalThis as typeof globalThis & {
+        IS_REACT_ACT_ENVIRONMENT?: boolean;
+      }
+    ).IS_REACT_ACT_ENVIRONMENT = true;
+
     for (let run = 0; run < RUNS; run++) {
       const heapUsedBefore = getMemoryUsage();
+      const container = document.createElement("div");
+      const root = createRoot(container);
       const state = proxy(makeArrayState());
 
-      const selectorForIndex = (i: number) => () => state.items[i].value;
+      function Reader({ index }: { index: number }) {
+        const snapshot = useSnapshot(state.items[index]);
+        return createElement(
+          "span",
+          { "data-slot": index },
+          String(snapshot.value),
+        );
+      }
 
-      const subs: Array<() => void> = [];
-
-      const subscribeTime = time(() => {
-        for (let i = 0; i < N_SUBSCRIBERS; i++) {
-          const idx = i % ARRAY_SIZE;
-          const unsub = valtioSubscribe(state, () => {
-            selectorForIndex(idx)();
-          });
-          subs.push(unsub);
-        }
-      });
+      function App() {
+        return createElement(
+          Fragment,
+          null,
+          Array.from({ length: N_SUBSCRIBERS }, (_, i) =>
+            createElement(Reader, { key: i, index: i % ARRAY_SIZE }),
+          ),
+        );
+      }
 
       const heapUsedAfter = getMemoryUsage();
       let heapUsedPeak = heapUsedAfter;
 
-      const updateTime = time(() => {
-        for (let u = 0; u < N_UPDATES; u++) {
-          const idx = Math.floor(Math.random() * ARRAY_SIZE);
+      const mountTime = time(() => {
+        act(() => {
+          root.render(createElement(App));
+        });
+      });
+
+      const updateStart = performance.now();
+      act(() => {
+        for (let idx = 0; idx < N_UPDATES; idx++) {
           state.items[idx].value = Math.random();
         }
       });
+      const updateTime = performance.now() - updateStart;
 
       heapUsedPeak = Math.max(heapUsedPeak, getMemoryUsage());
 
-      for (const u of subs) u();
+      act(() => {
+        root.unmount();
+      });
 
       const retained = getMemoryUsage();
 
-      subscribeTimings.push(subscribeTime);
+      mountTimings.push(mountTime);
       updateTimings.push(updateTime);
       memoryMetrics.push({
         heapUsedBefore,
@@ -64,10 +88,10 @@ describe("bench - valtio", () => {
       });
     }
 
-    const subClean = removeOutliers(subscribeTimings);
+    const mountClean = removeOutliers(mountTimings);
     const updClean = removeOutliers(updateTimings);
 
-    const subStats = computeStats(subClean);
+    const mountStats = computeStats(mountClean);
     const updStats = computeStats(updClean);
     const memoryStats = {
       heapUsedBefore: memoryMetrics[0]?.heapUsedBefore || 0,
@@ -78,11 +102,11 @@ describe("bench - valtio", () => {
 
     // eslint-disable-next-line no-console
     console.table({
-      "valtio-subscribe": {
-        mean: subStats.mean.toFixed(2),
-        median: subStats.median.toFixed(2),
-        min: subStats.min.toFixed(2),
-        max: subStats.max.toFixed(2),
+      "valtio-mount": {
+        mean: mountStats.mean.toFixed(2),
+        median: mountStats.median.toFixed(2),
+        min: mountStats.min.toFixed(2),
+        max: mountStats.max.toFixed(2),
       },
       "valtio-update": {
         mean: updStats.mean.toFixed(2),

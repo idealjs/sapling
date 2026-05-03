@@ -1,5 +1,5 @@
 import { describe, it } from "vitest";
-import { createStore as ourCreateStore } from "../useSelector";
+import { create } from "zustand";
 import {
   ARRAY_SIZE,
   computeStats,
@@ -12,46 +12,60 @@ import {
   RUNS,
   removeOutliers,
   time,
-} from "./bench.utils";
+} from "../bench.utils";
 
-describe("bench - our store", () => {
-  it("measures subscribe and updates for array workload", () => {
+type Item = { id: number; value: number };
+type ArrayState = {
+  items: Item[];
+  setValue: (idx: number, value: number) => void;
+};
+
+describe("bench - zustand", () => {
+  it("measures subscribe and update for array workload (no view)", () => {
     const subscribeTimings: number[] = [];
     const updateTimings: number[] = [];
     const memoryMetrics: MemoryMetrics[] = [];
 
     for (let run = 0; run < RUNS; run++) {
       const heapUsedBefore = getMemoryUsage();
-      const { store, subscribeSelector } = ourCreateStore(makeArrayState());
+      const initial = makeArrayState();
 
-      const selectorForIndex = (i: number) => () => store.items[i].value;
+      const useStore = create<ArrayState>((set) => ({
+        items: initial.items,
+        setValue: (idx: number, value: number) =>
+          set((state) => ({
+            items: state.items.map((item, i) =>
+              i === idx ? { ...item, value } : item,
+            ),
+          })),
+      }));
 
-      const unsubFns: Array<() => void> = [];
-
-      const subscribeTime = time(() => {
-        for (let i = 0; i < N_SUBSCRIBERS; i++) {
-          const idx = i % ARRAY_SIZE;
-          const unsub = subscribeSelector(
-            () => selectorForIndex(idx)(),
-            () => {},
-          );
-          unsubFns.push(unsub);
-        }
-      });
+      const selectorForIndex = (i: number) => () => useStore.getState().items[i].value;
+      const unsubscribeFns: Array<() => void> = [];
 
       const heapUsedAfter = getMemoryUsage();
       let heapUsedPeak = heapUsedAfter;
 
-      const updateTime = time(() => {
-        for (let u = 0; u < N_UPDATES; u++) {
-          const idx = Math.floor(Math.random() * ARRAY_SIZE);
-          store.items[idx].value = Math.random();
+      const subscribeTime = time(() => {
+        for (let i = 0; i < N_SUBSCRIBERS; i++) {
+          const idx = i % ARRAY_SIZE;
+          const unsub = useStore.subscribe(() => {
+            selectorForIndex(idx)();
+          });
+          unsubscribeFns.push(unsub);
         }
       });
 
+      const updateStart = performance.now();
+      for (let u = 0; u < N_UPDATES; u++) {
+        const idx = Math.floor(Math.random() * ARRAY_SIZE);
+        useStore.getState().setValue(idx, Math.random());
+      }
+      const updateTime = performance.now() - updateStart;
+
       heapUsedPeak = Math.max(heapUsedPeak, getMemoryUsage());
 
-      for (const u of unsubFns) u();
+      for (const u of unsubscribeFns) u();
 
       const retained = getMemoryUsage();
 
@@ -79,19 +93,19 @@ describe("bench - our store", () => {
 
     // eslint-disable-next-line no-console
     console.table({
-      "our-subscribe": {
+      "zustand-subscribe": {
         mean: subStats.mean.toFixed(2),
         median: subStats.median.toFixed(2),
         min: subStats.min.toFixed(2),
         max: subStats.max.toFixed(2),
       },
-      "our-update": {
+      "zustand-update": {
         mean: updStats.mean.toFixed(2),
         median: updStats.median.toFixed(2),
         min: updStats.min.toFixed(2),
         max: updStats.max.toFixed(2),
       },
-      "our-memory": {
+      "zustand-memory": {
         before: `${formatMB(memoryStats.heapUsedBefore * 1024 * 1024)} MB`,
         after: `${formatMB(memoryStats.heapUsedAfter * 1024 * 1024)} MB`,
         peak: `${formatMB(memoryStats.heapUsedPeak * 1024 * 1024)} MB`,

@@ -5,10 +5,7 @@ export default defineConfig({
     environment: "happy-dom",
     globals: true,
     pool: "forks",
-    poolOptions: {
-      forks: {
-        singleFork: true,
-      },
-    },
+    isolate: false,
+    maxWorkers: 1,
   },
 });

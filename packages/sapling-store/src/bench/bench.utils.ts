@@ -14,10 +14,7 @@ export type MemoryMetrics = {
 
 export function makeArrayState() {
   return {
-    items: Array.from(
-      { length: ARRAY_SIZE },
-      (_, i) => ({ id: i, value: i }),
-    ),
+    items: Array.from({ length: ARRAY_SIZE }, (_, i) => ({ id: i, value: i })),
   };
 }
 
@@ -29,20 +26,7 @@ export function time(fn: () => void) {
 }
 
 export function getMemoryUsage(): number {
-  try {
-    if (typeof globalThis.gc === "function") {
-      globalThis.gc();
-      return process.memoryUsage().heapUsed / 1024 / 1024;
-    }
-
-    if (typeof process !== "undefined" && process.memoryUsage) {
-      return process.memoryUsage().heapUsed / 1024 / 1024;
-    }
-  } catch {
-    // Memory measurement not available in this runtime.
-  }
-
-  return 0;
+  return process.memoryUsage().heapUsed / 1024 / 1024;
 }
 
 export function formatMB(bytes: number): string {

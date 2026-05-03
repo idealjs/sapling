@@ -3,14 +3,15 @@
 
 cd "$(dirname "$0")/../../.." || exit 1
 
-echo "🔍 Running memory benchmark with GC support..."
-echo ""
-
 files=(
-	packages/sapling-store/src/bench/redux.bench.test.ts
-	packages/sapling-store/src/bench/valtio.bench.test.ts
-	packages/sapling-store/src/bench/zustand.bench.test.ts
-	packages/sapling-store/src/bench/ours.bench.test.ts
+	packages/sapling-store/src/bench/memory/redux.mount-update.bench.test.tsx
+	packages/sapling-store/src/bench/memory/redux.subscribe-update.bench.test.tsx
+	packages/sapling-store/src/bench/memory/valtio.mount-update.bench.test.tsx
+	packages/sapling-store/src/bench/memory/valtio.subscribe-update.bench.test.tsx
+	packages/sapling-store/src/bench/memory/zustand.mount-update.bench.test.tsx
+	packages/sapling-store/src/bench/memory/zustand.subscribe-update.bench.test.tsx
+	packages/sapling-store/src/bench/memory/ours.mount-update.bench.test.tsx
+	packages/sapling-store/src/bench/memory/ours.subscribe-update.bench.test.tsx
 )
 
 for file in "${files[@]}"; do
