@@ -1,25 +1,17 @@
-import { act, createElement, Fragment } from "react";
+import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { proxy, useSnapshot } from "valtio";
 import { describe, it } from "vitest";
 import {
-  ARRAY_SIZE,
-  computeStats,
   formatMB,
   getMemoryUsage,
   type MemoryMetrics,
   makeArrayState,
-  N_SUBSCRIBERS,
-  N_UPDATES,
   RUNS,
-  removeOutliers,
-  time,
 } from "../bench.utils";
 
 describe("bench - valtio", () => {
   it("measures mount and update for array workload", { timeout: 30000 }, () => {
-    const mountTimings: number[] = [];
-    const updateTimings: number[] = [];
     const memoryMetrics: MemoryMetrics[] = [];
 
     (
@@ -32,43 +24,38 @@ describe("bench - valtio", () => {
       const heapUsedBefore = getMemoryUsage();
       const container = document.createElement("div");
       const root = createRoot(container);
-      const state = proxy(makeArrayState());
+      const initial = makeArrayState();
+      const state = proxy(initial);
 
       function Reader({ index }: { index: number }) {
-        const snapshot = useSnapshot(state.items[index]);
-        return createElement(
-          "span",
-          { "data-slot": index },
-          String(snapshot.value),
-        );
+        const snapshot = useSnapshot(state.items[index].meta.levelOne.levelTwo);
+        return <span data-slot={index}>{String(snapshot.value)}</span>;
       }
 
       function App() {
-        return createElement(
-          Fragment,
-          null,
-          Array.from({ length: N_SUBSCRIBERS }, (_, i) =>
-            createElement(Reader, { key: i, index: i % ARRAY_SIZE }),
-          ),
+        const snapshot = useSnapshot(state);
+
+        return (
+          <>
+            {snapshot.items.map((item) => (
+              <Reader key={item.id} index={item.id} />
+            ))}
+          </>
         );
       }
+
+      act(() => {
+        root.render(<App />);
+      });
 
       const heapUsedAfter = getMemoryUsage();
       let heapUsedPeak = heapUsedAfter;
 
-      const mountTime = time(() => {
-        act(() => {
-          root.render(createElement(App));
-        });
-      });
-
-      const updateStart = performance.now();
       act(() => {
-        for (let idx = 0; idx < N_UPDATES; idx++) {
-          state.items[idx].value = Math.random();
+        for (const item of state.items) {
+          state.items[item.id].meta.levelOne.levelTwo.value = Math.random();
         }
       });
-      const updateTime = performance.now() - updateStart;
 
       heapUsedPeak = Math.max(heapUsedPeak, getMemoryUsage());
 
@@ -78,8 +65,6 @@ describe("bench - valtio", () => {
 
       const retained = getMemoryUsage();
 
-      mountTimings.push(mountTime);
-      updateTimings.push(updateTime);
       memoryMetrics.push({
         heapUsedBefore,
         heapUsedAfter,
@@ -88,11 +73,6 @@ describe("bench - valtio", () => {
       });
     }
 
-    const mountClean = removeOutliers(mountTimings);
-    const updClean = removeOutliers(updateTimings);
-
-    const mountStats = computeStats(mountClean);
-    const updStats = computeStats(updClean);
     const memoryStats = {
       heapUsedBefore: memoryMetrics[0]?.heapUsedBefore || 0,
       heapUsedAfter: memoryMetrics[0]?.heapUsedAfter || 0,
@@ -102,18 +82,6 @@ describe("bench - valtio", () => {
 
     // eslint-disable-next-line no-console
     console.table({
-      "valtio-mount": {
-        mean: mountStats.mean.toFixed(2),
-        median: mountStats.median.toFixed(2),
-        min: mountStats.min.toFixed(2),
-        max: mountStats.max.toFixed(2),
-      },
-      "valtio-update": {
-        mean: updStats.mean.toFixed(2),
-        median: updStats.median.toFixed(2),
-        min: updStats.min.toFixed(2),
-        max: updStats.max.toFixed(2),
-      },
       "valtio-memory": {
         before: `${formatMB(memoryStats.heapUsedBefore * 1024 * 1024)} MB`,
         after: `${formatMB(memoryStats.heapUsedAfter * 1024 * 1024)} MB`,

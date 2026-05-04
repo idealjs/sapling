@@ -14,7 +14,10 @@ export type MemoryMetrics = {
 
 export function makeArrayState() {
   return {
-    items: Array.from({ length: ARRAY_SIZE }, (_, i) => ({ id: i, value: i })),
+    items: Array.from({ length: ARRAY_SIZE }, (_, i) => ({
+      id: i,
+      meta: { levelOne: { levelTwo: { value: i } } },
+    })),
   };
 }
 

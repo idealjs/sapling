@@ -1,141 +1,124 @@
-import { act, createElement, Fragment } from "react";
+import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, it } from "vitest";
 import { create } from "zustand";
 import {
-  ARRAY_SIZE,
-  computeStats,
   formatMB,
   getMemoryUsage,
   type MemoryMetrics,
   makeArrayState,
-  N_SUBSCRIBERS,
-  N_UPDATES,
   RUNS,
-  removeOutliers,
-  time,
 } from "../bench.utils";
 
-type Item = { id: number; value: number };
+type Item = { id: number; meta: { levelOne: { levelTwo: { value: number } } } };
 type ArrayState = {
   items: Item[];
   setValue: (idx: number, value: number) => void;
 };
 
 describe("bench - zustand", () => {
-  it(
-    "measures mount and update for array workload",
-    { timeout: 30000 },
-    () => {
-      const mountTimings: number[] = [];
-      const updateTimings: number[] = [];
-      const memoryMetrics: MemoryMetrics[] = [];
+  it("measures mount and update for array workload", { timeout: 30000 }, () => {
+    const memoryMetrics: MemoryMetrics[] = [];
 
-      (
-        globalThis as typeof globalThis & {
-          IS_REACT_ACT_ENVIRONMENT?: boolean;
-        }
-      ).IS_REACT_ACT_ENVIRONMENT = true;
+    (
+      globalThis as typeof globalThis & {
+        IS_REACT_ACT_ENVIRONMENT?: boolean;
+      }
+    ).IS_REACT_ACT_ENVIRONMENT = true;
 
-      for (let run = 0; run < RUNS; run++) {
-        const heapUsedBefore = getMemoryUsage();
-        const initial = makeArrayState();
-        const container = document.createElement("div");
-        const root = createRoot(container);
+    for (let run = 0; run < RUNS; run++) {
+      const heapUsedBefore = getMemoryUsage();
+      const initial = makeArrayState();
+      const container = document.createElement("div");
+      const root = createRoot(container);
 
-        const useStore = create<ArrayState>((set) => ({
-          items: initial.items,
-          setValue: (idx: number, value: number) =>
-            set((state) => ({
-              items: state.items.map((item, i) =>
-                i === idx ? { ...item, value } : item,
-              ),
-            })),
-        }));
-
-        function Reader({ index }: { index: number }) {
-          const value = useStore((state) => state.items[index].value);
-          return createElement("span", { "data-slot": index }, String(value));
-        }
-
-        function App() {
-          return createElement(
-            Fragment,
-            null,
-            Array.from({ length: N_SUBSCRIBERS }, (_, i) =>
-              createElement(Reader, { key: i, index: i % ARRAY_SIZE }),
+      const useStore = create<ArrayState>((set) => ({
+        items: initial.items,
+        setValue: (idx: number, value: number) =>
+          set((state) => ({
+            items: state.items.map((item, i) =>
+              i === idx
+                ? {
+                    ...item,
+                    meta: {
+                      ...item.meta,
+                      levelOne: {
+                        ...item.meta.levelOne,
+                        levelTwo: {
+                          ...item.meta.levelOne.levelTwo,
+                          value,
+                        },
+                      },
+                    },
+                  }
+                : item,
             ),
-          );
-        }
+          })),
+      }));
 
-        const heapUsedAfter = getMemoryUsage();
-        let heapUsedPeak = heapUsedAfter;
-
-        const mountTime = time(() => {
-          act(() => {
-            root.render(createElement(App));
-          });
-        });
-
-        const updateStart = performance.now();
-        act(() => {
-          for (let idx = 0; idx < N_UPDATES; idx++) {
-            useStore.getState().setValue(idx, Math.random());
-          }
-        });
-        const updateTime = performance.now() - updateStart;
-
-        heapUsedPeak = Math.max(heapUsedPeak, getMemoryUsage());
-
-        act(() => {
-          root.unmount();
-        });
-
-        const retained = getMemoryUsage();
-
-        mountTimings.push(mountTime);
-        updateTimings.push(updateTime);
-        memoryMetrics.push({
-          heapUsedBefore,
-          heapUsedAfter,
-          heapUsedPeak,
-          retained,
-        });
+      function Reader({ index }: { index: number }) {
+        const value = useStore(
+          (state) => state.items[index].meta.levelOne.levelTwo.value,
+        );
+        return <span data-slot={index}>{String(value)}</span>;
       }
 
-      const mountClean = removeOutliers(mountTimings);
-      const updClean = removeOutliers(updateTimings);
+      function App() {
+        const items = useStore((state) => state.items);
 
-      const mountStats = computeStats(mountClean);
-      const updStats = computeStats(updClean);
-      const memoryStats = {
-        heapUsedBefore: memoryMetrics[0]?.heapUsedBefore || 0,
-        heapUsedAfter: memoryMetrics[0]?.heapUsedAfter || 0,
-        heapUsedPeak: Math.max(...memoryMetrics.map((m) => m.heapUsedPeak)),
-        retained: memoryMetrics[memoryMetrics.length - 1]?.retained || 0,
-      };
+        return (
+          <>
+            {items.map((item) => (
+              <Reader key={item.id} index={item.id} />
+            ))}
+          </>
+        );
+      }
 
-      // eslint-disable-next-line no-console
-      console.table({
-        "zustand-mount": {
-          mean: mountStats.mean.toFixed(2),
-          median: mountStats.median.toFixed(2),
-          min: mountStats.min.toFixed(2),
-          max: mountStats.max.toFixed(2),
-        },
-        "zustand-update": {
-          mean: updStats.mean.toFixed(2),
-          median: updStats.median.toFixed(2),
-          min: updStats.min.toFixed(2),
-          max: updStats.max.toFixed(2),
-        },
-        "zustand-memory": {
-          before: `${formatMB(memoryStats.heapUsedBefore * 1024 * 1024)} MB`,
-          after: `${formatMB(memoryStats.heapUsedAfter * 1024 * 1024)} MB`,
-          peak: `${formatMB(memoryStats.heapUsedPeak * 1024 * 1024)} MB`,
-          retained: `${formatMB(memoryStats.retained * 1024 * 1024)} MB`,
-        },
+      act(() => {
+        root.render(<App />);
       });
-    },
-  );
+
+      const heapUsedAfter = getMemoryUsage();
+      let heapUsedPeak = heapUsedAfter;
+
+      act(() => {
+        for (const item of useStore.getState().items) {
+          useStore.getState().setValue(item.id, Math.random());
+        }
+      });
+
+      heapUsedPeak = Math.max(heapUsedPeak, getMemoryUsage());
+
+      act(() => {
+        root.unmount();
+      });
+
+      const retained = getMemoryUsage();
+
+      memoryMetrics.push({
+        heapUsedBefore,
+        heapUsedAfter,
+        heapUsedPeak,
+        retained,
+      });
+    }
+
+    const memoryStats = {
+      heapUsedBefore: memoryMetrics[0]?.heapUsedBefore || 0,
+      heapUsedAfter: memoryMetrics[0]?.heapUsedAfter || 0,
+      heapUsedPeak: Math.max(...memoryMetrics.map((m) => m.heapUsedPeak)),
+      retained: memoryMetrics[memoryMetrics.length - 1]?.retained || 0,
+    };
+
+    // eslint-disable-next-line no-console
+    console.table({
+      "zustand-memory": {
+        before: `${formatMB(memoryStats.heapUsedBefore * 1024 * 1024)} MB`,
+        after: `${formatMB(memoryStats.heapUsedAfter * 1024 * 1024)} MB`,
+        peak: `${formatMB(memoryStats.heapUsedPeak * 1024 * 1024)} MB`,
+        retained: `${formatMB(memoryStats.retained * 1024 * 1024)} MB`,
+      },
+    });
+  });
 });

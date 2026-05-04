@@ -2,7 +2,6 @@ import { describe, it } from "vitest";
 import { create } from "zustand";
 import {
   ARRAY_SIZE,
-  computeStats,
   formatMB,
   getMemoryUsage,
   type MemoryMetrics,
@@ -10,11 +9,9 @@ import {
   N_SUBSCRIBERS,
   N_UPDATES,
   RUNS,
-  removeOutliers,
-  time,
 } from "../bench.utils";
 
-type Item = { id: number; value: number };
+type Item = { id: number; meta: { levelOne: { levelTwo: { value: number } } } };
 type ArrayState = {
   items: Item[];
   setValue: (idx: number, value: number) => void;
@@ -22,8 +19,6 @@ type ArrayState = {
 
 describe("bench - zustand", () => {
   it("measures subscribe and update for array workload (no view)", () => {
-    const subscribeTimings: number[] = [];
-    const updateTimings: number[] = [];
     const memoryMetrics: MemoryMetrics[] = [];
 
     for (let run = 0; run < RUNS; run++) {
@@ -35,33 +30,44 @@ describe("bench - zustand", () => {
         setValue: (idx: number, value: number) =>
           set((state) => ({
             items: state.items.map((item, i) =>
-              i === idx ? { ...item, value } : item,
+              i === idx
+                ? {
+                    ...item,
+                    meta: {
+                      ...item.meta,
+                      levelOne: {
+                        ...item.meta.levelOne,
+                        levelTwo: {
+                          ...item.meta.levelOne.levelTwo,
+                          value,
+                        },
+                      },
+                    },
+                  }
+                : item,
             ),
           })),
       }));
 
-      const selectorForIndex = (i: number) => () => useStore.getState().items[i].value;
+      const selectorForIndex = (i: number) => () =>
+        useStore.getState().items[i].meta.levelOne.levelTwo.value;
       const unsubscribeFns: Array<() => void> = [];
+
+      for (let i = 0; i < N_SUBSCRIBERS; i++) {
+        const idx = i % ARRAY_SIZE;
+        const unsub = useStore.subscribe(() => {
+          selectorForIndex(idx)();
+        });
+        unsubscribeFns.push(unsub);
+      }
 
       const heapUsedAfter = getMemoryUsage();
       let heapUsedPeak = heapUsedAfter;
 
-      const subscribeTime = time(() => {
-        for (let i = 0; i < N_SUBSCRIBERS; i++) {
-          const idx = i % ARRAY_SIZE;
-          const unsub = useStore.subscribe(() => {
-            selectorForIndex(idx)();
-          });
-          unsubscribeFns.push(unsub);
-        }
-      });
-
-      const updateStart = performance.now();
       for (let u = 0; u < N_UPDATES; u++) {
         const idx = Math.floor(Math.random() * ARRAY_SIZE);
         useStore.getState().setValue(idx, Math.random());
       }
-      const updateTime = performance.now() - updateStart;
 
       heapUsedPeak = Math.max(heapUsedPeak, getMemoryUsage());
 
@@ -69,8 +75,6 @@ describe("bench - zustand", () => {
 
       const retained = getMemoryUsage();
 
-      subscribeTimings.push(subscribeTime);
-      updateTimings.push(updateTime);
       memoryMetrics.push({
         heapUsedBefore,
         heapUsedAfter,
@@ -79,11 +83,6 @@ describe("bench - zustand", () => {
       });
     }
 
-    const subClean = removeOutliers(subscribeTimings);
-    const updClean = removeOutliers(updateTimings);
-
-    const subStats = computeStats(subClean);
-    const updStats = computeStats(updClean);
     const memoryStats = {
       heapUsedBefore: memoryMetrics[0]?.heapUsedBefore || 0,
       heapUsedAfter: memoryMetrics[0]?.heapUsedAfter || 0,
@@ -93,18 +92,6 @@ describe("bench - zustand", () => {
 
     // eslint-disable-next-line no-console
     console.table({
-      "zustand-subscribe": {
-        mean: subStats.mean.toFixed(2),
-        median: subStats.median.toFixed(2),
-        min: subStats.min.toFixed(2),
-        max: subStats.max.toFixed(2),
-      },
-      "zustand-update": {
-        mean: updStats.mean.toFixed(2),
-        median: updStats.median.toFixed(2),
-        min: updStats.min.toFixed(2),
-        max: updStats.max.toFixed(2),
-      },
       "zustand-memory": {
         before: `${formatMB(memoryStats.heapUsedBefore * 1024 * 1024)} MB`,
         after: `${formatMB(memoryStats.heapUsedAfter * 1024 * 1024)} MB`,
