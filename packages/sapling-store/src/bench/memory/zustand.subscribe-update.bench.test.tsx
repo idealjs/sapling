@@ -1,7 +1,6 @@
 import { describe, it } from "vitest";
 import { create } from "zustand";
 import {
-  ARRAY_SIZE,
   formatMB,
   getMemoryUsage,
   type MemoryMetrics,
@@ -20,7 +19,10 @@ type ArrayState = {
 describe("bench - zustand", () => {
   it("measures subscribe and update for array workload (no view)", () => {
     const memoryMetrics: MemoryMetrics[] = [];
-
+    let count = 0;
+    const calc = (v: number) => {
+      count += v;
+    };
     for (let run = 0; run < RUNS; run++) {
       const heapUsedBefore = getMemoryUsage();
       const initial = makeArrayState();
@@ -54,9 +56,9 @@ describe("bench - zustand", () => {
       const unsubscribeFns: Array<() => void> = [];
 
       for (let i = 0; i < N_SUBSCRIBERS; i++) {
-        const idx = i % ARRAY_SIZE;
+        const selector = selectorForIndex(i);
         const unsub = useStore.subscribe(() => {
-          selectorForIndex(idx)();
+          calc(selector());
         });
         unsubscribeFns.push(unsub);
       }
@@ -65,8 +67,7 @@ describe("bench - zustand", () => {
       let heapUsedPeak = heapUsedAfter;
 
       for (let u = 0; u < N_UPDATES; u++) {
-        const idx = Math.floor(Math.random() * ARRAY_SIZE);
-        useStore.getState().setValue(idx, Math.random());
+        useStore.getState().setValue(u, u + 1);
       }
 
       heapUsedPeak = Math.max(heapUsedPeak, getMemoryUsage());
@@ -90,13 +91,13 @@ describe("bench - zustand", () => {
       retained: memoryMetrics[memoryMetrics.length - 1]?.retained || 0,
     };
 
-    // eslint-disable-next-line no-console
     console.table({
       "zustand-memory": {
         before: `${formatMB(memoryStats.heapUsedBefore * 1024 * 1024)} MB`,
         after: `${formatMB(memoryStats.heapUsedAfter * 1024 * 1024)} MB`,
         peak: `${formatMB(memoryStats.heapUsedPeak * 1024 * 1024)} MB`,
         retained: `${formatMB(memoryStats.retained * 1024 * 1024)} MB`,
+        count,
       },
     });
   });

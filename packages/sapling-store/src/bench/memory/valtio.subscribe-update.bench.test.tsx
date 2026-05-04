@@ -14,22 +14,27 @@ import {
 describe("bench - valtio", () => {
   it("measures subscribe and update for array workload (no view)", () => {
     const memoryMetrics: MemoryMetrics[] = [];
-
+    let count = 0;
+    const calc = (v: number) => {
+      count += v;
+    };
     for (let run = 0; run < RUNS; run++) {
       const heapUsedBefore = getMemoryUsage();
-      const state = proxy(makeArrayState());
+      const original = makeArrayState();
+      const state = proxy(original);
 
       const selectorForIndex = (i: number) => () =>
-        state.items[i].meta.levelOne.levelTwo.value;
+        original.items[i].meta.levelOne.levelTwo.value;
       const subs: Array<() => void> = [];
 
       for (let i = 0; i < N_SUBSCRIBERS; i++) {
-        const idx = i % ARRAY_SIZE;
+        const selector = selectorForIndex(i);
         const unsub = valtioSubscribe(
           state.items[i].meta.levelOne.levelTwo,
           () => {
-            selectorForIndex(idx)();
+            calc(selector());
           },
+          true,
         );
         subs.push(unsub);
       }
@@ -39,12 +44,10 @@ describe("bench - valtio", () => {
 
       for (let u = 0; u < N_UPDATES; u++) {
         const idx = Math.floor(Math.random() * ARRAY_SIZE);
-        state.items[idx].meta.levelOne.levelTwo.value = Math.random();
+        state.items[idx].meta.levelOne.levelTwo.value = u + 1;
       }
 
       heapUsedPeak = Math.max(heapUsedPeak, getMemoryUsage());
-
-      for (const u of subs) u();
 
       const retained = getMemoryUsage();
 
@@ -63,13 +66,13 @@ describe("bench - valtio", () => {
       retained: memoryMetrics[memoryMetrics.length - 1]?.retained || 0,
     };
 
-    // eslint-disable-next-line no-console
     console.table({
       "valtio-memory": {
         before: `${formatMB(memoryStats.heapUsedBefore * 1024 * 1024)} MB`,
         after: `${formatMB(memoryStats.heapUsedAfter * 1024 * 1024)} MB`,
         peak: `${formatMB(memoryStats.heapUsedPeak * 1024 * 1024)} MB`,
         retained: `${formatMB(memoryStats.retained * 1024 * 1024)} MB`,
+        count,
       },
     });
   });

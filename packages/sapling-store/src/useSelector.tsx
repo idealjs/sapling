@@ -33,7 +33,8 @@ const isPrefixPath = (parent: string, child: string) => {
 
 const compressDependencies = (dependencies: Set<string>) => {
   const sortedDependencies = [...dependencies].sort(
-    (left, right) => right.split(PATH_SEPARATOR).length - left.split(PATH_SEPARATOR).length,
+    (left, right) =>
+      right.split(PATH_SEPARATOR).length - left.split(PATH_SEPARATOR).length,
   );
   const compressed = new Set<string>();
 
@@ -156,7 +157,9 @@ export const createStore = <T extends object>(value: T) => {
       const nextSnapshot = entry.selector();
       const nextDependencies = compressDependencies(trackingPaths);
       if (!nextDependencies) {
-        throw new Error("Selector tracking context was lost during evaluation.");
+        throw new Error(
+          "Selector tracking context was lost during evaluation.",
+        );
       }
 
       replaceDependencies(entry as SelectorEntry<unknown>, nextDependencies);
@@ -199,7 +202,7 @@ export const createStore = <T extends object>(value: T) => {
   };
 
   const store = createProxy(value, {
-    notify(paths, operation) {
+    notifyGet(paths, operation) {
       if (operation === "get") {
         if (!trackingPaths) {
           return;
@@ -264,41 +267,8 @@ export const createStore = <T extends object>(value: T) => {
     return useSyncExternalStore(subscribe, getSnapshot);
   };
 
-  const subscribeSelector = <R,>(selector: Selector<R>, listener: (value: R) => void) => {
-    const entry = getOrCreateEntry(selector);
-
-    const wrapped = () => {
-      const val = entry.hasSnapshot && !entry.dirty ? (entry.snapshot as R) : evaluateSelector(entry as SelectorEntry<R>);
-      listener(val);
-    };
-
-    entry.listeners.add(wrapped);
-
-    // ensure initial snapshot
-    if (!entry.hasSnapshot || entry.dirty) {
-      wrapped();
-    } else {
-      listener(entry.snapshot as R);
-    }
-
-    return () => {
-      const currentEntry = selectorEntries.get(selector);
-      if (!currentEntry) return;
-
-      currentEntry.listeners.delete(wrapped);
-      if (currentEntry.listeners.size > 0) return;
-
-      for (const dependency of currentEntry.dependencies) {
-        removeDependencyFromTrie(currentEntry.selector, dependency);
-      }
-
-      selectorEntries.delete(selector);
-    };
-  };
-
   return {
     store,
     useSelector,
-    subscribeSelector,
   };
 };

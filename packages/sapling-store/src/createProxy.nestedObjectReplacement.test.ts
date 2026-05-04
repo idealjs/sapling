@@ -19,7 +19,7 @@ describe("createProxy - nested object replacement", () => {
       operations.push({ paths, operation });
     };
 
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifyGet: notify, notifySet: notify });
 
     const originalProfileProxy = proxy.user.profile;
 
@@ -38,22 +38,168 @@ describe("createProxy - nested object replacement", () => {
 
     expect(target.user.profile.details.name).toBe("Janet");
     expect(operations).toEqual(
-      expect.arrayContaining([
-        { paths: ["user"], operation: "get" },
-        { paths: ["user", "profile"], operation: "get" },
-        { paths: ["user", "profile"], operation: "set" },
-        { paths: ["user"], operation: "get" },
-        { paths: ["user", "profile"], operation: "get" },
-        { paths: ["user", "profile", "details"], operation: "get" },
+      [
         {
-          paths: ["user", "profile", "details", "name"],
           operation: "get",
+          paths: ["user"],
         },
         {
-          paths: ["user", "profile", "details", "name"],
-          operation: "set",
+          operation: "get",
+          paths: ["user", "profile"],
         },
-      ]),
+        {
+          operation: "get",
+          paths: ["user"],
+        },
+        {
+          operation: "set",
+          paths: ["user", "profile"],
+        },
+        {
+          operation: "get",
+          paths: ["user"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "symbol:Symbol.iterator"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "constructor"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "constructor"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "symbol:Symbol.toStringTag"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "symbol:Symbol.toStringTag"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "details"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "details"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "details", "symbol:Symbol.iterator"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "details", "constructor"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "details", "constructor"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "details", "symbol:Symbol.toStringTag"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "details", "symbol:Symbol.toStringTag"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "details", "name"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "details", "name"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "symbol:Symbol.iterator"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "symbol:Symbol.toStringTag"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "symbol:Symbol.toStringTag"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "details"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "details"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "details"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "details"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "details"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "details", "symbol:Symbol.iterator"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "details", "symbol:Symbol.toStringTag"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "details", "symbol:Symbol.toStringTag"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "details", "name"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "details", "name"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "details", "name"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "details", "name"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "details", "name"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "details"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "details", "name"],
+        },
+        {
+          operation: "get",
+          paths: ["user", "profile", "details"],
+        },
+        {
+          operation: "set",
+          paths: ["user", "profile", "details", "name"],
+        },
+      ],
     );
   });
 });

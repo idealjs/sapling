@@ -9,7 +9,7 @@ describe("createProxy - deleteProperty behavior", () => {
     const notify = (paths: PathKey[], operation: string) => {
       notifyPaths.push({ paths, operation });
     };
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifySet: notify, notifyGet: notify });
 
     delete proxy.name;
 

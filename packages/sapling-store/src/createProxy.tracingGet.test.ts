@@ -15,7 +15,7 @@ describe("createProxy - tracing path with get operations", () => {
 
   it("should track simple property access with get operation", () => {
     const target = { name: "John", age: 30 };
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifyGet: notify });
 
     expect(proxy.name).toBe("John");
 
@@ -24,7 +24,7 @@ describe("createProxy - tracing path with get operations", () => {
 
   it("should track multiple property accesses with get operation", () => {
     const target = { name: "John", age: 30, email: "john@example.com" };
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifyGet: notify });
 
     expect(proxy.name).toBe("John");
     expect(proxy.age).toBe(30);
@@ -45,7 +45,7 @@ describe("createProxy - tracing path with get operations", () => {
         },
       },
     };
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifyGet: notify });
 
     expect(proxy.user.profile.name).toBe("John");
 
@@ -68,7 +68,7 @@ describe("createProxy - tracing path with get operations", () => {
         },
       },
     };
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifyGet: notify });
 
     expect(proxy.level1.level2.level3.level4.value).toBe("deep");
 
@@ -90,7 +90,7 @@ describe("createProxy - tracing path with get operations", () => {
       name: "John",
       [sym]: "symbol value",
     };
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifyGet: notify });
 
     expect(proxy.name).toBe("John");
     expect(proxy[sym]).toBe("symbol value");
@@ -107,7 +107,7 @@ describe("createProxy - tracing path with get operations", () => {
       1: "second",
       2: "third",
     };
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifyGet: notify });
 
     expect(proxy[0]).toBe("first");
     expect(proxy[1]).toBe("second");
@@ -126,7 +126,7 @@ describe("createProxy - tracing path with get operations", () => {
       name: "John",
       [sym]: "symbol with number",
     };
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifyGet: notify });
 
     expect(proxy.name).toBe("John");
     expect(proxy[sym]).toBe("symbol with number");
@@ -139,7 +139,7 @@ describe("createProxy - tracing path with get operations", () => {
 
   it("should track array access by index", () => {
     const target = { items: [1, 2, 3] };
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifyGet: notify });
 
     expect(proxy.items[0]).toBe(1);
     expect(proxy.items[1]).toBe(2);
@@ -159,7 +159,7 @@ describe("createProxy - tracing path with get operations", () => {
     const target = {
       data: [{ name: "item1" }, { name: "item2" }],
     };
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifyGet: notify });
 
     expect(proxy.data[0].name).toBe("item1");
     expect(proxy.data[1].name).toBe("item2");
@@ -187,8 +187,8 @@ describe("createProxy - tracing path with get operations", () => {
       paths2.push({ paths, operation });
     };
 
-    const proxy1 = createProxy(target1, { notify: notify1 });
-    const proxy2 = createProxy(target2, { notify: notify2 });
+    const proxy1 = createProxy(target1, { notifyGet: notify1 });
+    const proxy2 = createProxy(target2, { notifyGet: notify2 });
 
     expect(proxy1.value).toBe(1);
     expect(proxy2.value).toBe(2);
@@ -202,7 +202,7 @@ describe("createProxy - tracing path with get operations", () => {
       user: { name: "John", age: 30 },
       settings: { theme: "dark" },
     };
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifyGet: notify });
 
     expect(proxy.user.name).toBe("John");
     expect(proxy.user.age).toBe(30);

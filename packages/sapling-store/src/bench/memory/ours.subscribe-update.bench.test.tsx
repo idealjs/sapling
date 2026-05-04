@@ -1,7 +1,6 @@
 import { describe, it } from "vitest";
-import { createStore as ourCreateStore } from "../../useSelector";
+import { createStore } from "../../createStore";
 import {
-  ARRAY_SIZE,
   formatMB,
   getMemoryUsage,
   type MemoryMetrics,
@@ -14,32 +13,32 @@ import {
 describe("bench - our store", () => {
   it("measures subscribe and update for array workload (no view)", () => {
     const memoryMetrics: MemoryMetrics[] = [];
-
+    let count = 0;
+    const calc = (v: number) => {
+      count += v;
+    };
     for (let run = 0; run < RUNS; run++) {
       const heapUsedBefore = getMemoryUsage();
-      const { store, subscribeSelector } = ourCreateStore(makeArrayState());
-
+      const original = makeArrayState();
+      const { proxy, subscribe } = createStore(original);
       const selectorForIndex = (i: number) => () =>
-        store.items[i].meta.levelOne.levelTwo.value;
+        original.items[i].meta.levelOne.levelTwo.value;
       const unsubFns: Array<() => void> = [];
 
       const heapUsedAfter = getMemoryUsage();
       let heapUsedPeak = heapUsedAfter;
-
       for (let i = 0; i < N_SUBSCRIBERS; i++) {
-        const idx = i % ARRAY_SIZE;
-        const unsub = subscribeSelector(
-          () => selectorForIndex(idx)(),
-          () => {},
-        );
+        const selector = selectorForIndex(i);
+        const unsub = subscribe(() => {
+          calc(selector());
+        });
         unsubFns.push(unsub);
       }
 
       heapUsedPeak = Math.max(heapUsedPeak, getMemoryUsage());
 
       for (let u = 0; u < N_UPDATES; u++) {
-        const idx = Math.floor(Math.random() * ARRAY_SIZE);
-        store.items[idx].meta.levelOne.levelTwo.value = Math.random();
+        proxy.items[u].meta.levelOne.levelTwo.value = u + 1;
       }
 
       for (const u of unsubFns) u();
@@ -61,13 +60,13 @@ describe("bench - our store", () => {
       retained: memoryMetrics[memoryMetrics.length - 1]?.retained || 0,
     };
 
-    // eslint-disable-next-line no-console
     console.table({
       "our-memory": {
         before: `${formatMB(memoryStats.heapUsedBefore * 1024 * 1024)} MB`,
         after: `${formatMB(memoryStats.heapUsedAfter * 1024 * 1024)} MB`,
         peak: `${formatMB(memoryStats.heapUsedPeak * 1024 * 1024)} MB`,
         retained: `${formatMB(memoryStats.retained * 1024 * 1024)} MB`,
+        count,
       },
     });
   });

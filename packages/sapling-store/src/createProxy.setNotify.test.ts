@@ -12,7 +12,7 @@ describe("createProxy - set with notify", () => {
       }
     };
 
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifySet: notify });
 
     proxy.name = "Jane";
 
@@ -29,7 +29,7 @@ describe("createProxy - set with notify", () => {
       }
     };
 
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifySet: notify });
 
     proxy.name = "Jane";
     proxy.age = 31;
@@ -52,7 +52,7 @@ describe("createProxy - set with notify", () => {
       }
     };
 
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifySet: notify });
 
     const userProxy = proxy.user;
     const profileProxy = userProxy.profile;
@@ -79,7 +79,7 @@ describe("createProxy - set with notify", () => {
       }
     };
 
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifySet: notify });
 
     proxy.level1.level2.level3.value = "updated";
 
@@ -103,7 +103,7 @@ describe("createProxy - set with notify", () => {
       }
     };
 
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifySet: notify });
 
     proxy.user.profile.name = "Jane";
     proxy.user.profile.email = "jane@example.com";
@@ -124,7 +124,7 @@ describe("createProxy - set with notify", () => {
       }
     };
 
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifySet: notify });
 
     proxy[sym] = "new";
 
@@ -142,7 +142,7 @@ describe("createProxy - set with notify", () => {
       }
     };
 
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifySet: notify, notifyGet: notify });
 
     proxy[sym] = "new";
 
@@ -159,7 +159,7 @@ describe("createProxy - set with notify", () => {
       }
     };
 
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifySet: notify, notifyGet: notify });
 
     proxy.items[1] = 20;
 
@@ -176,7 +176,7 @@ describe("createProxy - set with notify", () => {
       }
     };
 
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifySet: notify, notifyGet: notify });
 
     proxy.data[0].name = "newItem";
 
@@ -193,7 +193,7 @@ describe("createProxy - set with notify", () => {
       }
     };
 
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifySet: notify });
 
     delete proxy.name;
 
@@ -218,8 +218,8 @@ describe("createProxy - set with notify", () => {
       }
     };
 
-    const proxy1 = createProxy(target1, { notify: notify1 });
-    const proxy2 = createProxy(target2, { notify: notify2 });
+    const proxy1 = createProxy(target1, { notifySet: notify1 });
+    const proxy2 = createProxy(target2, { notifySet: notify2 });
 
     proxy1.value = 10;
     proxy2.value = 20;

@@ -19,7 +19,10 @@ type BenchAction = {
 describe("bench - redux", () => {
   it("measures subscribe and update for array workload (no view)", () => {
     const memoryMetrics: MemoryMetrics[] = [];
-
+    let count = 0;
+    const calc = (v: number) => {
+      count += v;
+    };
     for (let run = 0; run < RUNS; run++) {
       const heapUsedBefore = getMemoryUsage();
       const initial = makeArrayState();
@@ -63,11 +66,9 @@ describe("bench - redux", () => {
       const unsubscribeFns: Array<() => void> = [];
 
       for (let i = 0; i < N_SUBSCRIBERS; i++) {
-        const idx = i % ARRAY_SIZE;
-        let last = selectorForIndex(idx)();
+        const selector = selectorForIndex(i);
         const unsubscribe = store.subscribe(() => {
-          const v = selectorForIndex(idx)();
-          if (v !== last) last = v;
+          calc(selector());
         });
         unsubscribeFns.push(unsubscribe);
       }
@@ -106,13 +107,13 @@ describe("bench - redux", () => {
       retained: memoryMetrics[memoryMetrics.length - 1]?.retained || 0,
     };
 
-    // eslint-disable-next-line no-console
     console.table({
       "redux-memory": {
         before: `${formatMB(memoryStats.heapUsedBefore * 1024 * 1024)} MB`,
         after: `${formatMB(memoryStats.heapUsedAfter * 1024 * 1024)} MB`,
         peak: `${formatMB(memoryStats.heapUsedPeak * 1024 * 1024)} MB`,
         retained: `${formatMB(memoryStats.retained * 1024 * 1024)} MB`,
+        count,
       },
     });
   });

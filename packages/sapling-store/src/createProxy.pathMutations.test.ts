@@ -30,7 +30,7 @@ describe("createProxy - path tracing with state mutations", () => {
       operations.push({ paths, operation });
     };
 
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifyGet: notify, notifySet: notify });
 
     const profileProxy = proxy.user.profile;
 
@@ -97,7 +97,7 @@ describe("createProxy - path tracing with state mutations", () => {
       operations.push({ paths, operation });
     };
 
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifyGet: notify, notifySet: notify });
 
     const firstUserProxy = proxy.users[0];
     const readOps = operations.filter((op) => op.operation === "get");
@@ -138,7 +138,7 @@ describe("createProxy - path tracing with state mutations", () => {
       operations.push({ paths, operation });
     };
 
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifyGet: notify, notifySet: notify });
 
     // Read items array
     const itemsProxy = proxy.items;
@@ -174,7 +174,7 @@ describe("createProxy - path tracing with state mutations", () => {
       operations.push({ paths, operation });
     };
 
-    const proxy = createProxy(target, { notify });
+    const proxy = createProxy(target, { notifyGet: notify, notifySet: notify });
 
     const itemsProxy = proxy.items;
 

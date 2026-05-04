@@ -58,3 +58,5 @@ Lower times indicate better performance. The comparison helps identify:
 - **Update throughput**: Time to perform 1000 random mutations
 
 See output table for detailed results across all four implementations.
+
+yarn vitest run ours.subscribe-update --maxWorkers 1 --pool forks --execArgv=--cpu-prof --execArgv=--cpu-prof-name=ours-subscribe-update.cpuprofile
