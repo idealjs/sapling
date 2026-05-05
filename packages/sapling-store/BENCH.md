@@ -1,6 +1,6 @@
 # Benchmark Tests for sapling-store
 
-Performance comparison of Redux, Valtio, Zustand, and our `createStore` implementation.
+Performance comparison of Redux, Valtio, Zustand, and our `createUseStore` implementation.
 
 ## Setup
 

@@ -3,10 +3,10 @@ import { isTrackableProp } from "./isTrackableProp";
 import { segmentToKey } from "./segmentToKey";
 import type { PathKey } from "./types";
 
-export type ProxyOperation = "get" | "set" | "delete";
+export type ProxyOperation = "set" | "delete";
 
 type CreateProxyContext = {
-  notifySet?: (paths: PathKey[], operation: ProxyOperation) => void;
+  notifyChange?: (paths: PathKey[], operation: ProxyOperation) => void;
   basePathPrefix?: PathKey[];
   proxyCache?: WeakMap<object, object>;
 };
@@ -16,7 +16,7 @@ export function createProxy<TValue extends object>(
   context: CreateProxyContext = {},
 ): TValue {
   const {
-    notifySet,
+    notifyChange,
     basePathPrefix = [],
     proxyCache = new WeakMap(),
   } = context;
@@ -39,7 +39,7 @@ export function createProxy<TValue extends object>(
       const nextValue =
         !proxyCache.has(value) && isObjectLike(value)
           ? createProxy(value, {
-              notifySet,
+              notifyChange: notifyChange,
               basePathPrefix: isTrackableProp(prop)
                 ? [...basePathPrefix, segmentToKey(prop)]
                 : basePathPrefix,
@@ -50,14 +50,15 @@ export function createProxy<TValue extends object>(
       const result = Reflect.set(target, prop, nextValue, receiver);
       Reflect.set(original, prop, value);
       if (!initializing) {
-        notifySet?.([...basePathPrefix, segmentToKey(prop)], "set");
+        notifyChange?.([...basePathPrefix, segmentToKey(prop)], "set");
       }
 
       return result;
     },
     deleteProperty: (nextTarget, prop) => {
       const result = Reflect.deleteProperty(nextTarget, prop);
-      notifySet?.([...basePathPrefix, segmentToKey(prop)], "delete");
+      Reflect.deleteProperty(original, prop);
+      notifyChange?.([...basePathPrefix, segmentToKey(prop)], "delete");
       return result;
     },
   });

@@ -1,7 +1,7 @@
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, it } from "vitest";
-import { createStore as ourCreateStore } from "../../useSelector";
+import createUseStore from "../../createUseStore";
 import {
   formatMB,
   getMemoryUsage,
@@ -25,17 +25,17 @@ describe("bench - our store", () => {
       const container = document.createElement("div");
       const root = createRoot(container);
       const initial = makeArrayState();
-      const { store, useSelector } = ourCreateStore(initial);
+      const useStore = createUseStore(initial);
 
       function Reader({ index }: { index: number }) {
-        const value = useSelector(
-          () => store.items[index].meta.levelOne.levelTwo.value,
+        const value = useStore(
+          (value) => value.items[index].meta.levelOne.levelTwo.value,
         );
         return <span data-slot={index}>{String(value)}</span>;
       }
 
       function App() {
-        const items = useSelector(() => store.items);
+        const items = useStore((value) => value.items);
 
         return (
           <>
@@ -54,8 +54,8 @@ describe("bench - our store", () => {
       let heapUsedPeak = heapUsedAfter;
 
       act(() => {
-        for (const item of store.items) {
-          store.items[item.id].meta.levelOne.levelTwo.value = Math.random();
+        for (const item of useStore.proxy.items) {
+          item.meta.levelOne.levelTwo.value = Math.random();
         }
       });
 

@@ -1,5 +1,5 @@
 import { describe, it } from "vitest";
-import { createStore } from "../../createStore";
+import createUseStore from "../../createUseStore";
 import {
   formatMB,
   getMemoryUsage,
@@ -20,7 +20,7 @@ describe("bench - our store", () => {
     for (let run = 0; run < RUNS; run++) {
       const heapUsedBefore = getMemoryUsage();
       const original = makeArrayState();
-      const { proxy, subscribe } = createStore(original);
+      const { proxy, subscribe } = createUseStore(original);
       const selectorForIndex = (i: number) => () =>
         original.items[i].meta.levelOne.levelTwo.value;
       const unsubFns: Array<() => void> = [];

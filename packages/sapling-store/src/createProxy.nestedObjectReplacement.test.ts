@@ -3,7 +3,7 @@ import { createProxy } from "./createProxy";
 import type { PathKey } from "./types";
 
 describe("createProxy - nested object replacement", () => {
-  it("should create a new proxy after replacing a nested object and keep notifying reads and writes", () => {
+  it("should create a new proxy after replacing a nested object and keep notifying writes", () => {
     const target = {
       user: {
         profile: {
@@ -19,7 +19,7 @@ describe("createProxy - nested object replacement", () => {
       operations.push({ paths, operation });
     };
 
-    const proxy = createProxy(target, { notifyGet: notify, notifySet: notify });
+    const proxy = createProxy(target, { notifyChange: notify });
 
     const originalProfileProxy = proxy.user.profile;
 
@@ -37,169 +37,15 @@ describe("createProxy - nested object replacement", () => {
     replacementProfileProxy.details.name = "Janet";
 
     expect(target.user.profile.details.name).toBe("Janet");
-    expect(operations).toEqual(
-      [
-        {
-          operation: "get",
-          paths: ["user"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile"],
-        },
-        {
-          operation: "get",
-          paths: ["user"],
-        },
-        {
-          operation: "set",
-          paths: ["user", "profile"],
-        },
-        {
-          operation: "get",
-          paths: ["user"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "symbol:Symbol.iterator"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "constructor"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "constructor"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "symbol:Symbol.toStringTag"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "symbol:Symbol.toStringTag"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "details"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "details"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "details", "symbol:Symbol.iterator"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "details", "constructor"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "details", "constructor"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "details", "symbol:Symbol.toStringTag"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "details", "symbol:Symbol.toStringTag"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "details", "name"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "details", "name"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "symbol:Symbol.iterator"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "symbol:Symbol.toStringTag"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "symbol:Symbol.toStringTag"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "details"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "details"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "details"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "details"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "details"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "details", "symbol:Symbol.iterator"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "details", "symbol:Symbol.toStringTag"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "details", "symbol:Symbol.toStringTag"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "details", "name"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "details", "name"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "details", "name"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "details", "name"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "details", "name"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "details"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "details", "name"],
-        },
-        {
-          operation: "get",
-          paths: ["user", "profile", "details"],
-        },
-        {
-          operation: "set",
-          paths: ["user", "profile", "details", "name"],
-        },
-      ],
-    );
+    expect(operations).toEqual([
+      {
+        operation: "set",
+        paths: ["user", "profile"],
+      },
+      {
+        operation: "set",
+        paths: ["user", "profile", "details", "name"],
+      },
+    ]);
   });
 });
