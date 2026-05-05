@@ -23,33 +23,33 @@ describe("bench - zustand", () => {
     const calc = (v: number) => {
       count += v;
     };
-    for (let run = 0; run < RUNS; run++) {
-      const heapUsedBefore = getMemoryUsage();
-      const initial = makeArrayState();
+    const initial = makeArrayState();
 
-      const useStore = create<ArrayState>((set) => ({
-        items: initial.items,
-        setValue: (idx: number, value: number) =>
-          set((state) => ({
-            items: state.items.map((item, i) =>
-              i === idx
-                ? {
-                    ...item,
-                    meta: {
-                      ...item.meta,
-                      levelOne: {
-                        ...item.meta.levelOne,
-                        levelTwo: {
-                          ...item.meta.levelOne.levelTwo,
-                          value,
-                        },
+    const useStore = create<ArrayState>((set) => ({
+      items: initial.items,
+      setValue: (idx: number, value: number) =>
+        set((state) => ({
+          items: state.items.map((item, i) =>
+            i === idx
+              ? {
+                  ...item,
+                  meta: {
+                    ...item.meta,
+                    levelOne: {
+                      ...item.meta.levelOne,
+                      levelTwo: {
+                        ...item.meta.levelOne.levelTwo,
+                        value,
                       },
                     },
-                  }
-                : item,
-            ),
-          })),
-      }));
+                  },
+                }
+              : item,
+          ),
+        })),
+    }));
+    for (let run = 0; run < RUNS; run++) {
+      const heapUsedBefore = getMemoryUsage();
 
       const selectorForIndex = (i: number) => () =>
         useStore.getState().items[i].meta.levelOne.levelTwo.value;
@@ -67,7 +67,7 @@ describe("bench - zustand", () => {
       let heapUsedPeak = heapUsedAfter;
 
       for (let u = 0; u < N_UPDATES; u++) {
-        useStore.getState().setValue(u, u + 1);
+        useStore.getState().setValue(u, run + u + 1);
       }
 
       heapUsedPeak = Math.max(heapUsedPeak, getMemoryUsage());

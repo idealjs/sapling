@@ -17,16 +17,16 @@ describe("bench - our store", () => {
     const calc = (v: number) => {
       count += v;
     };
+    const original = makeArrayState();
+    const { proxy, subscribe, originalValue } = createUseStore(original);
+
     for (let run = 0; run < RUNS; run++) {
       const heapUsedBefore = getMemoryUsage();
-      const original = makeArrayState();
-      const { proxy, subscribe } = createUseStore(original);
+
       const selectorForIndex = (i: number) => () =>
-        original.items[i].meta.levelOne.levelTwo.value;
+        originalValue.items[i].meta.levelOne.levelTwo.value;
       const unsubFns: Array<() => void> = [];
 
-      const heapUsedAfter = getMemoryUsage();
-      let heapUsedPeak = heapUsedAfter;
       for (let i = 0; i < N_SUBSCRIBERS; i++) {
         const selector = selectorForIndex(i);
         const unsub = subscribe(() => {
@@ -35,11 +35,14 @@ describe("bench - our store", () => {
         unsubFns.push(unsub);
       }
 
-      heapUsedPeak = Math.max(heapUsedPeak, getMemoryUsage());
+      const heapUsedAfter = getMemoryUsage();
+      let heapUsedPeak = heapUsedAfter;
 
       for (let u = 0; u < N_UPDATES; u++) {
-        proxy.items[u].meta.levelOne.levelTwo.value = u + 1;
+        proxy.items[u].meta.levelOne.levelTwo.value = run + u + 1;
       }
+
+      heapUsedPeak = Math.max(heapUsedPeak, getMemoryUsage());
 
       for (const u of unsubFns) u();
 

@@ -20,12 +20,13 @@ describe("bench - our store", () => {
       }
     ).IS_REACT_ACT_ENVIRONMENT = true;
 
+    const initial = makeArrayState();
+    const useStore = createUseStore(initial);
+
     for (let run = 0; run < RUNS; run++) {
       const heapUsedBefore = getMemoryUsage();
       const container = document.createElement("div");
       const root = createRoot(container);
-      const initial = makeArrayState();
-      const useStore = createUseStore(initial);
 
       function Reader({ index }: { index: number }) {
         const value = useStore(

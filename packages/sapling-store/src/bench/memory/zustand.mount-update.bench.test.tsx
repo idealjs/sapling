@@ -26,35 +26,35 @@ describe("bench - zustand", () => {
       }
     ).IS_REACT_ACT_ENVIRONMENT = true;
 
-    for (let run = 0; run < RUNS; run++) {
-      const heapUsedBefore = getMemoryUsage();
-      const initial = makeArrayState();
-      const container = document.createElement("div");
-      const root = createRoot(container);
-
-      const useStore = create<ArrayState>((set) => ({
-        items: initial.items,
-        setValue: (idx: number, value: number) =>
-          set((state) => ({
-            items: state.items.map((item, i) =>
-              i === idx
-                ? {
-                    ...item,
-                    meta: {
-                      ...item.meta,
-                      levelOne: {
-                        ...item.meta.levelOne,
-                        levelTwo: {
-                          ...item.meta.levelOne.levelTwo,
-                          value,
-                        },
+    const initial = makeArrayState();
+    const useStore = create<ArrayState>((set) => ({
+      items: initial.items,
+      setValue: (idx: number, value: number) =>
+        set((state) => ({
+          items: state.items.map((item, i) =>
+            i === idx
+              ? {
+                  ...item,
+                  meta: {
+                    ...item.meta,
+                    levelOne: {
+                      ...item.meta.levelOne,
+                      levelTwo: {
+                        ...item.meta.levelOne.levelTwo,
+                        value,
                       },
                     },
-                  }
-                : item,
-            ),
-          })),
-      }));
+                  },
+                }
+              : item,
+          ),
+        })),
+    }));
+
+    for (let run = 0; run < RUNS; run++) {
+      const heapUsedBefore = getMemoryUsage();
+      const container = document.createElement("div");
+      const root = createRoot(container);
 
       function Reader({ index }: { index: number }) {
         const value = useStore(
